@@ -1,0 +1,94 @@
+# Copilot Studio Workshop
+
+## Day 2 — Operative Track
+
+### Lab 16 — Trigger Automation
+
+⏱ Estimated time: 40 min
+
+#### Overview
+In this lab, you will automate the first step of the Hiring Agent pipeline. When a recruiter or recruiting coordinator uploads a new resume PDF to SharePoint, the automation will capture the file, create a **Resume** row in Dataverse, and notify the recruiting team so the Hiring Agent can continue processing the candidate.
+
+#### Prerequisites
+1. [Maker] Complete **Lab 13**, **Lab 14**, and **Lab 15** in the same environment.
+2. [Maker] Confirm that you can create a SharePoint document library and a Power Automate connection.
+3. [Maker] Confirm that the **Resume** Dataverse table (displayed as **Resumes** in Power Automate table pickers) exists from the imported hiring solution.
+4. [IT Pro] Confirm that your tenant policies allow SharePoint, Dataverse, and Microsoft Teams connections.
+5. [Maker] Download or locate one sample resume PDF for testing. Two fictitious sample resumes are available in `workshop\assets\` (`AVERY EXAMPLE (FICTITIOUS).pdf` and `TAYLOR TESTPERSON (FICTITIOUS).pdf`).
+
+#### Step-by-Step Instructions
+#### Part 1 — Create the SharePoint drop-off location
+1. Open **SharePoint** and navigate to the team site used for the workshop.
+2. Select **New** and then select **Document library**.
+3. Name the library `Incoming Resumes` and select **Create**.
+4. Upload one sample PDF so you can verify the library works.
+5. Keep the library open in a browser tab for later testing.
+
+![SharePoint library for incoming resumes](./assets/lab-16-sharepoint-library.png)
+
+#### Part 2 — Add an event trigger to Hiring Agent
+1. Open **Hiring Agent** in Copilot Studio.
+2. In the **Overview** tab, scroll to **Triggers** and select **+ Add trigger**.
+3. In the **Add trigger** dialog, search for or browse to a SharePoint file-created trigger such as **When a file is created (properties only)** (SharePoint), and select it.
+4. Name the trigger `When a resume is uploaded to SharePoint`.
+5. Create or select the required connection references.
+6. Set the **Site Address** to your workshop SharePoint site.
+7. Set the **Library Name** to `Incoming Resumes`.
+8. Select **Create trigger**.
+9. On the trigger card, select **Edit in Power Automate**.
+
+#### Part 3 — Filter for PDF resumes and create the Dataverse record
+1. In **Power Automate**, locate the new SharePoint trigger flow.
+2. Add a **Condition** action directly under the trigger.
+3. In the left condition field, select the SharePoint **File name with extension** dynamic value.
+4. In the operator field, select **ends with**.
+5. In the right condition field, enter `.pdf`.
+6. In the **Yes** branch, add a **Get file content** action for the same SharePoint file.
+7. Add a **Dataverse - Add a new row** action.
+8. Set **Table name** to **Resumes** (the plural display name for the Resume table).
+9. Set **Resume Title** to the uploaded file name.
+10. Set **Source Email Address** to the uploader or a fixed recruiting mailbox value used in your workshop.
+11. Set **Upload Date** by using the `utcNow()` expression.
+12. Add a **Dataverse - Upload a file or an image** action.
+13. Set **Table name** to **Resumes**, map the **Row ID** from the row you just created, select the **Resume PDF** column, and map the SharePoint file content.
+
+> Tip: If your library stores resumes in mixed formats, keep the PDF check in place so signatures, images, and unrelated documents do not enter the hiring pipeline.
+
+#### Part 4 — Notify the recruiting team
+1. In the **Yes** branch, add a **Microsoft Teams - Post card in a chat or channel** action after the Dataverse upload action.
+2. Set **Post as** to **Flow bot**.
+3. Set **Post in** to **Channel**.
+4. Select the team and channel used by your recruiting group.
+5. In the adaptive card body, include the uploaded file name, the created resume row identifier, and a short call to action for recruiters to review the intake.
+6. Save the flow.
+7. Return to the trigger details, confirm the plan is associated with **Copilot Studio** if that option is available in your environment, and publish the flow.
+
+![Resume automation flow in Power Automate](./assets/lab-16-trigger-flow.png)
+
+#### Part 5 — Test the automation
+1. Return to the **Incoming Resumes** SharePoint library.
+2. Upload a new sample PDF file.
+3. Wait one to two minutes for the trigger flow to execute.
+4. Open the **Hiring Hub** app and go to **Resumes**.
+5. Confirm that a new row exists with the uploaded file name and a recent upload timestamp.
+6. Open Microsoft Teams and confirm that the recruiting channel received the notification card.
+
+#### Validation
+1. The SharePoint library named **Incoming Resumes** exists and accepts PDF uploads.
+2. The Copilot Studio trigger appears on the **Hiring Agent** overview page.
+3. Uploading a PDF creates a new row in the **Resumes** Dataverse table.
+4. The new Dataverse row contains a file in the **Resume PDF** column.
+5. The recruiting Teams channel receives a notification after the upload.
+
+#### Troubleshooting
+1. If the trigger does not fire, open the Power Automate flow run history and confirm the SharePoint connection is valid.
+2. If the Dataverse row is created without a file, recheck the **Upload a file or an image** action and confirm you mapped file content rather than metadata.
+3. If non-PDF files are being processed, confirm the condition uses the file name or content type field you intended.
+4. If the Teams post fails, recreate the Teams connection and verify that you selected a channel you can post to.
+5. If the flow saves but does not publish, remove any empty placeholder fields and save again before publishing.
+
+#### Facilitator Notes
+1. Pre-stage a SharePoint site and Teams channel if your participants do not have permission to create them during class.
+2. Remind participants that this lab automates the trigger only; later labs add richer AI analysis and downstream hiring actions.
+3. Have one known-good PDF ready for a live demo so you can quickly prove the end-to-end flow when troubleshooting.
+

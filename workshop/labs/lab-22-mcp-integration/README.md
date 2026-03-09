@@ -1,0 +1,87 @@
+# Copilot Studio Workshop
+
+## Day 2 — Operative Track
+
+### Lab 22 — MCP Integration
+
+⏱ Estimated time: 45 min
+
+#### Overview
+In this lab, you will extend the Hiring Agent solution with Model Context Protocol (MCP) capabilities. You will browse the pre-built Microsoft MCP Servers catalog in Copilot Studio, add the User Profile and Outlook Calendar servers to your agent, and then use those tools to help schedule an interview-prep meeting.
+
+> **Note:** MCP integration with pre-built Microsoft MCP Servers uses **Agent 365** tooling servers. If the MCP servers do not appear in your environment, ask your facilitator whether the required access is enabled. If MCP servers are unavailable, the facilitator will demo this lab.
+
+#### Prerequisites
+1. Complete **Lab 15** so you have **Interview Prep Agent** or **Hiring Agent** ready for extension.
+2. Have a manager configured for your workshop account in the Microsoft 365 Admin Center.
+3. Have at least one meeting on your calendar in the upcoming 24 hours.
+4. Have one coworker account available for a test meeting invitation.
+5. Confirm that your account can create or approve the Microsoft 365 connections required by the MCP tools.
+
+#### Step-by-Step Instructions
+#### Part 1 — Browse the MCP server catalog
+1. Open **Interview Prep Agent** or **Hiring Agent** in Copilot Studio.
+2. Select **Tools** in the top navigation and then select **+ Add a tool**.
+3. In the **Add tool** dialog, locate the filter row: **All | Connector | Prompt | Flow | REST API | Model Context Protocol**.
+4. Select the **Model Context Protocol** filter tab.
+5. Review the pre-built **Microsoft MCP Servers** that appear, such as Microsoft 365 User Profile, Microsoft Outlook Calendar, Microsoft Teams, SharePoint, and others.
+
+#### Part 2 — Add the User Profile MCP server
+1. From the filtered MCP server list, select **Microsoft 365 User Profile M...** (Microsoft MCP Servers).
+2. In the connection dropdown, select **Create new connection**.
+3. Select **Create** and then sign in with your workshop account when the pick-your-account popup appears.
+4. After authentication, select **Add and configure** to add the server to your agent.
+5. Scroll down on the tool overview page to review the MCP tools included in this server (such as *getMyManager*, *getMyProfile*, *getDirectReports*).
+6. Select **Test** to open the test pane.
+7. Enter `Who is my manager?` and press **Enter**.
+8. When the consent card appears, select **Allow** to grant the MCP server access to your data. This consent prompt appears once per agent-and-server combination.
+9. Confirm the agent returns your manager\'s name and details.
+
+#### Part 3 — Add the Outlook Calendar MCP server
+1. Return to **Tools** and select **+ Add a tool**.
+2. Select the **Model Context Protocol** filter tab.
+3. Select **Microsoft Outlook Calendar MCP** (Microsoft MCP Servers).
+4. Select **Add and configure**. If a connection already exists from Part 2, it may be reused automatically.
+5. Scroll down to review the MCP tools in this server (such as *findMeetingTimes*, *createEvent*, *getMyCalendarEvents*).
+6. In the test pane, enter `Get my meetings for today.`
+7. If the consent card appears again for this new server, select **Allow**.
+8. Confirm the agent returns your current meeting information.
+
+![Interview Prep Agent with MCP tools configured](./assets/lab-22-mcp-tools.png)
+
+#### Part 4 — Schedule an interview-prep meeting
+1. Start a **New test session**.
+2. Enter a prompt such as `Can you find 3 meeting times for a 30 minute meeting with [coworker name] for an interview prep-meeting?` (replace `[coworker name]` with the name of your test coworker account).
+3. Review the returned time slots. The agent uses the *findMeetingTimes* MCP tool to check both calendars for availability.
+4. Reply with a selection such as `Please schedule the one at 10:30 AM.`
+5. Confirm the agent calls the *createEvent* MCP tool and schedules the meeting.
+6. Open Outlook or Teams calendar to verify the meeting invitation was sent and received by the coworker.
+
+#### Part 5 — Review governance and scope
+1. Return to the **Tools** page.
+2. Open each MCP server entry and review its description, connection, and the list of tools it exposes.
+3. In your notes, record one action that the agent should be allowed to perform and one action that should remain out of scope.
+4. Note that each MCP server entry covers multiple tools (unlike connectors, which require a separate action per capability). This is a key advantage of MCP.
+5. Save your notes for the Day 2 wrap-up discussion.
+
+> **Note:** MCP servers are governed through the Microsoft 365 admin center. Administrators can allow or block specific servers organization-wide, scope permissions using Microsoft Entra, and audit all tool calls through Microsoft Defender.
+
+#### Validation
+1. The **Model Context Protocol** filter tab in the **Add tool** dialog shows pre-built Microsoft MCP Servers.
+2. The **Microsoft 365 User Profile** MCP server is added and can return manager or profile information.
+3. The **Microsoft Outlook Calendar** MCP server is added and can return meeting information.
+4. The agent can suggest available meeting times and create an interview-prep meeting.
+5. You documented one governance rule about what the MCP-enabled agent should and should not do.
+
+#### Troubleshooting
+1. If no MCP servers appear under the **Model Context Protocol** filter tab, your tenant may not have Agent 365 tooling servers enabled. Ask the facilitator to demo this lab or check whether the required access has been configured.
+2. If connection setup fails, sign out of the connection prompt and sign back in with the same account used for the workshop.
+3. If calendar tests fail, verify that your user has a mailbox and at least one current or future meeting.
+4. If the consent card does not appear, the connection may already be authorized from a previous session. Proceed with testing.
+5. If the agent does not call the MCP server, review the tool descriptions and test with a more direct request such as `Show my meetings for today.`
+
+#### Facilitator Notes
+1. Demonstrate the MCP filter tab and the add-and-configure flow once before the room starts so participants understand the difference between the **Create new** card (for custom MCP servers) and the **Model Context Protocol** filter tab (for pre-built Microsoft MCP Servers).
+2. If your tenant does not have Agent 365 tooling servers available, demo from a pre-configured environment and let participants observe the end state.
+3. Emphasize that one MCP server entry exposes multiple tools — contrast this with classic connectors that require one action per capability.
+4. Keep the conversation focused on governed tool use, not unlimited automation.

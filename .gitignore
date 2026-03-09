@@ -1,0 +1,14 @@
+# Workshop configuration with real credentials
+workshop/automation/workshop-config.json
+workshop/automation/pnp-auth-test.log
+
+# Certificate private keys
+*.pfx
+
+# Common editor artifacts
+.vs/
+*.suo
+*.user
+
+# Session artifacts
+LAB_ANALYSIS_COMPLETE.txt

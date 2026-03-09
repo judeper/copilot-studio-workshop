@@ -1,0 +1,183 @@
+# Pre-Event Environment Checklist
+
+Use this runbook for the full readiness pass one to two weeks before delivery, again the day before, and once more on the morning of Day 1. Use the [Environment Smoke Tests](../tests/environment-smoke-tests.md) for the opening-room fast path; use this checklist when you need the complete pre-event go/no-go review.
+
+## How to use this checklist
+
+- Mark each section green, yellow, or red during the pre-event review.
+- Green means continue hands-on as planned.
+- Yellow means keep the module on the agenda, but pre-stage a facilitator demo and tell the room where hands-on stops.
+- Red means treat the environment as not ready until the blocker is fixed or the module is formally removed from the delivery plan.
+- Optional automation path: copy `../automation/workshop-config.example.json` to `../automation/workshop-config.json`, replace the tenant, SharePoint, environment, and `SharePoint.PnPClientId` placeholders, keep the default Day 2 asset paths if you will localize into `workshop\assets`, and run `../automation/Install-WorkshopPrerequisites.ps1` once. `SharePoint.PnPLoginMode` defaults to `DeviceLogin` for terminal-friendly sign-in.
+- Use the Day 2 asset download helper to localize `Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv` from the public Microsoft [`agent-academy` Operative Mission 01 source](https://github.com/microsoft/agent-academy/tree/main/docs/operative/01-get-started) into `workshop\assets` before validation; this only prepares local files and does not import them into the environment.
+- If the dry run still needs a fresh facilitator environment, populate the optional `EnvironmentBootstrap` block in `../automation/workshop-config.json` and run `../automation/Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment` directly, or `../automation/Invoke-WorkshopLabSetup.ps1 -CreateEnvironment -Mode StudentReady` if you want the rest of the provisioning flow to continue. This wraps the officially documented `pac admin create` flow, still requires an already-authenticated admin-capable `pac` profile plus available capacity/licensing, and updates `EnvironmentUrl` when the created URL can be resolved.
+- Run `../automation/Invoke-WorkshopPrereqCheck.ps1` to validate local tools, populated config values, and localized asset paths before setup; it does not download the files, confirm live SharePoint access, or execute tenant settings.
+- Run `../automation/Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to pre-stage Lab 00 shared prerequisites and any optional SharePoint artifacts from config without pre-completing later student-owned work such as Labs 09, 13, and 16 or the broader agent, MCP, Teams, and evaluation exercises.
+- Use `../automation/Import-WorkshopOperativeAssets.ps1 -ImportSolution` only in a separate facilitator demo environment after confirming the intended `pac` auth profile is active; it imports only the solution ZIP and leaves the CSV import plus later Day 2 setup to the walkthrough.
+
+## Tenant, identity, and licensing
+
+- [ ] Confirm the workshop tenant is active and not under service restriction.
+- [ ] Confirm facilitator and backup facilitator accounts can sign in successfully.
+- [ ] Confirm participant accounts or attendee sign-in instructions are ready.
+- [ ] Confirm workshop accounts use supported work or school identities.
+- [ ] Confirm multifactor authentication expectations are communicated in advance.
+- [ ] Confirm Microsoft Copilot Studio access is available for facilitators.
+- [ ] Confirm participant licensing or trial guidance is ready and tested.
+- [ ] Confirm Microsoft 365 Copilot requirements are understood for publishing scenarios.
+- [ ] Confirm Copilot Studio Authors or equivalent publishing permissions are configured.
+- [ ] Confirm the workshop environment has **Copilot Studio credits** available. Use one of these options:
+  - **Pay-as-you-go:** Link an Azure subscription to the environment via **Power Platform admin center** > **Environments** > select your environment > **Billing** > **Link Azure subscription**. This is the fastest option for workshop scenarios.
+  - **Capacity pack:** Confirm a Copilot Studio capacity pack is assigned to the tenant and allocated to the workshop environment.
+  - **Trial:** Confirm a Copilot Studio trial is active and has not expired. Note that trials are time-limited and may block publishing or advanced actions.
+- [ ] Verify credits are working by creating a temporary test agent, asking a question in the test pane, and confirming a response is returned without a capacity error.
+
+**If unresolved:** Treat the environment as not ready. Do not start self-paced work until sign-in, licensing, and role assignments are stable.
+
+## Power Platform environment, solutions, and Dataverse
+
+- [ ] Confirm `workshop/automation/workshop-config.json` is populated with the real environment and SharePoint values, and that the Day 2 asset paths point to the helper-localized `workshop\assets` copies or another approved local folder.
+- [ ] Confirm the target Power Platform environment exists.
+- [ ] Confirm Dataverse is provisioned and healthy in the target environment.
+- [ ] Confirm facilitators can create or open the workshop solution in the intended environment.
+- [ ] Confirm facilitators can create or open agents, connections, and tables inside that solution.
+- [ ] Confirm environment maker permissions are assigned to expected users.
+- [ ] Confirm the localized Day 2 Hiring Agent files (`Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv`) are present locally before you begin the Lab 13 walkthrough in that environment.
+- [ ] Confirm `pac auth list` shows the intended facilitator demo environment as the active profile before any optional solution import.
+- [ ] Confirm at least one clean demo environment is reserved for live walkthroughs and any optional solution-package pre-staging.
+
+**If unresolved:** Treat the environment as not ready for hands-on. Both workshop days depend on stable environment and solution access.
+
+## SharePoint knowledge and Microsoft 365 content
+
+- [ ] Confirm SharePoint is enabled in the tenant.
+- [ ] Confirm the workshop SharePoint site is created and reachable.
+- [ ] Confirm sample lists or sample document libraries are populated as needed.
+- [ ] Confirm sample HR documents are uploaded for grounding and document-processing exercises.
+- [ ] Confirm document links are stable and readable by the intended workshop accounts.
+- [ ] Confirm the facilitator account can reach the SharePoint site or library picker from Copilot Studio knowledge setup.
+- [ ] Confirm at least one SharePoint knowledge source can be attached or refreshed in the demo environment.
+
+**If unresolved:** Switch the affected knowledge-grounding modules to facilitator demo only. If even the facilitator cannot attach SharePoint knowledge, the environment is not ready for that Day 1 path.
+
+## Connectors, DLP, triggers, and email execution
+
+- [ ] Confirm the SharePoint and Office 365 Outlook connectors are allowed by DLP policy in the target environment.
+- [ ] Confirm required connections or connection references can be created or reused inside the workshop solution.
+- [ ] Confirm the facilitator account can open the connector picker for flows, tools, and triggers without policy errors.
+- [ ] Confirm a pre-staged agent flow can read from SharePoint, write back to SharePoint or Dataverse as expected, and return a response to the agent.
+- [ ] Confirm a pre-staged trigger can fire from SharePoint or the intended event source in the demo environment.
+- [ ] Confirm at least one workshop-safe email action can send to a monitored test mailbox.
+- [ ] Confirm the escalation owner is known if connector approval or DLP policy changes at the last minute.
+
+**If unresolved:** Mark Lab 09, Lab 10, and any email-dependent automation as demo-only. If the facilitator account cannot execute the recovery demo, treat the automation path as not ready.
+
+## Teams and publishing surfaces
+
+- [ ] Confirm Microsoft Teams is enabled for the workshop tenant.
+- [ ] Confirm a Teams space or channel exists for workshop communications.
+- [ ] Confirm facilitators can publish or demonstrate publishing to Teams if included.
+- [ ] Confirm backup communication channel is ready if Teams access is inconsistent.
+
+**If unresolved:** Switch publishing to a readiness walkthrough or facilitator demo. Do not let Teams drift block the rest of the room.
+
+## MCP and developer tooling
+
+- [ ] Confirm the Copilot Studio MCP onboarding wizard is visible in the target environment.
+- [ ] Confirm at least one supported MCP server can be added in the demo environment.
+- [ ] Confirm the facilitator account can complete the Microsoft 365 connection prompts needed for MCP labs.
+- [ ] Confirm Visual Studio Code is installed on facilitator machines for the optional developer workflow.
+- [ ] Confirm the Copilot Studio extension for Visual Studio Code is available on facilitator machines if Module 25 is included.
+
+**If unresolved:** Switch MCP and VS Code extension modules to facilitator demo mode. If no facilitator account can open the wizard, treat those modules as not ready and replace them with discussion or screenshots.
+
+## Evaluation readiness
+
+- [ ] Confirm the built-in Evaluation experience opens in the target environment.
+- [ ] Confirm the New evaluation flow allows a manual or import-based test set.
+- [ ] Confirm the evaluation account can reuse the same knowledge, connections, and tools expected in the workshop.
+- [ ] Confirm at least one sample evaluation can be started or completed in the demo environment.
+- [ ] Confirm detailed results, graders, and activity-map-style diagnostics are visible for a completed or historical run.
+
+**If unresolved:** Switch the evaluation module to facilitator demo mode. If the facilitator account cannot run or open evaluation, treat that module as not ready.
+
+## Demo account and backup path
+
+- [ ] Confirm a dedicated demo account is fully configured and validated end to end.
+- [ ] Confirm the demo account has access to Copilot Studio, Dataverse, SharePoint, Teams, MCP, and Evaluation as applicable.
+- [ ] Confirm the demo account includes a completed baseline build for recovery demonstrations.
+- [ ] Confirm a second backup account is available in case the primary demo account fails.
+- [ ] Confirm screenshots or a completed tenant snapshot exist for the highest-risk steps.
+
+**If unresolved:** Treat the environment as not ready. A workshop without a validated recovery path will stall when the first tenant issue appears.
+
+## Communications setup
+
+- [ ] Send pre-event email with schedule, prerequisites, and sign-in expectations.
+- [ ] Share required URLs, tenant guidance, and any software install steps in advance.
+- [ ] Provide Day 1 and Day 2 readiness notes, including Day 2 dependency on Day 1 familiarity or Recruit-equivalent experience.
+- [ ] Prepare a support message template for common sign-in, licensing, and environment issues.
+- [ ] Prepare a visible “current lab and restart point” message for breaks.
+
+## Room-readiness checks
+
+- [ ] Confirm reliable internet for facilitator and attendees.
+- [ ] Confirm projector, adapters, audio, and screen resolution are working.
+- [ ] Confirm browser choice and pop-up settings will not block workshop tasks.
+- [ ] Confirm a printed or offline copy of key screenshots is available for recovery use.
+
+**If unresolved:** Treat the room as not ready even if the tenant checks are green.
+
+## Virtual delivery preparation
+
+Complete these items when delivering the workshop virtually with a single facilitator and 8–15 participants. These steps reduce the 25–35% virtual overhead that hands-on Copilot Studio labs carry compared to in-person delivery.
+
+### One week before
+
+- [ ] Audit every connector used across both days (SharePoint, Office 365 Outlook, Teams, Dataverse, HTTP) against the tenant DLP policy list in the Power Platform Admin Center. Get admin exceptions approved and applied before delivery.
+- [ ] Pre-grant all participant accounts at least Contributor access to the lab SharePoint site used for knowledge grounding.
+- [ ] Pre-grant MCP admin consent at the tenant level so participants do not hit a "needs admin approval" screen during the MCP onboarding wizard.
+- [ ] Pre-enable custom app sideloading and app setup policies in the Teams Admin Center for the participant group.
+- [ ] Run a full end-to-end dry run of both days using a participant-equivalent account, not a global admin account. Time each lab and document actual durations.
+- [ ] Pre-import the Day 2 solution ZIP into a clean sandbox environment identical to participant environments and verify the agent appears with all topics.
+- [ ] Build a Lab State Recovery document listing: (a) the direct environment URL with `environmentid` parameter for each lab, (b) a screenshot of each lab end state, and (c) a skip-ahead path for any lab that can be bypassed without breaking downstream labs.
+
+### 48 hours before
+
+- [ ] Run the automation scripts to pre-stage the Lab 00 SharePoint site, core lists, and sample data.
+- [ ] Pre-create a temporary warm-up agent in each participant environment to pre-provision the backend. Delete the warm-up agent after backend provisioning completes. This eliminates the 1–10 minute first-agent provisioning delay that has no progress indicator.
+- [ ] Pre-attach the lab SharePoint knowledge source to a facilitator template agent and allow it to index overnight. SharePoint indexing can take 15–60 minutes and blocks Lab 06 validation if not pre-seeded.
+- [ ] Pre-import the Day 2 solution ZIP into at least two participant environments to validate import success and create a recovery fallback.
+- [ ] Pre-create SharePoint, Office 365 Outlook, and Dataverse connector connections in the facilitator account to enable demo fallback for flow-based labs.
+- [ ] Stage all self-paced support materials (Adaptive Card JSON scaffolds, flow templates, sample documents, Word templates) and verify download links work.
+
+### Morning of Day 1
+
+- [ ] Pin the direct Copilot Studio environment URL (including `?environmentid=XXXX`) in the virtual meeting chat before participants arrive.
+- [ ] Confirm overnight SharePoint indexing completed by checking the facilitator template agent shows "Ready" status for the knowledge source.
+- [ ] Prepare a shared troubleshooting document (OneNote or Loop) where stuck participants can paste error messages and screenshots while waiting for a screen-share slot. Share the link in chat before the first hands-on block.
+- [ ] Post a "known platform lag" message template in chat: "If Copilot Studio feels slow, try Ctrl+Shift+R before assuming something is broken."
+- [ ] Establish the troubleshooting protocol with participants: screen-share is the default, cap each debug session at 5 minutes, then move to a fallback path and follow up asynchronously.
+
+### Morning of Day 2
+
+- [ ] Confirm the MCP onboarding wizard is visible in a representative participant environment. If absent, pre-stage the manual Custom MCP Server workaround as a fallback handout.
+- [ ] Confirm Dataverse tables are accessible in participant environments by testing record creation and deletion with a non-admin account.
+- [ ] Confirm the Evaluation experience opens and the "New evaluation" flow starts without errors.
+- [ ] Pre-download Day 2 CSV files (`job-roles.csv`, `evaluation-criteria.csv`) and share a direct download link in the meeting chat.
+
+### Virtual pacing discipline
+
+- [ ] Use explicit hold points at the end of each hands-on block. Post a "✅ Thumbs-up when you reach [checkpoint]" message in chat before releasing participants to work.
+- [ ] Keep fast finishers busy with extension challenge questions rather than allowing them to advance to the next lab unsynchronized.
+- [ ] Schedule the lightest content (demos, buffer, wrap-up) after the afternoon break to account for virtual fatigue.
+- [ ] Budget 8–12 minutes per 90-minute hands-on block for screen-share troubleshooting overhead.
+
+**If unresolved:** Virtual delivery without the pre-seeded SharePoint indexing, DLP audit, and MCP admin consent is high risk for a single facilitator. Treat these three items as go/no-go prerequisites.
+
+## Final go/no-go review
+
+- [ ] Continue hands-on only when core access, solution access, save/test, SharePoint knowledge, and the facilitator recovery path are green.
+- [ ] Switch a module to demo mode only when the facilitator fallback has been validated in advance.
+- [ ] Treat the environment as not ready when a core blocker is red or when a demo fallback has not been proven end to end.
+- [ ] Capture known risks, workarounds, and escalation contacts before attendees arrive.

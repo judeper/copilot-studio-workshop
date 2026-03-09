@@ -1,0 +1,97 @@
+{
+  "TenantId": "<replace-with-tenant-guid>",
+  "EnvironmentUrl": "https://<replace-with-org>.crm.dynamics.com",
+  "EnvironmentBootstrap": {
+    "DisplayName": "Contoso Copilot Studio Workshop",
+    "Type": "Sandbox",
+    "Region": "unitedstates",
+    "DomainName": "contoso-copilot-workshop",
+    "Currency": "USD",
+    "Language": "English",
+    "AdminUser": "",
+    "SecurityGroupId": ""
+  },
+  "SharePoint": {
+    "AdminUrl": "https://<replace-with-tenant>-admin.sharepoint.com",
+    "SiteUrl": "https://<replace-with-tenant>.sharepoint.com/sites/ContosoIT",
+    "SiteTitle": "Contoso IT",
+    "SiteAlias": "ContosoIT",
+    "SiteDescription": "Copilot Studio workshop data source",
+    "PnPClientId": "<replace-with-entra-app-client-id>",
+    "PnPLoginMode": "DeviceLogin",
+    "PnPCertificateThumbprint": ""
+  },
+  "Identity": {
+    "AgentCreatorsGroupName": "AgentCreators",
+    "ParticipantEmails": []
+  },
+  "Day1": {
+    "CreateDeviceRequestsList": false,
+    "CreateIncomingResumesLibrary": false,
+    "SampleDevices": [
+      {
+        "Title": "Surface Laptop 13",
+        "Manufacturer": "Microsoft",
+        "Model": "Surface Laptop 13",
+        "AssetType": "Laptop",
+        "Color": "Silver",
+        "SerialNumber": "SURF-1001",
+        "PurchaseDate": "2024-01-15",
+        "PurchasePrice": 1299.0,
+        "OrderNumber": "PO-1001",
+        "Status": "Available",
+        "ImageUrl": ""
+      },
+      {
+        "Title": "Surface Laptop 15",
+        "Manufacturer": "Microsoft",
+        "Model": "Surface Laptop 15",
+        "AssetType": "Laptop",
+        "Color": "Black",
+        "SerialNumber": "SURF-1002",
+        "PurchaseDate": "2024-02-12",
+        "PurchasePrice": 1499.0,
+        "OrderNumber": "PO-1002",
+        "Status": "Available",
+        "ImageUrl": ""
+      },
+      {
+        "Title": "Surface Pro 12",
+        "Manufacturer": "Microsoft",
+        "Model": "Surface Pro 12",
+        "AssetType": "Tablet",
+        "Color": "Platinum",
+        "SerialNumber": "SURF-1003",
+        "PurchaseDate": "2024-03-20",
+        "PurchasePrice": 1399.0,
+        "OrderNumber": "PO-1003",
+        "Status": "Available",
+        "ImageUrl": ""
+      },
+      {
+        "Title": "Surface Studio",
+        "Manufacturer": "Microsoft",
+        "Model": "Surface Studio",
+        "AssetType": "Desktop",
+        "Color": "Silver",
+        "SerialNumber": "SURF-1004",
+        "PurchaseDate": "2024-04-05",
+        "PurchasePrice": 4299.0,
+        "OrderNumber": "PO-1004",
+        "Status": "Available",
+        "ImageUrl": ""
+      }
+    ],
+    "SampleTicket": {
+      "Title": "VPN connection issue",
+      "Description": "User cannot connect after password change",
+      "Priority": "Normal"
+    }
+  },
+  "Day2": {
+    "OperativeSolutionZipPath": "..\\assets\\Operative_1_0_0_0.zip",
+    "JobRolesCsvPath": "..\\assets\\job-roles.csv",
+    "EvaluationCriteriaCsvPath": "..\\assets\\evaluation-criteria.csv",
+    "ImportOperativeSolution": false
+  }
+}

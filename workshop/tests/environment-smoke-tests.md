@@ -1,0 +1,23 @@
+# Environment Smoke Tests
+
+Use this morning-of runbook during the opening setup window. Run the checks in order, keep each check to **60–90 seconds**, and complete the full pass in **under 20 minutes**. The full pre-event readiness pass lives in the [Pre-Event Environment Checklist](../facilitator-guide/environment-checklist.md).
+
+| Check | Day | Action to perform | Expected result | If it fails |
+| --- | --- | --- | --- | --- |
+| 1. Copilot Studio sign-in | Both | Open Copilot Studio in the browser and sign in with the workshop account. | The Copilot Studio landing page loads without an access-denied or licensing error. | Reauthenticate once and confirm the correct tenant. If access still fails, treat the environment as **not ready**. |
+| 2. Workshop environment and solution access | Both | Switch to the intended workshop environment, then create or open the workshop solution. | The correct environment appears in the list, the solution opens, and the expected components load without permission errors. | Verify environment assignment, maker rights, and solution access. If the solution still will not open, treat the environment as **not ready**. |
+| 3. Agent save and test path | Both | Open a disposable test agent or the pre-staged demo agent, save once, and send a simple greeting in **Test your agent**. | The save completes and the test pane returns a response or a clear initialization message without blocking errors. | Refresh the agent, start a new test session, and retry once. If save or test still fails, treat the environment as **not ready** for hands-on. |
+| 4. SharePoint knowledge setup | Day 1 | In **Knowledge**, start **Add knowledge**, choose **SharePoint**, and wait for the site or library picker. | SharePoint is selectable and the picker opens for the expected site or library. | Retry once with the facilitator demo account. If the demo account works, switch the knowledge module to **demo mode**. If it also fails, treat the environment as **not ready** for the Day 1 knowledge path. |
+| 5. Connector and DLP readiness | Both | Open the connector or flow picker used in the workshop and confirm SharePoint and Office 365 Outlook can be selected without DLP or policy errors. | The picker loads, the required connectors appear, and connection prompts can start normally. | If policy blocks the path, switch the automation modules to **demo mode** using the pre-validated facilitator flow. If the facilitator flow cannot be opened either, treat the automation path as **not ready**. |
+| 6. Trigger and email execution | Both | Run one pre-staged automation test: submit the known SharePoint item or trigger the saved test flow, then confirm the email arrives in the monitored mailbox. | The trigger or flow runs and the expected email arrives. | If only the facilitator asset works, switch trigger and email exercises to **demo mode**. If no validated asset works, treat the automation path as **not ready**. |
+| 7. MCP readiness | Day 2 | Open **Tools**, choose the MCP path, and start the onboarding wizard. If you have a pre-staged MCP tool, confirm it still opens. | The MCP onboarding wizard or saved MCP tool loads without capability or connection errors. | If the facilitator demo account can still complete the wizard, switch MCP modules to **demo mode**. If no facilitator account can open MCP, treat the MCP module as **not ready**. |
+| 8. Evaluation availability | Day 2 | Open **Evaluation** and start the **New evaluation** flow. | The evaluation experience opens and the test-set path is available without errors. | Retry once with the facilitator demo account. If the demo account works, switch evaluation to **demo mode**. If it also fails, treat the evaluation module as **not ready**. |
+| 9. Dataverse table readiness | Day 2 | Open a Dataverse table in the target environment and confirm a test record can be created and deleted. | The table opens, a row can be added and removed without permission errors. | If the facilitator demo account can complete the operation, switch Dataverse exercises to **demo mode**. If neither account works, treat the Dataverse path as **not ready**. |
+
+## Morning-of outcomes
+
+- Continue the general hands-on path when checks 1–3 are green and each later module is either green or deliberately moved to demo mode.
+- Switch only the affected module to demo mode when checks 4–8 fail on the attendee path but succeed on the facilitator fallback.
+- Treat the environment as not ready when checks 1–3 fail, or when any later check has no working facilitator fallback.
+- Delete the temporary test agent or reset the disposable artifacts after the smoke pass.
+
