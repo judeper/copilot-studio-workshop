@@ -15,7 +15,7 @@ In this lab, you will stand up the Day 2 Hiring Agent scenario that you will ext
 1. [Maker] Sign in to a Microsoft Power Platform environment where you can create solutions, tables, flows, and agents.
 2. [Maker] Confirm that you have a Copilot Studio license or trial assigned.
 3. [IT Pro] Confirm that your environment allows Dataverse, Power Automate, and Microsoft Teams connections.
-4. [Maker] Download the facilitator-provided setup files to a local folder: `Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv`. Your facilitator will share these files through the course delivery channel, shared drive, or Teams channel before the session begins.
+4. [Maker] Locate the setup files in your local clone at `workshop/assets/`: `Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv`. If you do not have a local clone, your facilitator will share these files through the course delivery channel, shared drive, or Teams channel before the session begins.
 5. [Developer] Open a browser with both **Copilot Studio** and **Power Apps** available so you can switch between them during setup.
 6. Complete all Day 1 labs (Labs 00–12) or confirm equivalent Copilot Studio experience with the facilitator.
 
@@ -48,12 +48,12 @@ In this lab, you will stand up the Day 2 Hiring Agent scenario that you will ext
 2. On the command bar, select the **...** (more commands) dropdown, then select **Import from CSV**.
 3. Select **Choose File**, upload `job-roles.csv`, confirm the **Owner For Imported Records** is set to your account, and then select **Next**.
 4. On the **Delimiter Settings** screen, keep the defaults (Quotation mark data delimiter, Comma field delimiter, First row contains column headings checked, Allow Duplicates set to **No**) and select **Next**.
-5. On the **Map Attributes** screen, in the **Primary Fields** section, map **Job Title** by selecting the source column header from the dropdown (e.g., `Job Title,Description,Close Date,Number of Hires`).
+5. On the **Map Attributes** screen, in the **Primary Fields** section, map **Job Title** by selecting the matching source column from the dropdown. The `job-roles.csv` columns are: `Job Title`, `Description`, `Close Date`, `Number of Hires`.
 6. Select **Finish Import**.
 7. When the confirmation reads **Your data has been submitted for import**, select **Done**. Wait for the import to complete and then select **Refresh** until you see the imported job role records.
 8. In the left navigation, select **Evaluation Criteria**.
 9. Repeat the CSV import process for `evaluation-criteria.csv`.
-10. On the mapping screen, verify that the **Primary Fields** section shows **Criteria Name** mapped and **Job Role (Lookup)** mapped with a lookup icon (🔍). In the **Optional Fields** section, verify **Description** and **Weighting** are mapped.
+10. On the mapping screen, verify that the **Primary Fields** section shows **Criteria Name** mapped and **Job Role (Lookup)** mapped with a lookup icon (🔍). In the **Optional Fields** section, verify **Description** and **Weighting** are mapped. The `evaluation-criteria.csv` columns are: `Criteria Name`, `Description`, `Job Role`, `Weighting`.
 11. Select **Finish Import**, select **Done**, and refresh until the evaluation criteria rows appear.
 
 ![Sample data imported into the Hiring Hub app](./assets/lab-13-sample-data.png)

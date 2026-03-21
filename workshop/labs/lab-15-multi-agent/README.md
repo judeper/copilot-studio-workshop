@@ -51,11 +51,11 @@ flowchart LR
 2. Select **Add**.
 3. In the **Choose how you want to extend your agent** dialog, under **Create a child agent**, select **New child agent**.
 4. In **Name**, enter `Application Intake Agent`.
-4. In **When will this be used?**, select **The agent chooses**.
-5. In **Description**, enter `Processes new resumes, prepares intake summaries, and stores hiring data for the Contoso hiring workflow`.
-6. Expand **Advanced**, set **Priority** to `10000`, and turn **Web search** to **Disabled**.
-7. Select **Save**.
-8. In the child agent **Instructions** area, enter the following text and then select **Save**:
+5. In **When will this be used?**, select **The agent chooses**.
+6. In **Description**, enter `Processes new resumes, prepares intake summaries, and stores hiring data for the Contoso hiring workflow`.
+7. Expand **Advanced**, set **Priority** to `10000`, and turn **Web search** to **Disabled**.
+8. Select **Save**.
+9. In the child agent **Instructions** area, enter the following text and then select **Save**:
 
 ```text
 You are Application Intake Agent.
@@ -85,13 +85,14 @@ Do not answer questions about protected characteristics, private personal matter
 > Note: If your environment already exposes the hiring tables from the imported solution, use those records so the connected agent answers from live hiring data rather than static examples.
 
 #### Part 5 — Connect the Interview Prep Agent to Hiring Agent
-1. Return to **Hiring Agent**.
-2. Open the **Agents** tab and select **Add**.
-3. In the **Choose how you want to extend your agent** dialog, scroll to **Select an agent in your environment**.
-4. Select **Interview Prep Agent** from the agent list. If it does not appear, select the **Connected agents** filter tab or use the search box.
-5. In the connection configuration, enter the description `Use for interview guide creation, interview questions, and evaluation support`.
-6. Select **Add and configure**.
-7. Save the updated **Hiring Agent**.
+1. Before connecting, open **Interview Prep Agent** and select **Publish** (or **Save** if publish is unavailable in trial) so it is discoverable by other agents.
+2. Return to **Hiring Agent**.
+3. Open the **Agents** tab and select **Add**.
+4. In the **Choose how you want to extend your agent** dialog, scroll to **Select an agent in your environment**.
+5. Select **Interview Prep Agent** from the agent list. If it does not appear, select the **Connected agents** filter tab or use the search box.
+6. In the connection configuration, enter the description `Use for interview guide creation, interview questions, and evaluation support`.
+7. Select **Add and configure**.
+8. Save the updated **Hiring Agent**.
 
 #### Part 6 — Test delegation behavior
 1. Start a **New test session** in **Hiring Agent**.

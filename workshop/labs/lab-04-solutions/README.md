@@ -34,7 +34,7 @@ In this lab, you will create a publisher and a solution for the Contoso workshop
 2. In the **Display name** field, enter `Contoso Helpdesk Agent`.
 3. In the **Name** field, enter `ContosoHelpdeskAgent`.
 4. Leave the **Version** field at `1.0.0.0`.
-5. Select the **Set as your preferred solution** checkbox.
+5. Select the **Set as your preferred solution** checkbox. If this option does not appear in Copilot Studio, complete the creation here and then open `https://make.powerapps.com`, navigate to the solution, and set it as preferred from there.
 6. Select **Create**.
 7. When the new solution opens, confirm the header shows `Contoso Helpdesk Agent`.
 

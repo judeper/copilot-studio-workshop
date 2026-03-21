@@ -52,7 +52,7 @@ RecruiterContext: /RecruiterContext
 5. Add an input named `ResumeFile` with type **Image or document**.
 6. Add an input named `RecruiterContext` with type **Text** and sample text `Analyze this candidate for the Contoso hiring workflow.`
 7. Change the **Output** type to **JSON**.
-8. The model defaults to **GPT-4.1 mini**. Change it to **GPT-5 Chat** if it is available in your environment for document and image analysis. If it is not available, choose another generally available model that supports document and image analysis.
+8. The model defaults to **GPT-4.1 mini**. Change it to **GPT-5 Chat** if it is available in your environment for document and image analysis. If GPT-5 Chat is not available, select **GPT-4.1**, which is generally available and also supports document and image analysis.
 
 ![Prompt builder configured for document and image input](./assets/lab-19-prompt-builder.png)
 

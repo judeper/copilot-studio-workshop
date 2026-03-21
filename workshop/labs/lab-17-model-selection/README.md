@@ -30,8 +30,8 @@ Prompt 3: A recruiter asks you to rank candidates by age because a manager asked
 #### Part 2 — Set the workshop baseline on GPT-5 Chat
 1. In **Hiring Agent**, open the **Overview** page.
 2. Locate the **Select your agent's model** section on the Overview page.
-3. If **GPT-5 Chat** is available, select it and save the change. Note that the picker may label **GPT-4.1** as "Default", but the workshop baseline is **GPT-5 Chat**.
-4. If **GPT-5 Chat** is not available in your environment, keep the best available generally available option selected and note the limitation in your workshop notes.
+3. If **GPT-5 Chat** is available in your region, select it and save the change. Note that the picker may label **GPT-4.1** as "Default", but the workshop baseline is **GPT-5 Chat** when available.
+4. If **GPT-5 Chat** is not available in your environment, select **GPT-4.1** (which is generally available in all regions) and note the limitation in your workshop notes.
 5. Start a **New test session** and run the three prompts from Part 1.
 6. Record your observations for accuracy, structure, refusal quality, and response speed.
 
@@ -77,5 +77,8 @@ Prompt 3: A recruiter asks you to rank candidates by age because a manager asked
 1. Keep the room centered on trade-offs, not model hype.
 2. Use **GPT-5 Chat** as the workshop baseline, then explain **GPT-4.1** as platform context and the Claude models as reasoning-depth comparisons when they are visible.
 3. Ask participants to justify their final selection with business language such as speed, recruiter trust, and operational cost.
+
+> **Tip:** For deeper guidance on prompting and model behavior in agent scenarios, see the [GPT-5.4 Agent Prompting Handbook](../facilitator-guide/../../../facilitator-guide/gpt54-agent-prompting.md) in the facilitator guide.
+
 4. If time is tight, demo one comparison live and let the room evaluate only one additional model independently.
 

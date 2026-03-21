@@ -60,7 +60,7 @@ In this lab, you will connect the Adaptive Card from Lab 08 to a Power Automate 
 9. Map **Device Model** to the **Model** output from `Get Device`.
 10. Map **Device ID** to the **ID** output from `Get Device`.
 11. Map **Request Status** to `Pending`.
-12. Map **Requested On** to `utcNow()` if the field is available.
+12. Map **Requested On** to `utcNow()` if the field is available. To enter this, select the **Expression** tab (not **Dynamic content**) in the field editor and type `utcNow()` exactly as shown, then select **OK**.
 
 #### Step 6 — Update the original device record and notify the manager
 1. Add a SharePoint **Update item** action.
@@ -83,6 +83,9 @@ In this lab, you will connect the Adaptive Card from Lab 08 to a Power Automate 
 1. In the topic tool node, map `DeviceSharePointId` to `deviceSelectionId` from the adaptive card output.
 2. Map `ManagerEmail` to `managerEmailId`.
 3. Map `RequesterName` to `System.User.DisplayName`.
+
+> **Tip:** `System.User.DisplayName` is only populated when the agent is accessed via a signed-in channel such as Teams or SharePoint. In the unauthenticated test pane, this value will be blank, which causes the flow to create a record with an empty requester name. This is expected during testing — in production the user will always be signed in.
+
 4. Map `AdditionalComments` to `commentsId`.
 5. Add a **Send a message** node after the flow.
 6. Insert the `ConfirmationMessage` flow output into the message.

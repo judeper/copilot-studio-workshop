@@ -17,6 +17,7 @@ In this lab, you will extend the Hiring Agent solution with Model Context Protoc
 3. Have at least one meeting on your calendar in the upcoming 24 hours.
 4. Have one coworker account available for a test meeting invitation.
 5. Confirm that your account can create or approve the Microsoft 365 connections required by the MCP tools.
+6. Verify MCP server availability: open **Tools** > **+ Add a tool** > select the **Model Context Protocol** filter tab. If no servers appear, notify your facilitator before this lab begins so they can arrange a demo or troubleshoot access.
 
 #### Step-by-Step Instructions
 #### Part 1 — Browse the MCP server catalog

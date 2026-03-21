@@ -20,7 +20,7 @@ In this lab, you will use Copilot Studio evaluation capabilities to measure the 
 #### Step-by-Step Instructions
 1. In **Copilot Studio**, open **Hiring Agent**, then select the **Evaluation** tab.
 2. Select **Create a test set**.
-3. Choose either the in-product option to create test cases manually or the import option if you already have a CSV file that follows the validated template with **Question**, **Expected response**, and **Testing method** columns.
+3. Choose either the in-product option to create test cases manually or the import option if you already have a CSV file that follows the validated template with **Question**, **Expected response**, and **Testing method** columns. A sample template is available at `workshop/assets/evaluation-test-cases.csv`.
 4. Enter the test set name `Hiring Agent - Day 2 QA Baseline`.
 5. Add at least five test cases that reflect the Hiring Agent scenario, including one question about candidate matching, one about interview preparation, one about feedback capture, one ambiguous recruiter request, and one intentionally difficult case that should expose a weakness.
 6. For each test case, choose one or more graders that fit the scenario, such as **General quality**, **Compare meaning**, **Tool use**, or **Keyword match**.

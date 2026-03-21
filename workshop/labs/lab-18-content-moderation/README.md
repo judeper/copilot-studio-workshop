@@ -130,6 +130,9 @@ If a user asks about a prohibited topic, refuse politely and redirect to a job-r
 #### Facilitator Notes
 1. Emphasize that safe behavior comes from layers: disclosure, agent-level moderation, per-prompt sensitivity, instructions, and error handling.
 2. Call out that per-prompt sensitivity is especially important for regulated industries because it lets teams protect high-risk workflows without over-constraining the whole agent.
+
+> **Tip:** For supplemental guidance on model prompting behavior and safety patterns, see the [GPT-5.4 Agent Prompting Handbook](../../facilitator-guide/gpt54-agent-prompting.md) in the facilitator guide.
+
 3. Use the table as a shared classroom exercise so participants can compare which protection layer fired for each prompt.
 4. If time is limited, run prompts 1, 2, 8, and 10 live and assign the rest as individual practice.
 

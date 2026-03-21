@@ -18,7 +18,7 @@ In this lab, you will automate the first step of the Hiring Agent pipeline. When
 
 #### Step-by-Step Instructions
 #### Part 1 — Create the SharePoint drop-off location
-1. Open **SharePoint** and navigate to the team site used for the workshop.
+1. Open **SharePoint** and navigate to the **Contoso IT** team site you created in Lab 00 (the same site used throughout Day 1).
 2. Select **New** and then select **Document library**.
 3. Name the library `Incoming Resumes` and select **Create**.
 4. Upload one sample PDF so you can verify the library works.

@@ -43,14 +43,14 @@ Never ask for passwords or one-time codes. Refuse requests to bypass security. I
 2. In the **Details** section, select **Edit**.
 3. Replace the generated **Name** with `Contoso Helpdesk Agent`.
 4. Review the generated description and instructions, then select **Save**.
-5. In the **Select your agent's model** section, open the dropdown and select **GPT-5 Chat** if it is not already selected. This is the workshop baseline model.
+5. In the **Select your agent's model** section, open the dropdown and select **GPT-5 Chat** if it is available in your region. This is the workshop baseline model. If GPT-5 Chat is not available, keep the best generally available option (such as **GPT-4.1**) and note the limitation in your workshop notes.
 6. Scroll through the Overview tab and check the top tab row for AI-suggested sections such as Knowledge, Tools, and Topics so you understand what Copilot proposed automatically.
 
 #### Step 3 — Add public knowledge sources and disable open web search
 1. In the **Knowledge** section, select **+ Add** next to the suggested `https://support.microsoft.com` website if it appears, or select **+ Add knowledge** > **Public websites** and enter the same URL manually.
 2. Add a second website with the value `https://learn.microsoft.com/troubleshoot/`.
 3. Select **Add to agent**.
-4. Locate the **Web Search** toggle on the **Overview** page and set it to **Disabled** so the agent uses only the sources you explicitly approved.
+4. Open **Settings** and set **Use information from the Web** to **Off** so the agent uses only the sources you explicitly approved. This toggle may also appear on the **Overview** page depending on your agent configuration.
 
 #### Step 4 — Add the internal SharePoint knowledge source and filter it
 1. In the **Knowledge** section, select **+ Add knowledge** and choose **SharePoint**.
@@ -87,7 +87,7 @@ Never ask for passwords or one-time codes. Refuse requests to bypass security. I
 #### Validation
 1. Confirm the agent name is `Contoso Helpdesk Agent`.
 2. Confirm the **Knowledge** section lists both public websites, the `Contoso IT` SharePoint source, and uploaded reference files.
-3. Confirm the **Web Search** toggle on the Overview page is set to **Disabled**.
+3. Confirm **Use information from the Web** is set to **Off** in **Settings**.
 4. Confirm the SharePoint source has at least one saved metadata filter or scoped rule.
 5. Confirm the test pane returns at least one grounded answer with a trusted source reference.
 
@@ -100,7 +100,7 @@ Never ask for passwords or one-time codes. Refuse requests to bypass security. I
 
 > **Tip:** If you see `You don't have access` or `Connection not authorized`, verify that your account is a member of the SharePoint site and that the environment's DLP policy does not block the connector.
 
-> **Warning:** If responses still come from the open web, confirm the **Web search** toggle is disabled and no extra public sources were added accidentally.
+> **Warning:** If responses still come from the open web, confirm **Use information from the Web** is set to **Off** in **Settings** and no extra public sources were added accidentally.
 
 #### Facilitator Notes
 1. Remind participants that natural language creation accelerates setup, but human review is still required.

@@ -42,7 +42,7 @@ In this lab, you will prepare the shared Contoso IT workshop scenario used throu
 6. Record the exact environment name because you will reuse it in every Day 1 lab.
 
 #### Step 4 — Enable authoring and publishing permissions
-1. [IT Pro] Open `https://admin.cloud.microsoft` and select **Teams & groups** > **Active teams & groups**.
+1. [IT Pro] Open `https://admin.cloud.microsoft` and select **Teams & groups** > **Active teams & groups**. Alternatively, use `https://entra.microsoft.com` > **Groups** > **All groups** > **New group** if you manage groups through Microsoft Entra ID.
 2. Select the **Security groups** tab, select **Add a security group**, and create a group named `AgentCreators`.
 3. Open the new `AgentCreators` group, select **Members**, select **View all and manage members**, and add the participant accounts.
 4. Open `https://admin.powerplatform.com`, select **Manage**, then select **Tenant settings**.

@@ -46,6 +46,8 @@ In this lab, you will deploy a Microsoft-provided agent template and adapt it to
 
 > **Tip:** Template agents are useful learning assets even if you never deploy them to production. Use them to study naming patterns, starter prompts, and tool choices.
 
+> **Note:** The Safe Travels agent is an exploration exercise and does not need to be added to the `Contoso Helpdesk Agent` solution. Later labs (07–11) work exclusively with the custom agent you create in Lab 06.
+
 #### Validation
 1. Confirm the **Safe Travels** agent opens successfully.
 2. Confirm the **Knowledge** section includes `https://european-union.europa.eu/`.

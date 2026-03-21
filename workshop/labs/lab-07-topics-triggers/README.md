@@ -38,6 +38,9 @@ In this lab, you will add a structured topic that helps employees discover avail
 5. In **Site Address**, select your `Contoso IT` SharePoint site.
 6. In **List Name**, select `Devices`.
 7. In **Filter Query**, enter `Status eq 'Available'`.
+
+> **Tip:** SharePoint OData filters are case-sensitive for Choice column values. Confirm the exact spelling and casing of the `Available` choice value in your **Devices** list matches what you enter here. If you used `available` or `AVAILABLE` when setting up Lab 00, the filter will silently return zero results.
+
 8. Save the connector configuration.
 
 #### Step 4 — Store the results and summarize them for the user

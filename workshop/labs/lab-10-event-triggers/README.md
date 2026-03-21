@@ -27,10 +27,10 @@ In this lab, you will make the Contoso Helpdesk Agent respond autonomously when 
 3. In the **Add trigger** dialog, select the **Featured** filter tab if it is not already selected.
 4. Select **When an item is created** (SharePoint).
 5. In **Trigger name**, enter `New Support Ticket Created in SharePoint`.
-5. Wait for the connections to initialize and select **Next**.
-6. In **Site Address**, select the `Contoso IT` site.
-7. In **List Name**, select `Tickets`.
-8. In **Additional instructions to the agent when it's invoked by the trigger**, paste the text below.
+6. Wait for the connections to initialize and select **Next**.
+7. In **Site Address**, select the `Contoso IT` site.
+8. In **List Name**, select `Tickets`.
+9. In **Additional instructions to the agent when it's invoked by the trigger**, paste the text below.
 
 ```text
 New Support Ticket Created in SharePoint: {Body}
@@ -39,7 +39,7 @@ Use the Acknowledge SharePoint ticket tool to generate and send a confirmation e
 Do not wait for user input. Work autonomously.
 ```
 
-9. Select **Create trigger**.
+10. Select **Create trigger**.
 
 #### Step 3 — Edit the trigger payload in Power Automate
 1. In the **Triggers** section, open the **...** menu for `New Support Ticket Created in SharePoint`.
