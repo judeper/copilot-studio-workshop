@@ -203,15 +203,19 @@ function Connect-WorkshopPnPOnline {
     $connectParameters = @{
         Url         = $Url
         Tenant      = $Tenant
-        ClientId    = $ClientId
         ErrorAction = 'Stop'
     }
 
     switch ($LoginMode) {
         'Interactive' {
+            # Use custom ClientId for Interactive (supports it with redirect URI)
+            $connectParameters['ClientId'] = $ClientId
             $connectParameters['Interactive'] = $true
         }
         'DeviceLogin' {
+            # DeviceLogin requires delegated permissions — use PnP's built-in multi-tenant app
+            # which already has the right delegated scopes and redirect URIs configured.
+            # Custom app IDs only work for DeviceLogin if delegated SharePoint permissions are added.
             $connectParameters['DeviceLogin'] = $true
         }
         'CertificateThumbprint' {
@@ -219,6 +223,7 @@ function Connect-WorkshopPnPOnline {
                 throw "A certificate thumbprint is required when SharePoint.PnPLoginMode is CertificateThumbprint."
             }
 
+            $connectParameters['ClientId'] = $ClientId
             $connectParameters['Thumbprint'] = $CertificateThumbprint
         }
     }
