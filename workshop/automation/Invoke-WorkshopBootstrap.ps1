@@ -504,7 +504,7 @@ Write-Banner 'Step 4: Power Platform CLI Authentication'
 
 if (Test-CommandAvailable -Name 'pac') {
     $pacAuthCheck = & pac auth list 2>&1 | ForEach-Object { $_.ToString() }
-    $hasProfile = $pacAuthCheck | Select-String -Pattern '\*' -SimpleMatch
+    $hasProfile = $pacAuthCheck | Select-String -Pattern '*' -SimpleMatch
     if ($hasProfile) {
         Write-Status -Label 'pac auth' -Status 'Active profile found' -Color 'Green'
         $pacAuthCheck | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
@@ -607,7 +607,7 @@ $dashboard = @(
     @{ Label = 'TenantId configured';    Check = { -not [string]::IsNullOrWhiteSpace($config.TenantId) -and $config.TenantId -notmatch '^<' } }
     @{ Label = 'SharePoint URLs set';    Check = { $config.SharePoint.SiteUrl -notmatch '^<' -and $config.SharePoint.AdminUrl -notmatch '^<' } }
     @{ Label = 'PnPClientId set';        Check = { -not [string]::IsNullOrWhiteSpace([string]$config.SharePoint.PnPClientId) -and [string]$config.SharePoint.PnPClientId -notmatch '^<' } }
-    @{ Label = 'pac auth profile';       Check = { (Test-CommandAvailable -Name 'pac') -and ((& pac auth list 2>&1 | ForEach-Object { $_.ToString() }) | Select-String -Pattern '\*' -SimpleMatch) } }
+    @{ Label = 'pac auth profile';       Check = { (Test-CommandAvailable -Name 'pac') -and ((& pac auth list 2>&1 | ForEach-Object { $_.ToString() }) | Select-String -Pattern '*' -SimpleMatch) } }
     @{
         Label = 'Day 2 assets'
         Check = {
