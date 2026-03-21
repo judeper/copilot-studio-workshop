@@ -284,7 +284,101 @@ Write-Host "  Site URL:   $siteUrl  (Contoso IT workshop site)" -ForegroundColor
 $config.SharePoint.AdminUrl = $adminUrl
 $config.SharePoint.SiteUrl = $siteUrl
 
-$config.SharePoint.PnPClientId = Prompt-Value -Prompt 'Entra App Client ID (for PnP auth)' -Default ([string]$config.SharePoint.PnPClientId) -Required
+# Entra App registration
+Write-Host "`n--- Entra App Registration ---" -ForegroundColor Cyan
+$existingClientId = [string]$config.SharePoint.PnPClientId
+if (-not [string]::IsNullOrWhiteSpace($existingClientId) -and $existingClientId -notmatch '^<') {
+    Write-Status -Label 'Entra App' -Status "Existing Client ID: $existingClientId" -Color 'Green'
+    if (-not (Prompt-YesNo -Question 'Use this existing app?' -Default $true)) {
+        $existingClientId = ''
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match '^<') {
+    Write-Host "`nCreating a new Entra app registration for the workshop..." -ForegroundColor Cyan
+    Write-Host "  This requires Global Administrator or Application Administrator role." -ForegroundColor Yellow
+
+    try {
+        # Ensure Graph connection
+        $graphConnected = $false
+        try {
+            Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/me' -ErrorAction Stop | Out-Null
+            $graphConnected = $true
+        } catch {}
+
+        if (-not $graphConnected) {
+            Write-Host "`nSign in with an admin account to create the Entra app..." -ForegroundColor Yellow
+            Connect-MgGraph -TenantId $tenantId -Scopes 'Application.ReadWrite.All' -NoWelcome
+        }
+
+        $appDisplayName = "Copilot Studio Workshop - $tenantName"
+
+        # Check if app already exists
+        $existingApps = Invoke-MgGraphRequest -Method GET `
+            -Uri "https://graph.microsoft.com/v1.0/applications?`$filter=displayName eq '$appDisplayName'&`$select=appId,displayName"
+        $existingApp = $existingApps.value | Select-Object -First 1
+
+        if ($existingApp) {
+            $existingClientId = $existingApp.appId
+            Write-Status -Label 'Entra App' -Status "Found existing app: $appDisplayName ($existingClientId)" -Color 'Green'
+        } else {
+            # Define required API permissions
+            $spOnlineAppId = '00000003-0000-0ff1-ce00-000000000000'  # SharePoint Online
+            $graphAppId = '00000003-0000-0000-c000-000000000000'     # Microsoft Graph
+
+            $appBody = @{
+                displayName    = $appDisplayName
+                signInAudience = 'AzureADMyOrg'
+                requiredResourceAccess = @(
+                    @{
+                        resourceAppId  = $graphAppId
+                        resourceAccess = @(
+                            @{ id = '62a82d76-70ea-41e2-9197-370581804d09'; type = 'Role' }  # Group.ReadWrite.All
+                            @{ id = '7ab1d382-f21e-4acd-a863-ba3e13f7da61'; type = 'Role' }  # Directory.Read.All
+                            @{ id = 'df021288-bdef-4463-88db-98f22de89214'; type = 'Role' }  # User.Read.All
+                            @{ id = '23fc2474-f741-46ce-8465-674744c5c361'; type = 'Role' }  # Team.Create
+                        )
+                    }
+                    @{
+                        resourceAppId  = $spOnlineAppId
+                        resourceAccess = @(
+                            @{ id = '678536fe-1083-478a-9c59-b99265e6b0d3'; type = 'Role' }  # Sites.FullControl.All
+                        )
+                    }
+                )
+            } | ConvertTo-Json -Depth 10
+
+            $newApp = Invoke-MgGraphRequest -Method POST `
+                -Uri 'https://graph.microsoft.com/v1.0/applications' `
+                -Body $appBody -ContentType 'application/json'
+
+            $existingClientId = $newApp.appId
+            Write-Status -Label 'Entra App' -Status "Created: $appDisplayName ($existingClientId)" -Color 'Green'
+
+            # Create service principal for the app
+            $spBody = @{ appId = $existingClientId } | ConvertTo-Json
+            Invoke-MgGraphRequest -Method POST `
+                -Uri 'https://graph.microsoft.com/v1.0/servicePrincipals' `
+                -Body $spBody -ContentType 'application/json' | Out-Null
+            Write-Status -Label 'Service Principal' -Status 'Created' -Color 'Green'
+
+            Write-Host "`n  IMPORTANT: You must grant admin consent for the API permissions." -ForegroundColor Red
+            Write-Host "  Open this URL in a browser and click 'Grant admin consent':" -ForegroundColor Yellow
+            Write-Host "  https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/CallAnAPI/appId/$existingClientId" -ForegroundColor Cyan
+            Write-Host "`n  Press Enter after granting admin consent..." -ForegroundColor Yellow
+            Read-Host
+        }
+
+        Disconnect-MgGraph -ErrorAction SilentlyContinue
+    }
+    catch {
+        Write-Status -Label 'Entra App' -Status "Auto-creation failed: $_" -Color 'Red'
+        Write-Host "  You can create the app manually in the Azure portal and enter the Client ID below." -ForegroundColor Yellow
+        $existingClientId = Prompt-Value -Prompt 'Entra App Client ID (or leave blank to skip)' -Default ''
+    }
+}
+
+$config.SharePoint.PnPClientId = $existingClientId
 
 # Auth mode
 Write-Host "`n--- Authentication Mode ---" -ForegroundColor Cyan
