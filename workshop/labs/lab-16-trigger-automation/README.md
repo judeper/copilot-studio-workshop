@@ -55,6 +55,9 @@ In this lab, you will automate the first step of the Hiring Agent pipeline. When
 > Tip: If your library stores resumes in mixed formats, keep the PDF check in place so signatures, images, and unrelated documents do not enter the hiring pipeline.
 
 #### Part 4 — Notify the recruiting team
+
+> **Note:** The Office 365 Outlook and Microsoft Teams connectors must be in the **Business** data group of your environment's DLP policy. If email or Teams actions fail with a policy error, contact your Power Platform admin or ask your facilitator.
+
 1. In the **Yes** branch, add a **Microsoft Teams - Post card in a chat or channel** action after the Dataverse upload action.
 2. Set **Post as** to **Flow bot**.
 3. Set **Post in** to **Channel**.

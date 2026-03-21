@@ -21,7 +21,7 @@ In this lab, you will extend the Hiring Agent solution with Model Context Protoc
 
 #### Step-by-Step Instructions
 #### Part 1 — Browse the MCP server catalog
-1. Open **Interview Prep Agent** or **Hiring Agent** in Copilot Studio.
+1. Open **Interview Prep Agent** (if you completed Lab 15) or **Hiring Agent** (if you skipped Lab 15) in Copilot Studio.
 2. Select **Tools** in the top navigation and then select **+ Add a tool**.
 3. In the **Add tool** dialog, locate the filter row: **All | Connector | Prompt | Flow | REST API | Model Context Protocol**.
 4. Select the **Model Context Protocol** filter tab.

@@ -11,7 +11,7 @@ In this lab, you will ground the Hiring Agent workflow in a live Dataverse table
 
 #### Prerequisites
 1. [Maker] Complete **Lab 19** or have a saved resume-analysis prompt available.
-2. [Maker] Have permission to create or modify Dataverse tables in the workshop environment.
+2. [Maker] Confirm you are working in the same environment used in Lab 13, which must have Dataverse provisioned. Power Apps Developer Plan environments support custom table creation.
 3. [Maker] Have at least one sample resume file available for prompt testing.
 
 #### Step-by-Step Instructions

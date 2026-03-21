@@ -1,5 +1,7 @@
 # GPT-5.4 Agent Prompting Operator Handbook
 
+> **INTERNAL — Facilitator and Author Use Only.** This document is not intended for participant distribution. It describes how the coding agent generates and validates workshop content.
+
 This internal guide standardizes how the coding agent should author and validate workshop content for this package. Use it as the working playbook whenever generating or refining facilitator guides, participant guides, test narratives, or supporting workshop assets.
 
 ## Core API settings

@@ -14,6 +14,8 @@ In this lab, you will create a declarative agent for Microsoft 365 Copilot and M
 3. [Maker] Confirm you have permission to create agents in Copilot Studio.
 4. [IT Pro] If participants will test in Microsoft Teams, confirm the tenant allows Teams app usage.
 
+> **Note:** This lab creates a declarative agent for Microsoft 365 Copilot, which requires a **Microsoft 365 Copilot license** (such as the Copilot add-on for Microsoft 365 E3/E5). If your workshop account does not have this license, your facilitator will demonstrate this lab. You can observe the pattern without hands-on access.
+
 #### Step-by-Step Instructions
 #### Step 1 — Create a declarative agent shell
 1. Go to `https://copilotstudio.microsoft.com` and select **Agents** in the left navigation.

@@ -79,7 +79,7 @@ In this lab, you will close the loop on the Hiring Agent scenario by collecting 
 2. Add a **Topic**-scoped numeric variable named `VarCSATRating` and initialize it to `0`.
 3. Open the **CSAT Question** node properties and store the response in `Topic.VarCSATRating`.
 4. Add a **Condition** node after the CSAT question.
-5. Configure the condition to check whether `VarCSATRating` is **greater than or equal to** `3`.
+5. Configure the condition to check whether `VarCSATRating` is **greater than or equal to** `3`. This means scores of 3, 4, or 5 proceed normally through the main branch. Scores of 1 or 2 fall into the **All other conditions** branch and will be redirected to the dissatisfied feedback card.
 6. In the **All other conditions** branch, add **Go to another topic**.
 7. Select `Capture Dissatisfied Feedback`.
 8. Save the **End of Conversation** system topic.

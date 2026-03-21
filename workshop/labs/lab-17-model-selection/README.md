@@ -12,7 +12,7 @@ In this lab, you will compare model options for the Hiring Agent and choose a wo
 1. Complete **Lab 13** and **Lab 14** so the **Hiring Agent** already has working instructions and scenario context.
 2. Open **Hiring Agent** in Copilot Studio with permission to change the selected model.
 3. Keep a note-taking app open so you can capture model observations.
-4. Understand that not every tenant exposes every generally available model. Compare the options that are visible in your picker and document any gaps.
+4. Understand that not every tenant exposes every generally available model. Compare the options that are visible in your picker and document any gaps. Anthropic models (such as Claude Sonnet) appear only if external models are enabled by your admin in the Power Platform admin center and allowed in the Microsoft 365 admin center.
 
 #### Step-by-Step Instructions
 #### Part 1 — Prepare a consistent test pack
