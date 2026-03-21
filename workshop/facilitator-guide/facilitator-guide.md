@@ -41,6 +41,8 @@ Zero-assumption setup sequence (facilitator machine):
 6. Run `Invoke-WorkshopPrereqCheck.ps1` to validate local tools, populated config values, and localized Day 2 asset paths.
 7. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to pre-stage Lab 00 shared prerequisites while preserving later student-owned exercises.
 8. Optional: run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` only in a separate facilitator demo environment when you intentionally want the Lab 13 solution package pre-staged.
+9. Optional: batch-provision per-student environments by populating `Identity.ParticipantEmails` in the config and running `Invoke-StudentEnvironmentProvisioning.ps1`. Each student gets a Sandbox environment with Dataverse, SharePoint TeamSite, Teams team, Copilot Studio credits, and Environment Maker role. See the [Environment Checklist](environment-checklist.md#optional-batch-student-environment-provisioning) for Entra app permission prerequisites.
+10. Post-workshop: tear down student environments with `Remove-StudentEnvironments.ps1 -HardDelete` to permanently free all names, aliases, and resources for reuse.
 
 Canonical commands from repository root:
 
@@ -60,6 +62,17 @@ powershell -File .\workshop\automation\Invoke-WorkshopPrereqCheck.ps1
 
 powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
 # Expected result: Contoso IT site and shared prerequisites are created without pre-completing later student labs
+
+# Optional: batch-provision per-student environments (requires Entra app with certificate — see environment checklist)
+powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1 -ValidateOnly
+# Expected result: config validation passes; no changes made
+
+powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
+# Expected result: each student gets a Sandbox env with Dataverse, SharePoint site, Teams team, and credits
+
+# Post-workshop: tear down all student environments
+powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete
+# Expected result: all student environments, sites, teams, and groups permanently removed
 ```
 
 Decision point:
