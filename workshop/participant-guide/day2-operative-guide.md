@@ -89,7 +89,7 @@ Day 2 is where governance becomes visible in the build. Pay attention to:
 
 - Who can access the environment and data sources.
 - How prompt and instruction choices affect output quality and risk.
-- How content moderation and safety checks should be tested, not assumed, including per-prompt sensitivity controls where needed.
+- How content moderation and safety checks should be tested, not assumed, including per-prompt content moderation levels where needed.
 - How document processing and generated outputs should be reviewed before broader rollout.
 - How MCP access should be scoped to the minimum useful tool set.
 

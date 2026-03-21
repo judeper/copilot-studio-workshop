@@ -51,7 +51,7 @@ Recommended values:
 - Do not describe `GPT-4o` as current, default, or recommended.
 - Treat MCP as GA and use the in-product onboarding wizard as the primary workshop path.
 - Use the GA in-product MCP onboarding wizard as the only MCP lab path.
-- Expand content moderation guidance to include per-prompt sensitivity settings for hate/fairness, sexual, violence, and self-harm.
+- Expand content moderation guidance to include the per-prompt content moderation slider (Low/Moderate/High), which covers hate/fairness, sexual, violence, and self-harm collectively as a single control. Note that per-prompt moderation is available only for managed models (GPT-4.1, GPT-5 Chat), not Anthropic models.
 - Include Agent Evaluation and Quality Assurance as a Day 2 module.
 - Include the optional Visual Studio Code workflow only as a GA developer add-on, not as a required path.
 - Update publishing references to include WhatsApp in channel overviews where relevant.

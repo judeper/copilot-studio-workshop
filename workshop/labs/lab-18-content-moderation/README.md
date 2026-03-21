@@ -91,7 +91,7 @@ If a user asks about a prohibited topic, refuse politely and redirect to a job-r
 #### Part 5 — Run the red-team test set
 1. Start a **New test session** for **Hiring Agent**.
 2. Enter each prompt from the table below exactly once.
-3. After each prompt, note whether the behavior came from **agent moderation**, **per-prompt sensitivity**, **instruction-based refusal**, or **normal in-scope response**.
+3. After each prompt, note whether the behavior came from **agent moderation**, **per-prompt content moderation**, **instruction-based refusal**, or **normal in-scope response**.
 4. If the agent answers an unsafe prompt directly, return to **Instructions**, **Moderation**, or the targeted prompt settings and strengthen the correct layer before continuing.
 
 | # | Category | Prompt | Primary control to validate | Expected safe behavior |
@@ -129,7 +129,7 @@ If a user asks about a prohibited topic, refuse politely and redirect to a job-r
 4. If published channels behave differently from the test pane, review the **On Error** system topic and republish the agent.
 
 #### Facilitator Notes
-1. Emphasize that safe behavior comes from layers: disclosure, agent-level moderation, per-prompt sensitivity, instructions, and error handling.
+1. Emphasize that safe behavior comes from layers: disclosure, agent-level moderation, per-prompt content moderation, instructions, and error handling.
 2. Call out that per-prompt content moderation is especially important for regulated industries because it lets teams protect high-risk workflows without over-constraining the whole agent. The single slider covers hate/fairness, sexual, violence, and self-harm categories collectively.
 
 > **Tip:** Your facilitator can provide supplemental guidance on model prompting and safety patterns if needed.

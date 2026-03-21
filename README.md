@@ -72,6 +72,29 @@ powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode Student
 
 See the [Facilitator Guide](workshop/facilitator-guide/facilitator-guide.md) for the full delivery checklist.
 
+## PDF Workbooks
+
+Generate printable PDF files for students and facilitators:
+
+```powershell
+cd workshop\automation
+npm install
+node Generate-WorkshopPDFs.js
+```
+
+Output lands in `workshop/pdf-output/`:
+
+| # | Student PDFs | Facilitator PDFs |
+|---|---|---|
+| 01 | Welcome & Overview | Facilitator Guide |
+| 02 | Day 1 Workbook (Labs 00–12) | Environment Readiness Pack |
+| 03 | Day 2 Workbook (Labs 13–24) | Session Splitting Guide |
+| 04 | Optional Developer Lab (Lab 25) | Lab Timing Guide |
+| 05 | | Slide Deck Outline |
+| 06 | | Lab Validation Reference |
+
+Generate a subset with `--only`: `node Generate-WorkshopPDFs.js --only S2,F1`
+
 ## Key Scenario Names
 
 | Name | Purpose |

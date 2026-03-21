@@ -365,7 +365,7 @@
 
 ### Slide 60: Safety by layered controls
 - Combine AI disclosure, instructions, moderation, error handling, and testing into one safety model.
-- Use per-prompt sensitivity controls where a specific prompt or tool needs tighter moderation than the rest of the agent.
+- Use per-prompt content moderation (Low/Moderate/High slider) where a specific prompt or tool needs tighter moderation than the rest of the agent.
 - Treat safety as something to validate with evidence, not something to assume after configuration.
 **Speaker note:** This slide sets up content moderation as a layered operational control rather than a toggle.
 

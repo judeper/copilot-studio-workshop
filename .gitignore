@@ -2,6 +2,12 @@
 workshop/automation/workshop-config.json
 workshop/automation/pnp-auth-test.log
 
+# Node.js dependencies (installed via npm install in workshop/automation)
+workshop/automation/node_modules/
+
+# Generated PDF output (regenerate with: node workshop/automation/Generate-WorkshopPDFs.js)
+workshop/pdf-output/
+
 # Certificate private keys
 *.pfx
 

@@ -164,7 +164,7 @@ You are assisting a workshop facilitator who is doing a dry-run of a Microsoft C
 | # | Filename | When to Capture | What Should Be Visible |
 |---|----------|----------------|----------------------|
 | 31 | `lab-18-conversation-start.png` | After updating the Conversation Start topic | The Conversation Start system topic showing the updated greeting message with AI disclosure text, capability list, and the note about responses potentially containing errors. |
-| 32 | `lab-18-prompt-sensitivity.png` | After configuring per-prompt sensitivity | The prompt builder for "Candidate Screening Notes" showing the sensitivity controls: Hate/Fairness set to High, Sexual set to High, Violence set to Medium, Self-harm set to Medium. The four slider/dropdown controls should all be visible. |
+| 32 | `lab-18-prompt-sensitivity.png` | After configuring per-prompt content moderation | The prompt builder for "Candidate Screening Notes" showing the content moderation slider set to High. The single Low/Moderate/High slider should be visible in the prompt Settings panel. |
 | 33 | `lab-18-red-team-tests.png` | After running the red-team test set | The Test pane showing at least one adversarial prompt being blocked or redirected by the moderation system. The blocking message or refusal should be clearly visible. Alternatively, a worksheet or notes view showing test results across multiple prompts. |
 
 ### Lab 19 — Multimodal Prompts
