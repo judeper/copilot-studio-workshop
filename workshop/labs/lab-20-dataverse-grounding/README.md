@@ -26,6 +26,7 @@ In this lab, you will ground the Hiring Agent workflow in a live Dataverse table
 5. Save and publish the table.
 6. Add at least two open requisitions that the Hiring Agent can match against.
 7. Set **Status** to `Open` for the rows you want the prompt to use.
+8. Open the **Operative** solution, select **+ Add existing** > **Table**, and add **Job Requisitions** so the table is included in the solution for ALM and environment transport.
 
 ![Dataverse Job Requisitions table with sample rows](./assets/lab-20-job-requisitions-table.png)
 

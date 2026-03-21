@@ -69,7 +69,7 @@ In this lab, you will connect the Adaptive Card from Lab 08 to a Power Automate 
 2. Rename the step to `Mark Device Requested`.
 3. Use the same `Contoso IT` site and the `Devices` list.
 4. Map **Id** to the **ID** output from `Get Device`.
-5. Preserve the required fields from the original item and change **Status** to `Requested`.
+5. Map the required fields from the `Get Device` output back into the **Update item** action so the existing values are preserved. At minimum, map **Title**, **Manufacturer**, **Model**, **Asset Type**, **Color**, **Serial Number**, **Purchase Date**, **Purchase Price**, and **Order #** from the `Get Device` step, then change **Status** to `Requested`.
 6. Add an **Office 365 Outlook – Send an email (V2)** action.
 7. In **To**, insert `ManagerEmail`.
 8. In **Subject**, enter `New device request from` followed by the `RequesterName` input.

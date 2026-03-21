@@ -101,6 +101,13 @@ Use this runbook for the full readiness pass one to two weeks before delivery, a
 
 **If unresolved:** Switch the evaluation module to facilitator demo mode. If the facilitator account cannot run or open evaluation, treat that module as not ready.
 
+## Document generation readiness
+
+- [ ] Confirm participants have **Microsoft Word desktop** (not Word Online) for Lab 21, or pre-stage the prebuilt `OfferLetterTemplate.docx` from `workshop/assets/Operative09StarterSolution.zip`.
+- [ ] Confirm facilitators can distribute the extracted template to participants who lack Word desktop.
+
+**If unresolved:** Distribute the prebuilt template before Lab 21 starts. Do not let Word desktop availability block the lab.
+
 ## Demo account and backup path
 
 - [ ] Confirm a dedicated demo account is fully configured and validated end to end.

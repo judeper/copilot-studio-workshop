@@ -66,8 +66,7 @@ Please have these ready before you begin:
 For MCP integration and the optional developer workflow on Day 2, you may also need:
 
 - Visual Studio Code
-- The Copilot Studio extension for Visual Studio Code
-- GitHub Copilot access for the developer workflow if your facilitator includes it
+- The Copilot Studio extension for Visual Studio Code (available in the VS Code Extensions marketplace)
 
 ## How Day 1 and Day 2 connect
 
