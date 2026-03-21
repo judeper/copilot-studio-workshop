@@ -358,6 +358,22 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
         if ($existingApp) {
             $existingClientId = $existingApp.appId
             Write-Status -Label 'Entra App' -Status "Found existing app: $appDisplayName ($existingClientId)" -Color 'Green'
+
+            # Ensure publicClient redirect URI is set (required for DeviceLogin)
+            try {
+                $fullApp = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/applications?`$filter=appId eq '$existingClientId'&`$select=id,publicClient"
+                $appObjectId = $fullApp.value[0].id
+                $existingRedirects = $fullApp.value[0].publicClient.redirectUris
+                $nativeUri = 'https://login.microsoftonline.com/common/oauth2/nativeclient'
+                if ($existingRedirects -notcontains $nativeUri) {
+                    $patchBody = @{ publicClient = @{ redirectUris = @($nativeUri) } } | ConvertTo-Json -Depth 5
+                    Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/v1.0/applications/$appObjectId" -Body $patchBody -ContentType 'application/json'
+                    Write-Status -Label 'Entra App' -Status 'Added DeviceLogin redirect URI' -Color 'Green'
+                }
+            }
+            catch {
+                Write-Status -Label 'Entra App' -Status "Could not verify redirect URI: $_" -Color 'Yellow'
+            }
         } else {
             # Define required API permissions
             $spOnlineAppId = '00000003-0000-0ff1-ce00-000000000000'  # SharePoint Online
@@ -366,6 +382,11 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
             $appBody = @{
                 displayName    = $appDisplayName
                 signInAudience = 'AzureADMyOrg'
+                publicClient   = @{
+                    redirectUris = @(
+                        'https://login.microsoftonline.com/common/oauth2/nativeclient'
+                    )
+                }
                 requiredResourceAccess = @(
                     @{
                         resourceAppId  = $graphAppId
