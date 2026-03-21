@@ -364,12 +364,14 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
                 $fullApp = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/applications?`$filter=appId eq '$existingClientId'&`$select=id,publicClient"
                 $appObjectId = $fullApp.value[0].id
 
-                # Patch: add http://localhost redirect URI + enable public client flows + add delegated perms
+                # Patch: add redirect URIs for all PnP auth methods + enable public client flows
                 $patchBody = @{
                     publicClient = @{
                         redirectUris = @(
                             'https://login.microsoftonline.com/common/oauth2/nativeclient'
                             'http://localhost'
+                            'http://127.0.0.1'
+                            "ms-appx-web://microsoft.aad.brokerplugin/$existingClientId"
                         )
                     }
                     isFallbackPublicClient = $true
@@ -393,6 +395,7 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
                     redirectUris = @(
                         'https://login.microsoftonline.com/common/oauth2/nativeclient'
                         'http://localhost'
+                        'http://127.0.0.1'
                     )
                 }
                 requiredResourceAccess = @(
@@ -427,6 +430,20 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
             $existingClientId = $newApp.appId
             Write-Status -Label 'Entra App' -Status "Created: $appDisplayName ($existingClientId)" -Color 'Green'
 
+            # Add WAM broker redirect URI (requires clientId, so must be a separate PATCH)
+            $appObjectId = $newApp.id
+            $wamPatch = @{
+                publicClient = @{
+                    redirectUris = @(
+                        'https://login.microsoftonline.com/common/oauth2/nativeclient'
+                        'http://localhost'
+                        'http://127.0.0.1'
+                        "ms-appx-web://microsoft.aad.brokerplugin/$existingClientId"
+                    )
+                }
+            } | ConvertTo-Json -Depth 5
+            Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/v1.0/applications/$appObjectId" -Body $wamPatch -ContentType 'application/json'
+
             # Create service principal for the app
             $spBody = @{ appId = $existingClientId } | ConvertTo-Json
             Invoke-MgGraphRequest -Method POST `
@@ -452,9 +469,9 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
 
 $config.SharePoint.PnPClientId = $existingClientId
 
-# Auth mode -- default to DeviceLogin, no confusing prompt
-$config.SharePoint.PnPLoginMode = 'DeviceLogin'
-Write-Status -Label 'Auth mode' -Status 'DeviceLogin (interactive device code flow)' -Color 'Green'
+# Auth mode -- default to OSLogin (WAM), most reliable on Windows 11 + PS 7
+$config.SharePoint.PnPLoginMode = 'OSLogin'
+Write-Status -Label 'Auth mode' -Status 'OSLogin (Windows native sign-in)' -Color 'Green'
 
 # Environment bootstrap -- auto-derive, show as confirmation
 $domainDefault = "$tenantName-workshop"
@@ -577,7 +594,8 @@ if (-not [string]::IsNullOrWhiteSpace($clientId) -and $clientId -notmatch '^<') 
             Write-Host "  Verify the certificate is imported and admin consent is granted." -ForegroundColor Yellow
         }
     } else {
-        Write-Status -Label 'PnP connectivity' -Status "Will use DeviceLogin -- connectivity tested during lab setup" -Color 'Green'
+        # Test interactive auth (OSLogin/DeviceLogin/Interactive)
+        Write-Status -Label 'PnP connectivity' -Status "Will use $($config.SharePoint.PnPLoginMode) -- connectivity tested during lab setup" -Color 'Green'
     }
 } else {
     Write-Status -Label 'Entra App' -Status 'No Client ID configured -- skipping connectivity test' -Color 'Yellow'

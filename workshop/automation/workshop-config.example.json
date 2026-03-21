@@ -22,7 +22,7 @@
     "SitePrefix": "ContosoIT",
     "SiteDescription": "Copilot Studio workshop data source",
     "PnPClientId": "<replace-with-entra-app-client-id>",
-    "PnPLoginMode": "DeviceLogin",
+    "PnPLoginMode": "OSLogin",
     "PnPCertificateThumbprint": ""
   },
   "Teams": {

@@ -22,12 +22,12 @@ function Resolve-SharePointPnPLoginMode {
     )
 
     if (Test-PlaceholderValue -Value $Value) {
-        return 'DeviceLogin'
+        return 'OSLogin'
     }
 
     $normalizedValue = $Value.Trim()
-    if ($normalizedValue -notin @('DeviceLogin', 'Interactive', 'CertificateThumbprint')) {
-        throw "Config value 'SharePoint.PnPLoginMode' is not supported. Supported values: DeviceLogin, Interactive, CertificateThumbprint."
+    if ($normalizedValue -notin @('OSLogin', 'DeviceLogin', 'Interactive', 'CertificateThumbprint')) {
+        throw "Config value 'SharePoint.PnPLoginMode' is not supported. Supported values: OSLogin, DeviceLogin, Interactive, CertificateThumbprint."
     }
 
     return $normalizedValue

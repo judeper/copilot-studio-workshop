@@ -165,12 +165,12 @@ function Resolve-PnPLoginMode {
     )
 
     if (Test-PlaceholderValue -Value $Value) {
-        return 'DeviceLogin'
+        return 'OSLogin'
     }
 
     $normalizedValue = $Value.Trim()
-    if ($normalizedValue -notin @('DeviceLogin', 'Interactive', 'CertificateThumbprint')) {
-        throw "Config value 'SharePoint.PnPLoginMode' is not supported. Supported values: DeviceLogin, Interactive, CertificateThumbprint."
+    if ($normalizedValue -notin @('OSLogin', 'DeviceLogin', 'Interactive', 'CertificateThumbprint')) {
+        throw "Config value 'SharePoint.PnPLoginMode' is not supported. Supported values: OSLogin, DeviceLogin, Interactive, CertificateThumbprint."
     }
 
     return $normalizedValue
@@ -188,7 +188,7 @@ function Connect-WorkshopPnPOnline {
         [string]$ClientId,
 
         [Parameter(Mandatory = $true)]
-        [ValidateSet('DeviceLogin', 'Interactive', 'CertificateThumbprint')]
+        [ValidateSet('OSLogin', 'DeviceLogin', 'Interactive', 'CertificateThumbprint')]
         [string]$LoginMode,
 
         [Parameter()]
@@ -200,36 +200,53 @@ function Connect-WorkshopPnPOnline {
         [string]$Label
     )
 
-    $connectParameters = @{
-        Url         = $Url
-        Tenant      = $Tenant
-        ErrorAction = 'Stop'
+    # Certificate auth is non-interactive — no fallback needed
+    if ($LoginMode -eq 'CertificateThumbprint') {
+        if ([string]::IsNullOrWhiteSpace($CertificateThumbprint)) {
+            throw "A certificate thumbprint is required when SharePoint.PnPLoginMode is CertificateThumbprint."
+        }
+        Write-StepResult -Level INFO -Message "Connecting to $Label using certificate auth."
+        Connect-PnPOnline -Url $Url -Tenant $Tenant -ClientId $ClientId -Thumbprint $CertificateThumbprint -ErrorAction Stop
+        return
     }
 
-    switch ($LoginMode) {
-        'Interactive' {
-            # Use custom ClientId for Interactive (supports it with redirect URI)
-            $connectParameters['ClientId'] = $ClientId
-            $connectParameters['Interactive'] = $true
-        }
-        'DeviceLogin' {
-            # PnP v3.x requires ClientId for all flows. DeviceLogin is unreliable in PS 7.
-            # Use -Interactive with our ClientId (app has delegated perms + http://localhost redirect).
-            $connectParameters['ClientId'] = $ClientId
-            $connectParameters['Interactive'] = $true
-        }
-        'CertificateThumbprint' {
-            if ([string]::IsNullOrWhiteSpace($CertificateThumbprint)) {
-                throw "A certificate thumbprint is required when SharePoint.PnPLoginMode is CertificateThumbprint."
+    # Interactive auth waterfall: try the configured mode, fall back to DeviceLogin
+    $methods = switch ($LoginMode) {
+        'OSLogin'     { @('OSLogin', 'DeviceLogin') }
+        'Interactive' { @('Interactive', 'DeviceLogin') }
+        'DeviceLogin' { @('DeviceLogin') }
+    }
+
+    $lastError = $null
+    foreach ($method in $methods) {
+        try {
+            Write-StepResult -Level INFO -Message "Connecting to $Label using PnP login mode '$method'."
+            switch ($method) {
+                'OSLogin' {
+                    # WAM (Web Account Manager) — native Windows broker, no localhost redirect needed
+                    Connect-PnPOnline -Url $Url -ClientId $ClientId -OSLogin -ErrorAction Stop
+                }
+                'Interactive' {
+                    # MSAL browser popup — requires http://127.0.0.1 redirect URI
+                    Connect-PnPOnline -Url $Url -ClientId $ClientId -Interactive -ErrorAction Stop
+                }
+                'DeviceLogin' {
+                    # Device code flow — no redirect URI involved, requires -Tenant
+                    Connect-PnPOnline -Url $Url -ClientId $ClientId -Tenant $Tenant -DeviceLogin -ErrorAction Stop
+                }
             }
-
-            $connectParameters['ClientId'] = $ClientId
-            $connectParameters['Thumbprint'] = $CertificateThumbprint
+            return  # success
+        }
+        catch {
+            $lastError = $_
+            if ($methods.Count -gt 1 -and $method -ne $methods[-1]) {
+                Write-StepResult -Level WARN -Message "$method failed for $Label`: $($_.Exception.Message). Trying fallback..."
+            }
         }
     }
 
-    Write-StepResult -Level INFO -Message "Connecting to $Label using PnP login mode '$LoginMode'."
-    Connect-PnPOnline @connectParameters
+    # All methods exhausted
+    throw "Unable to connect to $Label after trying $($methods -join ', '). Last error: $lastError"
 }
 
 function Get-DeviceStatusFieldXml {
