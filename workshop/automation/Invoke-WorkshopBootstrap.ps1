@@ -33,13 +33,18 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
         $hasWinget = $null -ne (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)
         if ($hasWinget) {
             & winget install --id Microsoft.PowerShell --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "  winget install failed (exit code $LASTEXITCODE). Trying manual path..." -ForegroundColor Yellow
+            }
             # Refresh PATH
             $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
             $pwshPath = Get-Command -Name 'pwsh' -ErrorAction SilentlyContinue
         }
         if (-not $pwshPath) {
-            Write-Host 'Could not install PowerShell 7 automatically. Install from: https://aka.ms/powershell' -ForegroundColor Red
-            Write-Host 'After installing, re-run this script with: pwsh -File' $MyInvocation.MyCommand.Path -ForegroundColor Yellow
+            Write-Host '' -ForegroundColor Red
+            Write-Host '  PowerShell 7 could not be installed automatically.' -ForegroundColor Red
+            Write-Host '  Install from: https://aka.ms/powershell' -ForegroundColor Yellow
+            Write-Host '  After installing, re-run: pwsh -File Bootstrap.ps1' -ForegroundColor Yellow
             return
         }
     }
@@ -87,6 +92,9 @@ function Install-ViAwinget {
 
     Write-Host "Installing $DisplayName via winget..." -ForegroundColor Cyan
     & winget install --id $WingetId --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Status -Label $DisplayName -Status "winget install may have failed (exit code $LASTEXITCODE)" -Color 'Yellow'
+    }
 
     # Refresh PATH for current session
     $machinePath = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
@@ -151,16 +159,31 @@ if ($null -eq $repoRoot) {
         }
     }
 
-    $cloneTarget = Join-Path -Path (Get-Location) -ChildPath 'copilot-studio-workshop'
-    if (Test-Path -LiteralPath (Join-Path -Path $cloneTarget -ChildPath 'workshop\automation\Common.ps1')) {
-        Write-Status -Label 'Repository' -Status "Already cloned at $cloneTarget" -Color 'Green'
+    # Determine clone target -- avoid nesting if already in a workshop-named directory
+    $currentDir = (Get-Location).Path
+    $currentDirName = Split-Path -Path $currentDir -Leaf
+
+    if ($currentDirName -eq 'copilot-studio-workshop') {
+        # Already in a folder named copilot-studio-workshop -- clone here directly
+        $cloneTarget = $currentDir
+        if (-not (Test-Path -LiteralPath (Join-Path -Path $cloneTarget -ChildPath '.git'))) {
+            # Empty folder with the right name -- clone into current dir
+            Write-Host "Cloning repository into current directory ($cloneTarget)..." -ForegroundColor Cyan
+            & git clone $RepoUrl . 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
+        }
     } else {
-        Write-Host "Cloning repository to $cloneTarget..." -ForegroundColor Cyan
-        & git clone $RepoUrl $cloneTarget 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
-        Write-Status -Label 'Repository' -Status "Cloned to $cloneTarget" -Color 'Green'
+        $cloneTarget = Join-Path -Path $currentDir -ChildPath 'copilot-studio-workshop'
+        if (Test-Path -LiteralPath (Join-Path -Path $cloneTarget -ChildPath 'workshop\automation\Common.ps1')) {
+            Write-Status -Label 'Repository' -Status "Already cloned at $cloneTarget" -Color 'Green'
+        } else {
+            Write-Host "Cloning repository to $cloneTarget..." -ForegroundColor Cyan
+            & git clone $RepoUrl $cloneTarget 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
+        }
     }
 
+    Write-Status -Label 'Repository' -Status "Ready at $cloneTarget" -Color 'Green'
     $repoRoot = $cloneTarget
     $automationDir = Join-Path -Path $repoRoot -ChildPath 'workshop\automation'
 }
@@ -168,7 +191,11 @@ if ($null -eq $repoRoot) {
 $ConfigPath = Join-Path -Path $automationDir -ChildPath 'workshop-config.json'
 $commonPath = Join-Path -Path $automationDir -ChildPath 'Common.ps1'
 
-Set-Location -Path $repoRoot
+if (-not (Test-Path -LiteralPath $commonPath)) {
+    throw "Common.ps1 not found at $commonPath. The repository may be incomplete -- try deleting the folder and re-running this script."
+}
+
+Set-Location -Path $repoRoot -ErrorAction Stop
 Write-Host "Working directory: $repoRoot" -ForegroundColor Gray
 
 . $commonPath
@@ -197,7 +224,7 @@ foreach ($tool in $tools) {
         if (Test-CommandAvailable -Name $tool.Name) {
             Write-Status -Label $tool.DisplayName -Status 'Installed successfully' -Color 'Green'
         } elseif ($tool.Required) {
-            Write-Host "WARNING: $($tool.DisplayName) is required but still not found. Some steps may fail." -ForegroundColor Red
+            throw "$($tool.DisplayName) is required but could not be installed. Install it manually from $($tool.FallbackUrl) and re-run this script."
         }
     }
 }
@@ -206,6 +233,13 @@ foreach ($tool in $tools) {
 # Step 2: PowerShell Modules
 # ============================================================================
 Write-Banner 'Step 2: PowerShell Modules'
+
+# Ensure PSGallery is trusted (prevents interactive prompts on fresh PS 7 installs)
+$psGallery = Get-PSRepository -Name 'PSGallery' -ErrorAction SilentlyContinue
+if ($psGallery -and $psGallery.InstallationPolicy -ne 'Trusted') {
+    Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+    Write-Status -Label 'PSGallery' -Status 'Set to Trusted' -Color 'Green'
+}
 
 $modules = @(
     @{ Name = 'PnP.PowerShell';                                      Label = 'PnP.PowerShell (SharePoint)';         Required = $true  }
@@ -220,12 +254,12 @@ foreach ($mod in $modules) {
     } else {
         Write-Status -Label $mod.Label -Status 'Not found -- installing...' -Color 'Yellow'
         try {
-            Install-Module -Name $mod.Name -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
+            Install-Module -Name $mod.Name -Scope CurrentUser -Force -AllowClobber -AcceptLicense -ErrorAction Stop
             Write-Status -Label $mod.Label -Status 'Installed' -Color 'Green'
         }
         catch {
             if ($mod.Required) {
-                Write-Status -Label $mod.Label -Status "Install failed: $_" -Color 'Red'
+                throw "Required module $($mod.Name) could not be installed: $_"
             } else {
                 Write-Status -Label $mod.Label -Status "Install failed (optional): $_" -Color 'Yellow'
             }
@@ -239,6 +273,9 @@ foreach ($mod in $modules) {
 Write-Banner 'Step 3: Workshop Configuration'
 
 $exampleConfigPath = Join-Path -Path $automationDir -ChildPath 'workshop-config.example.json'
+if (-not (Test-Path -LiteralPath $exampleConfigPath)) {
+    throw "Example config not found at $exampleConfigPath. The repository may be incomplete."
+}
 
 if (Test-Path -LiteralPath $ConfigPath) {
     Write-Status -Label 'Config file' -Status 'Found existing workshop-config.json' -Color 'Green'
@@ -399,11 +436,19 @@ if (Prompt-YesNo -Question 'Provision per-student environments?' -Default $false
 
     if ($emailInput -and (Test-Path -LiteralPath $emailInput -PathType Leaf)) {
         # Read from file
-        $fileEmails = Get-Content -LiteralPath $emailInput | ForEach-Object {
-            ($_ -split ',')[0].Trim()
-        } | Where-Object { $_ -match '@' }
-        foreach ($e in $fileEmails) { [void]$emails.Add($e) }
-        Write-Status -Label 'Student file' -Status "Loaded $($emails.Count) email(s) from $emailInput" -Color 'Green'
+        try {
+            $fileEmails = Get-Content -LiteralPath $emailInput -ErrorAction Stop | ForEach-Object {
+                ($_ -split ',')[0].Trim()
+            } | Where-Object { $_ -match '@' }
+            foreach ($e in $fileEmails) { [void]$emails.Add($e) }
+            Write-Status -Label 'Student file' -Status "Loaded $($emails.Count) email(s) from $emailInput" -Color 'Green'
+            if ($emails.Count -eq 0) {
+                Write-Status -Label 'Student file' -Status "No valid emails found in $emailInput (expected one email per line)" -Color 'Yellow'
+            }
+        }
+        catch {
+            Write-Status -Label 'Student file' -Status "Failed to read $emailInput : $_" -Color 'Red'
+        }
     } else {
         # Manual entry -- first one already captured
         if ($emailInput -match '@') { [void]$emails.Add($emailInput.Trim()) }
@@ -424,11 +469,18 @@ if (Prompt-YesNo -Question 'Provision per-student environments?' -Default $false
         if ($pfxFiles) {
             Write-Host "  Found .pfx file(s): $($pfxFiles.Name -join ', ')" -ForegroundColor Cyan
             if (Prompt-YesNo -Question "  Import $($pfxFiles[0].Name) into your certificate store?") {
-                $cert = Import-PfxCertificate -FilePath $pfxFiles[0].FullName -CertStoreLocation Cert:\CurrentUser\My
-                $config.SharePoint.PnPLoginMode = 'CertificateThumbprint'
-                $config.SharePoint.PnPCertificateThumbprint = $cert.Thumbprint
-                Write-Status -Label 'Certificate' -Status "Imported (thumbprint: $($cert.Thumbprint))" -Color 'Green'
-                Write-Status -Label 'Auth mode' -Status 'Switched to CertificateThumbprint for batch provisioning' -Color 'Green'
+                try {
+                    $cert = Import-PfxCertificate -FilePath $pfxFiles[0].FullName -CertStoreLocation Cert:\CurrentUser\My -ErrorAction Stop
+                    $config.SharePoint.PnPLoginMode = 'CertificateThumbprint'
+                    $config.SharePoint.PnPCertificateThumbprint = $cert.Thumbprint
+                    Write-Status -Label 'Certificate' -Status "Imported (thumbprint: $($cert.Thumbprint))" -Color 'Green'
+                    Write-Status -Label 'Auth mode' -Status 'Switched to CertificateThumbprint for batch provisioning' -Color 'Green'
+                }
+                catch {
+                    Write-Status -Label 'Certificate' -Status "Import failed: $_" -Color 'Red'
+                    Write-Host "  The .pfx may be password-protected. Import it manually:" -ForegroundColor Yellow
+                    Write-Host "  Import-PfxCertificate -FilePath '$($pfxFiles[0].FullName)' -CertStoreLocation Cert:\CurrentUser\My -Password (Read-Host -AsSecureString)" -ForegroundColor Gray
+                }
             }
         } else {
             Write-Host "  No .pfx file found in repo root. You can set the certificate thumbprint manually in workshop-config.json." -ForegroundColor Yellow
@@ -437,8 +489,13 @@ if (Prompt-YesNo -Question 'Provision per-student environments?' -Default $false
 }
 
 # Save config
-$config | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $ConfigPath -Encoding UTF8
-Write-Status -Label 'Config' -Status "Saved to $ConfigPath" -Color 'Green'
+try {
+    $config | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $ConfigPath -Encoding UTF8 -ErrorAction Stop
+    Write-Status -Label 'Config' -Status "Saved to $ConfigPath" -Color 'Green'
+}
+catch {
+    throw "Failed to save config to $ConfigPath : $_"
+}
 
 # ============================================================================
 # Step 4: pac CLI Authentication
@@ -505,7 +562,8 @@ if (Test-Path -LiteralPath $assetScript) {
     }
     catch {
         Write-Status -Label 'Day 2 assets' -Status "Download failed: $_" -Color 'Red'
-        Write-Host '  You can retry later with: powershell -File .\workshop\automation\Get-WorkshopDay2Assets.ps1' -ForegroundColor Yellow
+        Write-Host '  WARNING: Labs 13, 16, 19, 21, and 24 require these assets.' -ForegroundColor Red
+        Write-Host '  Retry with: pwsh -File .\workshop\automation\Get-WorkshopDay2Assets.ps1' -ForegroundColor Yellow
     }
 } else {
     Write-Status -Label 'Day 2 assets' -Status 'Get-WorkshopDay2Assets.ps1 not found' -Color 'Red'
@@ -562,12 +620,17 @@ $dashboard = @(
 )
 
 $allGreen = $true
+$failedChecks = [System.Collections.ArrayList]@()
 foreach ($item in $dashboard) {
-    $pass = try { & $item.Check } catch { $false }
+    $pass = $false
+    $checkError = $null
+    try { $pass = & $item.Check } catch { $checkError = $_.Exception.Message }
     if ($pass) {
         Write-Host "  [PASS] $($item.Label)" -ForegroundColor Green
     } else {
-        Write-Host "  [----] $($item.Label)" -ForegroundColor Yellow
+        $detail = if ($checkError) { " ($checkError)" } else { '' }
+        Write-Host "  [----] $($item.Label)$detail" -ForegroundColor Yellow
+        [void]$failedChecks.Add($item.Label)
         $allGreen = $false
     }
 }
@@ -576,7 +639,8 @@ Write-Host ''
 if ($allGreen) {
     Write-Host '  All checks passed! You are ready to proceed.' -ForegroundColor Green
 } else {
-    Write-Host '  Some items need attention (see above). Fix them and re-run the wizard.' -ForegroundColor Yellow
+    Write-Host "  $($failedChecks.Count) item(s) need attention: $($failedChecks -join ', ')" -ForegroundColor Yellow
+    Write-Host '  Fix them and re-run the wizard, or proceed if you know they are expected.' -ForegroundColor Yellow
 }
 
 Write-Host "`n--- Next Steps ---" -ForegroundColor Cyan
