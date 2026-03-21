@@ -7,9 +7,9 @@
 
 ## Commands
 
-- **First-time setup on a fresh machine** — paste into PowerShell: `$f="$env:TEMP\Invoke-WorkshopBootstrap.ps1"; irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 -OutFile $f; & $f`. This downloads and runs the interactive bootstrap wizard that installs all dependencies (git, pac CLI, Node.js via winget), clones the repo, installs PowerShell modules, creates the config interactively, downloads assets, and validates everything.
+- **First-time setup on a fresh machine** — open PowerShell and run: `mkdir C:\workshop; cd C:\workshop`, then `irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 -OutFile .\Bootstrap.ps1`, then `.\Bootstrap.ps1`. The wizard installs PS 7 (if needed), git, pac CLI, Node.js via winget, clones the repo, installs PowerShell modules, auto-creates an Entra app registration with required permissions, walks through config interactively, downloads assets, and validates everything.
 - If the repo is already cloned, run the wizard directly:
-  - `powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1`
+  - `pwsh -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1`
 - After the bootstrap wizard completes, the individual scripts can be run separately:
 - Install local prerequisites (if not using the bootstrap wizard):
   - `powershell -File .\workshop\automation\Install-WorkshopPrerequisites.ps1`

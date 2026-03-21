@@ -29,28 +29,31 @@ Recommended baseline:
 
 ## Automated setup
 
-Paste this into PowerShell on any Windows 11 machine to set up everything from scratch:
+On a fresh Windows 11 machine, open PowerShell and run:
 
 ```powershell
-$f="$env:TEMP\Invoke-WorkshopBootstrap.ps1"; irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 -OutFile $f; & $f
+mkdir C:\workshop; cd C:\workshop
+irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 -OutFile .\Bootstrap.ps1
+.\Bootstrap.ps1
 ```
 
 If the repo is already cloned, run the wizard directly instead:
 
 ```powershell
-powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
+pwsh -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
 ```
 
 The wizard handles these steps automatically:
 
-1. **CLI tools** — Installs git, Power Platform CLI (pac), and Node.js via winget if missing.
-2. **PowerShell modules** — Installs PnP.PowerShell, Microsoft.Graph, and PowerApps Admin modules.
-3. **Config file** — Creates `workshop-config.json` from the example template and walks through each required value interactively (tenant name, SharePoint URLs, Entra app client ID, auth mode).
-4. **pac CLI auth** — Checks for an active Power Platform CLI profile and launches interactive sign-in if needed.
-5. **Entra app validation** — Tests PnP connectivity (if using certificate auth), shows the required permission checklist, and offers to import `.pfx` certificates.
-6. **Day 2 assets** — Downloads all workshop assets from the public GitHub repository.
-7. **Prerequisites check** — Runs the full validation suite and reports pass/fail for every component.
-8. **Readiness dashboard** — Shows green/yellow status for each component and the exact next-step commands to run.
+1. **PowerShell 7** — Installs PS 7 via winget if running in PS 5.1, then re-launches itself.
+2. **CLI tools** — Installs git, Power Platform CLI (pac), and Node.js via winget if missing. Halts if required tools (git, pac) cannot be installed.
+3. **PowerShell modules** — Installs PnP.PowerShell, Microsoft.Graph, and PowerApps Admin modules. Halts if required modules fail.
+4. **Config file** — Creates `workshop-config.json` from the example template and walks through each required value interactively: tenant name (auto-derives all SharePoint URLs), TenantId (auto-detected from pac auth if available).
+5. **Entra app registration** — Auto-creates an Entra app with the required API permissions (Group.ReadWrite.All, User.Read.All, Team.Create, Sites.FullControl.All) via Microsoft Graph, creates the service principal, and provides a direct Azure portal link for admin consent.
+6. **pac CLI auth** — Checks for an active Power Platform CLI profile and launches interactive sign-in if needed.
+7. **Day 2 assets** — Downloads all workshop assets from the public GitHub repository.
+8. **Prerequisites check** — Runs the full validation suite and reports pass/fail for every component.
+9. **Readiness dashboard** — Shows green/yellow status for each component and the exact next-step commands to run.
 
 After the wizard completes:
 
