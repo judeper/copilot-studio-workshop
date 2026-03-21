@@ -1,6 +1,10 @@
 # GPT-5.4 Agent Prompting Operator Handbook
 
-> **INTERNAL — Facilitator and Author Use Only.** This document is not intended for participant distribution. It describes how the coding agent generates and validates workshop content.
+> **⛔ INTERNAL — Facilitator and Author Use Only — DO NOT DISTRIBUTE.**
+>
+> This document is **not** part of the customer-facing workshop package. It describes how the coding agent (Copilot/GPT) generates and validates workshop content. It contains internal model identifiers and version references that **do not match** Microsoft's public documentation and must not be shared with participants or customers.
+>
+> If you are packaging this repo for external delivery, **exclude this file** from the distributable (e.g., via `.gitattributes export-ignore` or by removing it from the delivery archive).
 
 This internal guide standardizes how the coding agent should author and validate workshop content for this package. Use it as the working playbook whenever generating or refining facilitator guides, participant guides, test narratives, or supporting workshop assets.
 

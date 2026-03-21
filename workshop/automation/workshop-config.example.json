@@ -31,6 +31,8 @@
   },
   "Identity": {
     "AgentCreatorsGroupName": "AgentCreators",
+    "ClientSecret": "",
+    "ClientSecretEnvVar": "COPILOT_WORKSHOP_APP_SECRET",
     "ParticipantEmails": []
   },
   "Workshop": {

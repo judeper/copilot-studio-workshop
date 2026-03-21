@@ -99,8 +99,15 @@ function Set-DefaultViewFields {
         [string[]]$FieldInternalNames
     )
 
-    Set-PnPView -List $ListTitle -Identity 'All Items' -Fields $FieldInternalNames | Out-Null
-    Write-StepResult -Level PASS -Message "Updated the default view for '$ListTitle'."
+    $views = Get-PnPView -List $ListTitle -ErrorAction SilentlyContinue
+    $defaultView = $views | Where-Object { $_.DefaultView -eq $true } | Select-Object -First 1
+    if (-not $defaultView) { $defaultView = $views | Select-Object -First 1 }
+    if ($defaultView) {
+        Set-PnPView -List $ListTitle -Identity $defaultView.Id -Fields $FieldInternalNames | Out-Null
+        Write-StepResult -Level PASS -Message "Updated the default view for '$ListTitle'."
+    } else {
+        Write-StepResult -Level WARN -Message "Could not resolve a default view for list '$ListTitle'; skipping view field configuration."
+    }
 }
 
 function Ensure-ListItem {

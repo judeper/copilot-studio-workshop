@@ -75,6 +75,19 @@ if ($sharePointPnPLoginMode -eq 'CertificateThumbprint') {
     Write-StepResult -Level PASS -Message "Configured SharePoint PnP certificate thumbprint '$sharePointPnPCertificateThumbprint'."
 }
 
+# Validate Identity.ClientSecret availability (needed for per-student provisioning)
+$clientSecret = [string]$config.Identity.ClientSecret
+$clientSecretEnvVar = [string]$config.Identity.ClientSecretEnvVar
+$hasClientSecret = -not [string]::IsNullOrWhiteSpace($clientSecret) -and -not (Test-PlaceholderValue -Value $clientSecret)
+$hasEnvVarSecret = -not [string]::IsNullOrWhiteSpace($clientSecretEnvVar) -and (Test-Path "Env:\$clientSecretEnvVar")
+if ($hasClientSecret -or $hasEnvVarSecret) {
+    Write-StepResult -Level PASS -Message "Identity.ClientSecret is available (needed for per-student credit allocation and PowerApps admin auth)."
+} elseif (-not [string]::IsNullOrWhiteSpace($clientSecretEnvVar)) {
+    Write-StepResult -Level WARN -Message "Identity.ClientSecretEnvVar is set to '$clientSecretEnvVar' but the environment variable is not defined. Per-student credit allocation will be skipped."
+} else {
+    Write-StepResult -Level WARN -Message "Neither Identity.ClientSecret nor Identity.ClientSecretEnvVar is configured. Per-student credit allocation and PowerApps admin auth will be skipped."
+}
+
 Write-Section "Checking local tooling"
 Require-Module -Name 'PnP.PowerShell'
 Write-StepResult -Level PASS -Message "PnP.PowerShell is installed."

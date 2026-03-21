@@ -1,0 +1,2 @@
+# Exclude internal-only files from git archive distributions
+workshop/facilitator-guide/gpt54-agent-prompting.md  export-ignore

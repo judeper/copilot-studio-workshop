@@ -28,7 +28,7 @@ This optional lab shows how developers can work with an existing Copilot Studio 
 
 ![Cloning the agent and reviewing changes in VS Code](./assets/lab-25-vscode-clone.png)
 
-7. [Developer] In **Explorer**, open the main agent definition file, typically `agent.yaml`.
+7. [Developer] In **Explorer**, open the main agent definition file, typically `agent.mcs.yaml` (older projects may use `agent.yaml`).
 8. [Developer] Locate the `instructions:` block. If you do not see it immediately, use global search in VS Code for `Hiring Agent` or `instructions:`.
 9. [Developer] Update the instructions with one small but visible improvement, such as adding `Always end recruiter-facing guidance with the next recommended hiring action.` or refining the ambiguity rule to request one focused follow-up question.
 10. [Developer] Save the file and review the change in the editor diff or the **Source Control** pane.
