@@ -57,13 +57,26 @@ A two-day, hands-on workshop for building, extending, and governing AI agents wi
 
 ## Facilitator Automation
 
-Run the bootstrap wizard on a fresh Windows 11 machine — it installs all dependencies, walks through configuration, and validates everything:
+Paste this one-liner into PowerShell on any Windows 11 machine to set up everything from scratch:
+
+```powershell
+irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 | iex
+```
+
+This downloads and runs the interactive bootstrap wizard, which:
+- Installs git, Power Platform CLI, and Node.js (via winget) if missing
+- Clones this repository if not already on disk
+- Installs required PowerShell modules (PnP.PowerShell, Microsoft.Graph, PowerApps Admin)
+- Walks through config setup interactively (tenant name → auto-derives all URLs)
+- Sets up pac CLI authentication
+- Downloads all workshop assets
+- Validates every prerequisite and shows a readiness dashboard
+
+If you already have the repo cloned, run the wizard directly:
 
 ```powershell
 powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
 ```
-
-The wizard handles: git + pac CLI + Node.js installation (via winget), PowerShell module installation, interactive config setup, pac CLI authentication, Entra app validation, asset downloads, and a full readiness check.
 
 After the wizard completes:
 

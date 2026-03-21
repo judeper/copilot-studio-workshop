@@ -24,6 +24,10 @@ Set-StrictMode -Version Latest
 # Helpers (inline — cannot depend on Common.ps1 until repo is confirmed)
 # ============================================================================
 
+# Detect execution context: invoked via irm | iex (no $PSScriptRoot) vs file
+$scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { $null }
+$isRemoteInvocation = $null -eq $scriptDir
+
 function Write-Banner {
     param([string]$Message)
     $line = '=' * 70
@@ -94,33 +98,50 @@ function Prompt-YesNo {
 # ============================================================================
 Write-Banner 'Step 0: Repository Check'
 
-$commonPath = Join-Path -Path $PSScriptRoot -ChildPath 'Common.ps1'
-if (Test-Path -LiteralPath $commonPath) {
-    Write-Status -Label 'Repository' -Status "Found at $(Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent)" -Color 'Green'
-} else {
-    Write-Status -Label 'Repository' -Status 'Not found — need to clone' -Color 'Yellow'
+$repoRoot = $null
+$automationDir = $null
+
+if (-not $isRemoteInvocation) {
+    $commonPath = Join-Path -Path $scriptDir -ChildPath 'Common.ps1'
+    if (Test-Path -LiteralPath $commonPath) {
+        $automationDir = $scriptDir
+        $repoRoot = Split-Path -Path $automationDir -Parent | Split-Path -Parent
+        Write-Status -Label 'Repository' -Status "Found at $repoRoot" -Color 'Green'
+    }
+}
+
+if ($null -eq $repoRoot) {
+    # Repo not on disk — need to clone
+    Write-Status -Label 'Repository' -Status 'Not found on disk — will clone' -Color 'Yellow'
 
     if (-not (Test-CommandAvailable -Name 'git')) {
         Write-Host "`ngit is required to clone the repository." -ForegroundColor Yellow
         Install-ViAwinget -WingetId 'Git.Git' -DisplayName 'Git' -FallbackUrl 'https://git-scm.com/download/win'
 
         if (-not (Test-CommandAvailable -Name 'git')) {
-            throw 'git is still not available after install attempt. Install it manually and re-run this script.'
+            throw 'git is still not available after install attempt. Install it manually and re-run.'
         }
     }
 
     $cloneTarget = Join-Path -Path (Get-Location) -ChildPath 'copilot-studio-workshop'
-    Write-Host "Cloning repository to $cloneTarget..." -ForegroundColor Cyan
-    & git clone $RepoUrl $cloneTarget 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
+    if (Test-Path -LiteralPath (Join-Path -Path $cloneTarget -ChildPath 'workshop\automation\Common.ps1')) {
+        Write-Status -Label 'Repository' -Status "Already cloned at $cloneTarget" -Color 'Green'
+    } else {
+        Write-Host "Cloning repository to $cloneTarget..." -ForegroundColor Cyan
+        & git clone $RepoUrl $cloneTarget 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
+        Write-Status -Label 'Repository' -Status "Cloned to $cloneTarget" -Color 'Green'
+    }
 
-    $PSScriptRoot = Join-Path -Path $cloneTarget -ChildPath 'workshop\automation'
-    $commonPath = Join-Path -Path $PSScriptRoot -ChildPath 'Common.ps1'
-    $ConfigPath = Join-Path -Path $PSScriptRoot -ChildPath 'workshop-config.json'
-
-    Write-Status -Label 'Repository' -Status "Cloned to $cloneTarget" -Color 'Green'
-    Write-Host "`nIMPORTANT: After this wizard completes, cd into $cloneTarget before running other scripts." -ForegroundColor Yellow
+    $repoRoot = $cloneTarget
+    $automationDir = Join-Path -Path $repoRoot -ChildPath 'workshop\automation'
 }
+
+$ConfigPath = Join-Path -Path $automationDir -ChildPath 'workshop-config.json'
+$commonPath = Join-Path -Path $automationDir -ChildPath 'Common.ps1'
+
+Set-Location -Path $repoRoot
+Write-Host "Working directory: $repoRoot" -ForegroundColor Gray
 
 . $commonPath
 
@@ -189,7 +210,7 @@ foreach ($mod in $modules) {
 # ============================================================================
 Write-Banner 'Step 3: Workshop Configuration'
 
-$exampleConfigPath = Join-Path -Path $PSScriptRoot -ChildPath 'workshop-config.example.json'
+$exampleConfigPath = Join-Path -Path $automationDir -ChildPath 'workshop-config.example.json'
 
 if (Test-Path -LiteralPath $ConfigPath) {
     Write-Status -Label 'Config file' -Status 'Found existing workshop-config.json' -Color 'Green'
@@ -250,7 +271,7 @@ if ($config.SharePoint.PnPLoginMode -eq 'CertificateThumbprint') {
     $config.SharePoint.PnPCertificateThumbprint = Prompt-Value -Prompt 'Certificate thumbprint' -Required
 
     # Check if .pfx exists in repo and offer to import
-    $pfxFiles = Get-ChildItem -Path (Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent) -Filter '*.pfx' -ErrorAction SilentlyContinue
+    $pfxFiles = Get-ChildItem -Path $repoRoot -Filter '*.pfx' -ErrorAction SilentlyContinue
     if ($pfxFiles) {
         Write-Host "`nFound .pfx file(s): $($pfxFiles.Name -join ', ')" -ForegroundColor Cyan
         if (Prompt-YesNo -Question 'Import the first .pfx into your certificate store?') {
@@ -356,7 +377,7 @@ if (-not [string]::IsNullOrWhiteSpace($clientId) -and $clientId -notmatch '^<') 
 # ============================================================================
 Write-Banner 'Step 6: Download Workshop Assets'
 
-$assetScript = Join-Path -Path $PSScriptRoot -ChildPath 'Get-WorkshopDay2Assets.ps1'
+$assetScript = Join-Path -Path $automationDir -ChildPath 'Get-WorkshopDay2Assets.ps1'
 if (Test-Path -LiteralPath $assetScript) {
     Write-Host 'Downloading Day 2 assets from GitHub...' -ForegroundColor Cyan
     try {
@@ -376,7 +397,7 @@ if (Test-Path -LiteralPath $assetScript) {
 # ============================================================================
 Write-Banner 'Step 7: Prerequisites Validation'
 
-$prereqScript = Join-Path -Path $PSScriptRoot -ChildPath 'Invoke-WorkshopPrereqCheck.ps1'
+$prereqScript = Join-Path -Path $automationDir -ChildPath 'Invoke-WorkshopPrereqCheck.ps1'
 if (Test-Path -LiteralPath $prereqScript) {
     try {
         & $prereqScript -ConfigPath $ConfigPath
@@ -408,7 +429,7 @@ $dashboard = @(
     @{
         Label = 'Day 2 assets'
         Check = {
-            $assetsDir = Join-Path -Path $PSScriptRoot -ChildPath '..\assets'
+            $assetsDir = Join-Path -Path $automationDir -ChildPath '..\assets'
             (Test-Path (Join-Path $assetsDir 'Operative_1_0_0_0.zip')) -and
             (Test-Path (Join-Path $assetsDir 'job-roles.csv')) -and
             (Test-Path (Join-Path $assetsDir 'evaluation-criteria.csv'))

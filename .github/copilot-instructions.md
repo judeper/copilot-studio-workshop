@@ -7,7 +7,8 @@
 
 ## Commands
 
-- **First-time setup on a fresh machine** — run the interactive bootstrap wizard that installs all dependencies (git, pac CLI, Node.js via winget), PowerShell modules, creates the config interactively, downloads assets, and validates everything:
+- **First-time setup on a fresh machine** — paste the one-liner into PowerShell: `irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 | iex`. This downloads and runs the interactive bootstrap wizard that installs all dependencies (git, pac CLI, Node.js via winget), clones the repo, installs PowerShell modules, creates the config interactively, downloads assets, and validates everything.
+- If the repo is already cloned, run the wizard directly:
   - `powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1`
 - After the bootstrap wizard completes, the individual scripts can be run separately:
 - Install local prerequisites (if not using the bootstrap wizard):

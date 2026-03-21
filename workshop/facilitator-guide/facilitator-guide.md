@@ -29,9 +29,13 @@ Recommended baseline:
 
 ## Automated setup
 
-Use the bootstrap wizard in [`../automation/`](../automation/) to set up the facilitator machine from scratch. It works on a vanilla Windows 11 machine — it detects and installs every missing dependency, walks through configuration interactively, downloads assets, and validates everything.
+Paste this one-liner into PowerShell on any Windows 11 machine to set up everything from scratch:
 
-**Run once, before anything else:**
+```powershell
+irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 | iex
+```
+
+If the repo is already cloned, run the wizard directly instead:
 
 ```powershell
 powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
