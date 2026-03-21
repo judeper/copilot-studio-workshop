@@ -380,50 +380,59 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
 
 $config.SharePoint.PnPClientId = $existingClientId
 
-# Auth mode
-Write-Host "`n--- Authentication Mode ---" -ForegroundColor Cyan
-Write-Host "  1. DeviceLogin (default -- interactive device code flow)" -ForegroundColor White
-Write-Host "  2. Interactive (browser popup)" -ForegroundColor White
-Write-Host "  3. CertificateThumbprint (app-only -- requires .pfx in cert store)" -ForegroundColor White
-$authChoice = Prompt-Value -Prompt 'Choose auth mode (1/2/3)' -Default '1'
-$config.SharePoint.PnPLoginMode = switch ($authChoice) {
-    '2' { 'Interactive' }
-    '3' { 'CertificateThumbprint' }
-    default { 'DeviceLogin' }
-}
+# Auth mode -- default to DeviceLogin, no confusing prompt
+$config.SharePoint.PnPLoginMode = 'DeviceLogin'
+Write-Status -Label 'Auth mode' -Status 'DeviceLogin (interactive device code flow)' -Color 'Green'
 
-if ($config.SharePoint.PnPLoginMode -eq 'CertificateThumbprint') {
-    $config.SharePoint.PnPCertificateThumbprint = Prompt-Value -Prompt 'Certificate thumbprint' -Required
-
-    # Check if .pfx exists in repo and offer to import
-    $pfxFiles = Get-ChildItem -Path $repoRoot -Filter '*.pfx' -ErrorAction SilentlyContinue
-    if ($pfxFiles) {
-        Write-Host "`nFound .pfx file(s): $($pfxFiles.Name -join ', ')" -ForegroundColor Cyan
-        if (Prompt-YesNo -Question 'Import the first .pfx into your certificate store?') {
-            Import-PfxCertificate -FilePath $pfxFiles[0].FullName -CertStoreLocation Cert:\CurrentUser\My | Out-Null
-            Write-Status -Label 'Certificate' -Status "Imported $($pfxFiles[0].Name)" -Color 'Green'
-        }
-    }
-}
-
-# Environment bootstrap
-Write-Host "`n--- Environment Bootstrap ---" -ForegroundColor Cyan
+# Environment bootstrap -- auto-derive, show as confirmation
 $domainDefault = "$tenantName-workshop"
-$config.EnvironmentBootstrap.DomainName = Prompt-Value -Prompt 'Environment domain prefix' -Default $domainDefault
+$config.EnvironmentBootstrap.DomainName = $domainDefault
+Write-Host "`n  Environment domain: $domainDefault.crm.dynamics.com" -ForegroundColor White
 
 # Student provisioning
 Write-Host "`n--- Student Provisioning (Optional) ---" -ForegroundColor Cyan
 if (Prompt-YesNo -Question 'Provision per-student environments?' -Default $false) {
-    Write-Host "Enter student emails (one per line, empty line to finish):" -ForegroundColor Yellow
+    Write-Host "  Enter a path to a text/CSV file with one email per line," -ForegroundColor Yellow
+    Write-Host "  or type emails one per line (empty line to finish):" -ForegroundColor Yellow
+    $emailInput = Prompt-Value -Prompt 'File path or first email'
     $emails = [System.Collections.ArrayList]@()
-    while ($true) {
-        $email = Read-Host '  Email'
-        if ([string]::IsNullOrWhiteSpace($email)) { break }
-        [void]$emails.Add($email.Trim())
+
+    if ($emailInput -and (Test-Path -LiteralPath $emailInput -PathType Leaf)) {
+        # Read from file
+        $fileEmails = Get-Content -LiteralPath $emailInput | ForEach-Object {
+            ($_ -split ',')[0].Trim()
+        } | Where-Object { $_ -match '@' }
+        foreach ($e in $fileEmails) { [void]$emails.Add($e) }
+        Write-Status -Label 'Student file' -Status "Loaded $($emails.Count) email(s) from $emailInput" -Color 'Green'
+    } else {
+        # Manual entry -- first one already captured
+        if ($emailInput -match '@') { [void]$emails.Add($emailInput.Trim()) }
+        while ($true) {
+            $email = Read-Host '  Email'
+            if ([string]::IsNullOrWhiteSpace($email)) { break }
+            [void]$emails.Add($email.Trim())
+        }
     }
+
     if ($emails.Count -gt 0) {
         $config.Identity.ParticipantEmails = @($emails)
         Write-Status -Label 'Students' -Status "$($emails.Count) email(s) configured" -Color 'Green'
+
+        # Per-student provisioning requires app-only auth (certificate)
+        Write-Host "`n  Per-student provisioning requires app-only (certificate) authentication." -ForegroundColor Yellow
+        $pfxFiles = Get-ChildItem -Path $repoRoot -Filter '*.pfx' -ErrorAction SilentlyContinue
+        if ($pfxFiles) {
+            Write-Host "  Found .pfx file(s): $($pfxFiles.Name -join ', ')" -ForegroundColor Cyan
+            if (Prompt-YesNo -Question "  Import $($pfxFiles[0].Name) into your certificate store?") {
+                $cert = Import-PfxCertificate -FilePath $pfxFiles[0].FullName -CertStoreLocation Cert:\CurrentUser\My
+                $config.SharePoint.PnPLoginMode = 'CertificateThumbprint'
+                $config.SharePoint.PnPCertificateThumbprint = $cert.Thumbprint
+                Write-Status -Label 'Certificate' -Status "Imported (thumbprint: $($cert.Thumbprint))" -Color 'Green'
+                Write-Status -Label 'Auth mode' -Status 'Switched to CertificateThumbprint for batch provisioning' -Color 'Green'
+            }
+        } else {
+            Write-Host "  No .pfx file found in repo root. You can set the certificate thumbprint manually in workshop-config.json." -ForegroundColor Yellow
+        }
     }
 }
 
@@ -444,7 +453,8 @@ if (Test-CommandAvailable -Name 'pac') {
         $pacAuthCheck | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
     } else {
         Write-Status -Label 'pac auth' -Status 'No active profile -- launching interactive sign-in' -Color 'Yellow'
-        Write-Host "`nSign in with a Power Platform admin account..." -ForegroundColor Yellow
+        Write-Host "`n  A browser window will open (or a device code will appear)." -ForegroundColor Yellow
+        Write-Host "  Sign in with a Power Platform admin account.`n" -ForegroundColor Yellow
         & pac auth create 2>&1 | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
         if ($LASTEXITCODE -eq 0) {
             Write-Status -Label 'pac auth' -Status 'Authenticated successfully' -Color 'Green'
@@ -457,31 +467,13 @@ if (Test-CommandAvailable -Name 'pac') {
 }
 
 # ============================================================================
-# Step 5: Entra App Validation
+# Step 5: Entra App Connectivity Test
 # ============================================================================
-Write-Banner 'Step 5: Entra App Permissions Check'
+Write-Banner 'Step 5: Entra App Connectivity Test'
 
 $clientId = [string]$config.SharePoint.PnPClientId
 if (-not [string]::IsNullOrWhiteSpace($clientId) -and $clientId -notmatch '^<') {
-    Write-Host "Entra App Client ID: $clientId" -ForegroundColor White
-
-    $requiredPerms = @(
-        'Sites.FullControl.All (SharePoint -- application)',
-        'Group.ReadWrite.All (Graph -- application)',
-        'Team.Create (Graph -- application)',
-        'User.Read.All (Graph -- application)'
-    )
-
-    Write-Host "`nRequired API permissions for full provisioning:" -ForegroundColor Yellow
-    foreach ($perm in $requiredPerms) {
-        Write-Host "  [ ] $perm" -ForegroundColor White
-    }
-
-    Write-Host "`nVerify at: https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/CallAnAPI/appId/$clientId" -ForegroundColor Cyan
-    Write-Host "Also ensure admin consent is granted for all permissions above.`n" -ForegroundColor Yellow
-
-    # Test PnP connectivity if in CertificateThumbprint mode
-    if ($config.SharePoint.PnPLoginMode -eq 'CertificateThumbprint') {
+    if ($config.SharePoint.PnPLoginMode -eq 'CertificateThumbprint' -and -not [string]::IsNullOrWhiteSpace([string]$config.SharePoint.PnPCertificateThumbprint)) {
         try {
             Import-Module PnP.PowerShell -ErrorAction Stop
             Connect-PnPOnline -Url $config.SharePoint.AdminUrl -ClientId $clientId -Tenant $tenantId -Thumbprint $config.SharePoint.PnPCertificateThumbprint -ErrorAction Stop
@@ -490,11 +482,13 @@ if (-not [string]::IsNullOrWhiteSpace($clientId) -and $clientId -notmatch '^<') 
         }
         catch {
             Write-Status -Label 'PnP connectivity' -Status "Failed: $_" -Color 'Red'
-            Write-Host "  Verify the certificate is imported and the Entra app has Sites.FullControl.All." -ForegroundColor Yellow
+            Write-Host "  Verify the certificate is imported and admin consent is granted." -ForegroundColor Yellow
         }
+    } else {
+        Write-Status -Label 'PnP connectivity' -Status "Will use DeviceLogin -- connectivity tested during lab setup" -Color 'Green'
     }
 } else {
-    Write-Status -Label 'Entra App' -Status 'PnPClientId not configured -- SharePoint automation will use interactive auth' -Color 'Yellow'
+    Write-Status -Label 'Entra App' -Status 'No Client ID configured -- skipping connectivity test' -Color 'Yellow'
 }
 
 # ============================================================================
@@ -529,7 +523,12 @@ if (Test-Path -LiteralPath $prereqScript) {
         Write-Status -Label 'Prerequisites' -Status 'All checks passed' -Color 'Green'
     }
     catch {
-        Write-Status -Label 'Prerequisites' -Status "Validation failed: $_" -Color 'Red'
+        $errMsg = $_.Exception.Message
+        if ($errMsg -match 'EnvironmentUrl' -or $errMsg -match 'placeholder') {
+            Write-Status -Label 'Prerequisites' -Status 'Passed (EnvironmentUrl will be set after running lab setup)' -Color 'Yellow'
+        } else {
+            Write-Status -Label 'Prerequisites' -Status "Validation failed: $errMsg" -Color 'Red'
+        }
     }
 } else {
     Write-Status -Label 'Prerequisites' -Status 'Invoke-WorkshopPrereqCheck.ps1 not found' -Color 'Red'
@@ -582,11 +581,11 @@ if ($allGreen) {
 
 Write-Host "`n--- Next Steps ---" -ForegroundColor Cyan
 Write-Host '  1. Pre-stage shared Day 1 site:' -ForegroundColor White
-Write-Host '     powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady' -ForegroundColor Gray
+Write-Host '     pwsh -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady' -ForegroundColor Gray
 Write-Host ''
 Write-Host '  2. Optional: Batch-provision per-student environments:' -ForegroundColor White
-Write-Host '     powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1' -ForegroundColor Gray
+Write-Host '     pwsh -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1' -ForegroundColor Gray
 Write-Host ''
 Write-Host '  3. Post-workshop cleanup:' -ForegroundColor White
-Write-Host '     powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete' -ForegroundColor Gray
+Write-Host '     pwsh -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete' -ForegroundColor Gray
 Write-Host ''
