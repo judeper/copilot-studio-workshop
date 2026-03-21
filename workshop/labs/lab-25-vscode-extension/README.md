@@ -69,5 +69,6 @@ This optional lab shows how developers can work with an existing Copilot Studio 
 2. Emphasize that this workflow is now generally available and fits real developer team practices such as local editing, search, diff review, and source control.
 3. Remind participants that **Apply** updates the cloud agent definition but does not publish the agent to end users.
 4. If teams ask how MCP fits the developer workflow, explain that MCP is supported in the agent definition, but setup and authentication should still follow the supported GA onboarding wizard in Copilot Studio.
+5. If the Copilot Studio extension cannot be installed due to IT policy or marketplace restrictions, the developer can observe the facilitator demo and follow along in the browser. Confirm extension availability before the session starts.
 
 

@@ -44,6 +44,8 @@ Prompt 3: A recruiter asks you to rank candidates by age because a manager asked
 
 > **Tip:** You may also see **GPT-5 Auto** (Preview), **GPT-5 Reasoning** (Preview), **RL FineTuned O4 mini** (Experimental), and **Claude Opus 4.5** (Experimental) in the picker. These are not covered in this workshop but you can test them for comparison if time allows. Record them in the empty rows at the bottom of the scorecard.
 
+> **Tip:** For the **Best fit in this workshop** column, consider which tasks each model handles best. For example: broad hiring task support, structured knowledge Q&A, or deep reasoning on complex hiring scenarios. Use your observations from the three test prompts to justify your choice.
+
 | Model | Accuracy | Latency | Relative cost | Best fit in this workshop |
 | --- | --- | --- | --- | --- |
 | GPT-5 Chat | High / Medium / Low | Fast / Medium / Slow | Higher / Medium / Lower | |

@@ -13,7 +13,7 @@ In this lab, you will extend the Hiring Agent scenario with an offer-letter gene
 1. Complete **Lab 13** and **Lab 20** in the same environment.
 2. Confirm that you have at least one candidate, one job application, and one job requisition available for testing.
 3. Confirm that you can edit a Word document template and store it in SharePoint or OneDrive.
-4. [Maker] You need **Microsoft Word desktop** (not Word Online) to create the template with content controls. If you do not have Word desktop, ask the facilitator for a prebuilt `OfferLetterTemplate.docx`.
+4. [Maker] You need **Microsoft Word desktop** (not Word Online) to create the template with content controls. If you do not have Word desktop, the prebuilt `OfferLetterTemplate.docx` is included in `workshop/assets/Operative09StarterSolution.zip`. Extract it and upload it to SharePoint before starting Part 1.
 5. Confirm that the flow account can use **Word Online (Business)** and **Dataverse** connections.
 
 #### Step-by-Step Instructions
