@@ -27,7 +27,7 @@ const PDF_DEFS = [
   // ---- Student PDFs ----
   {
     id: 'S1',
-    filename: 'Student-Welcome-and-Overview.pdf',
+    filename: '01-Student-Welcome-and-Overview.pdf',
     title: 'Welcome & Overview',
     subtitle: 'Copilot Studio Workshop — Participant Guide',
     audience: 'Student',
@@ -35,7 +35,7 @@ const PDF_DEFS = [
   },
   {
     id: 'S2',
-    filename: 'Student-Workbook-Day1-Recruit.pdf',
+    filename: '02-Student-Workbook-Day1-Recruit.pdf',
     title: 'Day 1 — Recruit Track',
     subtitle: 'Student Workbook · Labs 00–12',
     audience: 'Student',
@@ -46,7 +46,7 @@ const PDF_DEFS = [
   },
   {
     id: 'S3',
-    filename: 'Student-Workbook-Day2-Operative.pdf',
+    filename: '03-Student-Workbook-Day2-Operative.pdf',
     title: 'Day 2 — Operative Track',
     subtitle: 'Student Workbook · Labs 13–24',
     audience: 'Student',
@@ -57,7 +57,7 @@ const PDF_DEFS = [
   },
   {
     id: 'S4',
-    filename: 'Student-Workbook-Optional-Developer-Lab.pdf',
+    filename: '04-Student-Workbook-Optional-Developer-Lab.pdf',
     title: 'Optional Developer Lab',
     subtitle: 'Student Workbook · Lab 25 — VS Code Extension',
     audience: 'Student',
@@ -66,7 +66,7 @@ const PDF_DEFS = [
   // ---- Facilitator PDFs ----
   {
     id: 'F1',
-    filename: 'Facilitator-Guide.pdf',
+    filename: '01-Facilitator-Guide.pdf',
     title: 'Facilitator Guide',
     subtitle: 'Copilot Studio Workshop — Delivery Flow & Recovery',
     audience: 'Facilitator',
@@ -74,7 +74,7 @@ const PDF_DEFS = [
   },
   {
     id: 'F2',
-    filename: 'Facilitator-Environment-Readiness-Pack.pdf',
+    filename: '02-Facilitator-Environment-Readiness-Pack.pdf',
     title: 'Environment Readiness Pack',
     subtitle: 'Environment Checklist + Morning-of Smoke Tests',
     audience: 'Facilitator',
@@ -85,15 +85,15 @@ const PDF_DEFS = [
   },
   {
     id: 'F3',
-    filename: 'Facilitator-Lab-Validation-Reference.pdf',
-    title: 'Lab Validation & Troubleshooting',
-    subtitle: 'Per-Lab Success Criteria · Labs 00–24',
+    filename: '03-Facilitator-Session-Splitting-Guide.pdf',
+    title: 'Session Splitting Guide',
+    subtitle: 'Alternative Delivery Formats (8-Session & 6-Session)',
     audience: 'Facilitator',
-    sources: [rel('tests/validation-checklist.md')],
+    sources: [rel('assets/session-splitting-guide.md')],
   },
   {
     id: 'F4',
-    filename: 'Facilitator-Lab-Timing-Guide.pdf',
+    filename: '04-Facilitator-Lab-Timing-Guide.pdf',
     title: 'Lab Timing Guide',
     subtitle: 'Minute-by-Minute Schedule — Day 1 & Day 2',
     audience: 'Facilitator',
@@ -101,19 +101,19 @@ const PDF_DEFS = [
   },
   {
     id: 'F5',
-    filename: 'Facilitator-Session-Splitting-Guide.pdf',
-    title: 'Session Splitting Guide',
-    subtitle: 'Alternative Delivery Formats (8-Session & 6-Session)',
-    audience: 'Facilitator',
-    sources: [rel('assets/session-splitting-guide.md')],
-  },
-  {
-    id: 'F6',
-    filename: 'Facilitator-Slide-Deck-Outline.pdf',
+    filename: '05-Facilitator-Slide-Deck-Outline.pdf',
     title: 'Slide Deck Outline',
     subtitle: 'Speaker Notes & Transitions — Day 1 & Day 2',
     audience: 'Facilitator',
     sources: [rel('assets/slide-deck-outline.md')],
+  },
+  {
+    id: 'F6',
+    filename: '06-Facilitator-Lab-Validation-Reference.pdf',
+    title: 'Lab Validation & Troubleshooting',
+    subtitle: 'Per-Lab Success Criteria · Labs 00–24',
+    audience: 'Facilitator',
+    sources: [rel('tests/validation-checklist.md')],
   },
 ];
 
