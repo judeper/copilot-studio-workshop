@@ -23,7 +23,33 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 # ============================================================================
-# Helpers (inline — cannot depend on Common.ps1 until repo is confirmed)
+# PS 7 requirement -- install and re-launch if running in Windows PowerShell 5.1
+# ============================================================================
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    Write-Host 'PowerShell 7 is required. Checking...' -ForegroundColor Yellow
+    $pwshPath = Get-Command -Name 'pwsh' -ErrorAction SilentlyContinue
+    if (-not $pwshPath) {
+        Write-Host 'Installing PowerShell 7 via winget...' -ForegroundColor Cyan
+        $hasWinget = $null -ne (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)
+        if ($hasWinget) {
+            & winget install --id Microsoft.PowerShell --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-Null
+            # Refresh PATH
+            $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+            $pwshPath = Get-Command -Name 'pwsh' -ErrorAction SilentlyContinue
+        }
+        if (-not $pwshPath) {
+            Write-Host 'Could not install PowerShell 7 automatically. Install from: https://aka.ms/powershell' -ForegroundColor Red
+            Write-Host 'After installing, re-run this script with: pwsh -File' $MyInvocation.MyCommand.Path -ForegroundColor Yellow
+            return
+        }
+    }
+    Write-Host 'Re-launching in PowerShell 7...' -ForegroundColor Green
+    & pwsh -File $MyInvocation.MyCommand.Path @PSBoundParameters
+    return
+}
+
+# ============================================================================
+# Helpers (inline -- cannot depend on Common.ps1 until repo is confirmed)
 # ============================================================================
 
 # Detect execution context: invoked via irm | iex (no $PSScriptRoot) vs file
@@ -41,7 +67,7 @@ function Write-Banner {
 function Write-Status {
     param([string]$Label, [string]$Status, [string]$Color = 'Green')
     $icon = switch ($Color) { 'Green' { '[PASS]' }; 'Yellow' { '[WARN]' }; 'Red' { '[FAIL]' }; default { '[INFO]' } }
-    Write-Host "$icon $Label — $Status" -ForegroundColor $Color
+    Write-Host "$icon $Label -- $Status" -ForegroundColor $Color
 }
 
 function Test-CommandAvailable {
@@ -113,8 +139,8 @@ if (-not $isRemoteInvocation) {
 }
 
 if ($null -eq $repoRoot) {
-    # Repo not on disk — need to clone
-    Write-Status -Label 'Repository' -Status 'Not found on disk — will clone' -Color 'Yellow'
+    # Repo not on disk -- need to clone
+    Write-Status -Label 'Repository' -Status 'Not found on disk -- will clone' -Color 'Yellow'
 
     if (-not (Test-CommandAvailable -Name 'git')) {
         Write-Host "`ngit is required to clone the repository." -ForegroundColor Yellow
@@ -192,7 +218,7 @@ foreach ($mod in $modules) {
         $ver = (Get-Module -ListAvailable -Name $mod.Name | Select-Object -First 1).Version.ToString()
         Write-Status -Label $mod.Label -Status "v$ver" -Color 'Green'
     } else {
-        Write-Status -Label $mod.Label -Status 'Not found — installing...' -Color 'Yellow'
+        Write-Status -Label $mod.Label -Status 'Not found -- installing...' -Color 'Yellow'
         try {
             Install-Module -Name $mod.Name -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
             Write-Status -Label $mod.Label -Status 'Installed' -Color 'Green'
@@ -259,9 +285,9 @@ $config.SharePoint.PnPClientId = Prompt-Value -Prompt 'Entra App Client ID (for 
 
 # Auth mode
 Write-Host "`n--- Authentication Mode ---" -ForegroundColor Cyan
-Write-Host "  1. DeviceLogin (default — interactive device code flow)" -ForegroundColor White
+Write-Host "  1. DeviceLogin (default -- interactive device code flow)" -ForegroundColor White
 Write-Host "  2. Interactive (browser popup)" -ForegroundColor White
-Write-Host "  3. CertificateThumbprint (app-only — requires .pfx in cert store)" -ForegroundColor White
+Write-Host "  3. CertificateThumbprint (app-only -- requires .pfx in cert store)" -ForegroundColor White
 $authChoice = Prompt-Value -Prompt 'Choose auth mode (1/2/3)' -Default '1'
 $config.SharePoint.PnPLoginMode = switch ($authChoice) {
     '2' { 'Interactive' }
@@ -320,17 +346,17 @@ if (Test-CommandAvailable -Name 'pac') {
         Write-Status -Label 'pac auth' -Status 'Active profile found' -Color 'Green'
         $pacAuthCheck | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
     } else {
-        Write-Status -Label 'pac auth' -Status 'No active profile — launching interactive sign-in' -Color 'Yellow'
+        Write-Status -Label 'pac auth' -Status 'No active profile -- launching interactive sign-in' -Color 'Yellow'
         Write-Host "`nSign in with a Power Platform admin account..." -ForegroundColor Yellow
         & pac auth create 2>&1 | ForEach-Object { Write-Host "  $_" -ForegroundColor Gray }
         if ($LASTEXITCODE -eq 0) {
             Write-Status -Label 'pac auth' -Status 'Authenticated successfully' -Color 'Green'
         } else {
-            Write-Status -Label 'pac auth' -Status 'Authentication may have failed — verify manually' -Color 'Yellow'
+            Write-Status -Label 'pac auth' -Status 'Authentication may have failed -- verify manually' -Color 'Yellow'
         }
     }
 } else {
-    Write-Status -Label 'pac auth' -Status 'pac CLI not available — skipping' -Color 'Red'
+    Write-Status -Label 'pac auth' -Status 'pac CLI not available -- skipping' -Color 'Red'
 }
 
 # ============================================================================
@@ -343,10 +369,10 @@ if (-not [string]::IsNullOrWhiteSpace($clientId) -and $clientId -notmatch '^<') 
     Write-Host "Entra App Client ID: $clientId" -ForegroundColor White
 
     $requiredPerms = @(
-        'Sites.FullControl.All (SharePoint — application)',
-        'Group.ReadWrite.All (Graph — application)',
-        'Team.Create (Graph — application)',
-        'User.Read.All (Graph — application)'
+        'Sites.FullControl.All (SharePoint -- application)',
+        'Group.ReadWrite.All (Graph -- application)',
+        'Team.Create (Graph -- application)',
+        'User.Read.All (Graph -- application)'
     )
 
     Write-Host "`nRequired API permissions for full provisioning:" -ForegroundColor Yellow
@@ -371,7 +397,7 @@ if (-not [string]::IsNullOrWhiteSpace($clientId) -and $clientId -notmatch '^<') 
         }
     }
 } else {
-    Write-Status -Label 'Entra App' -Status 'PnPClientId not configured — SharePoint automation will use interactive auth' -Color 'Yellow'
+    Write-Status -Label 'Entra App' -Status 'PnPClientId not configured -- SharePoint automation will use interactive auth' -Color 'Yellow'
 }
 
 # ============================================================================
