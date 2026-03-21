@@ -2,8 +2,8 @@
 
 ## Working context
 
-- Most editable content lives under `workshop\`; the repository root mainly contains signing artifacts plus that workshop package.
-- Treat this as a documentation-first workshop repository, not a conventional application repo. Most changes are Markdown; the executable code is the facilitator PowerShell in `workshop\automation`.
+- The repository root contains a `README.md` with the workshop overview, lab index, and quick start, plus signing artifacts and the `workshop\` package.
+- Most editable content lives under `workshop\`; treat this as a documentation-first workshop repository, not a conventional application repo. Most changes are Markdown; the executable code is the facilitator PowerShell in `workshop\automation`.
 
 ## Commands
 
@@ -39,6 +39,7 @@
   - Labs `13`-`24` are the Day 2 Operative track. They import the `Operative` solution, use Dataverse and the `Hiring Hub` app, then extend the `Hiring Agent` with instructions, multi-agent behavior, automation, model selection, moderation, multimodal prompts, document generation, MCP, feedback, and evaluation.
   - Lab `25` is an optional VS Code workflow that edits the cloud agent definition locally and syncs it back to Copilot Studio.
 - `workshop\automation` is for facilitator or demo preparation, not for skipping the student journey. `StudentReady` intentionally leaves later student-owned work unfinished, while `FacilitatorDemo` can pre-stage Day 2 assets in a separate demo environment.
+- `workshop\assets` contains the Day 2 setup files (`Operative_1_0_0_0.zip`, `job-roles.csv`, `evaluation-criteria.csv`), sample resumes, starter templates, and the `evaluation-test-cases.csv` template for Lab 24. Lab 13 points participants to the local `workshop/assets/` copies first, with facilitator-provided delivery channels as a fallback.
 - `workshop\tests` holds manual readiness and validation checklists. Use it as the canonical success/failure reference when editing lab steps or troubleshooting guidance.
 - Day 2 assumes Day 1 completion, the Recruit badge, or equivalent Copilot Studio familiarity. Preserve that dependency when restructuring docs.
 
@@ -48,8 +49,8 @@
 - Preserve the two-day narrative. Day 1 is foundation-building; Day 2 is the governed enterprise extension of that same scenario, not a reset.
 - Labs follow a stable structure: time estimate near the top, then `Overview`, `Prerequisites`, detailed steps, `Validation`, `Troubleshooting`, and `Facilitator Notes`, with screenshots stored under each lab's `assets` folder as `lab-NN-*.png`.
 - Use `[Maker]`, `[IT Pro]`, and `[Developer]` only when the guidance truly differs. The default workshop flow is shared across roles; Lab 25 is the main developer-only stretch path.
-- Keep participant-facing docs flat and scannable. The repo's internal authoring guide in `workshop\facilitator-guide\gpt54-agent-prompting.md` explicitly avoids nested bullets in participant docs and uses callouts only when they improve execution.
-- Prefer generally available platform guidance. The repo standard is `GPT-5 Chat` for hands-on work, current GA terminology such as the unified activity and transcript view, and the in-product MCP onboarding wizard rather than hand-editing secrets or describing non-GA flows.
+- Keep participant-facing docs flat and scannable. The repo's internal authoring guide in `workshop\facilitator-guide\gpt54-agent-prompting.md` (cross-referenced from Labs 17 and 18) explicitly avoids nested bullets in participant docs and uses callouts only when they improve execution.
+- Prefer generally available platform guidance. The repo standard is `GPT-5 Chat` as the baseline model when available in the participant's region, with `GPT-4.1` as the explicit GA fallback. Use current GA terminology such as the unified activity and transcript view, and the in-product MCP onboarding wizard rather than hand-editing secrets or describing non-GA flows.
 - When you change instructions, model guidance, or validation prompts, expect fresh Copilot Studio sessions to matter. Multiple labs and the validation checklist require `New test session` after changes so stale conversation context does not hide regressions.
 - If you touch facilitator automation, keep `pac` imports pointed at a separate facilitator demo environment and verify the active `pac` profile first. SharePoint automation assumes PnP PowerShell sign-in, with `DeviceLogin` as the default login mode unless `workshop-config.json` says otherwise.
 - If you edit the MCP or VS Code content, keep the browser-based Copilot Studio path as the core workshop flow. The VS Code extension is optional, and MCP setup should continue to use the supported wizard plus narrow, governed Microsoft 365 servers.
