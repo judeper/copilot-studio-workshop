@@ -29,6 +29,22 @@ Canonical facilitator setup sequence (run on the facilitator machine from reposi
 - If the dry run still needs a fresh facilitator environment, populate the optional `EnvironmentBootstrap` block in `../automation/workshop-config.json` and run `../automation/Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment` directly, or `../automation/Invoke-WorkshopLabSetup.ps1 -CreateEnvironment -Mode StudentReady` if you want the rest of the provisioning flow to continue. This wraps the officially documented `pac admin create` flow, still requires an already-authenticated admin-capable `pac` profile plus available capacity/licensing, and updates `EnvironmentUrl` when the created URL can be resolved.
 - `SharePoint.PnPLoginMode` defaults to `DeviceLogin` for terminal-friendly sign-in.
 
+### Optional: batch student environment provisioning
+
+If provisioning per-student environments (instead of a shared environment), additional Entra app permissions and prerequisites are required:
+
+- [ ] Entra app registration has **Microsoft Graph** application permissions: `Team.Create`, `User.Read.All`, `Group.ReadWrite.All`
+- [ ] Entra app registration has **SharePoint** application permission: `Sites.FullControl.All`
+- [ ] Entra app is registered via `New-PowerAppManagementApp` for Power Platform Licensing API access
+- [ ] Certificate (.pfx with private key) is imported into the facilitator machine certificate store (`Cert:\CurrentUser\My`)
+- [ ] `Microsoft.PowerApps.Administration.PowerShell` module v2.0.150+ is installed (for `Add-PowerAppsAccount -ClientSecret`)
+- [ ] `Identity.ParticipantEmails` is populated in `workshop-config.json`
+- [ ] `Identity.ClientSecret` is set for Power Platform Licensing API token acquisition
+- [ ] Tenant has sufficient Copilot Studio credit capacity for all students (default: 25,000 per student)
+- [ ] `D365_CDSSampleApp` template is enabled for the target region — verify with `pac admin list-app-templates` (enabled for `unitedstates`, may be disabled in other regions)
+- Run: `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1`
+- Post-workshop cleanup: `powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete`
+
 ## Tenant, identity, and licensing
 
 - [ ] Confirm the workshop tenant is active and not under service restriction.

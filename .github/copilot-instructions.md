@@ -28,6 +28,12 @@
   - `cd workshop\automation && npm install && node Generate-WorkshopPDFs.js`
   - Output: `workshop\pdf-output\` (10 numbered PDFs: 4 student, 6 facilitator)
   - Selective generation: `node Generate-WorkshopPDFs.js --only S2,F1`
+- Batch-provision per-student environments (requires Entra app with certificate auth, `Identity.ParticipantEmails` populated):
+  - `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1`
+  - Each student gets: Sandbox environment with Dataverse (`D365_CDSSampleApp`), SharePoint TeamSite, Teams team, 25K Copilot credits, Environment Maker role
+  - Validate-only: `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1 -ValidateOnly`
+- Tear down student environments after the workshop:
+  - `powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete`
 - No package-based build or lint command exists under `workshop`.
 - No automated test runner exists. The closest single-test equivalents are:
   - a targeted dry run with `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1`

@@ -88,6 +88,14 @@ powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode Student
 # 7) Optional: pre-import Operative solution in a separate demo environment only
 powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution
 # Expected result: Operative solution import succeeds in the demo environment only
+
+# 8) Optional: batch-provision per-student environments (requires Entra app with certificate)
+powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
+# Expected result: each student gets a Sandbox environment with Dataverse, SharePoint site, Teams team, and credits
+
+# 9) Optional: tear down student environments after the workshop
+powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete
+# Expected result: all student environments, sites, and teams are permanently removed
 ```
 
 See the [Facilitator Guide](workshop/facilitator-guide/facilitator-guide.md) for the full delivery checklist.
