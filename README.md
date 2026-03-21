@@ -57,10 +57,10 @@ A two-day, hands-on workshop for building, extending, and governing AI agents wi
 
 ## Facilitator Automation
 
-Paste this one-liner into PowerShell on any Windows 11 machine to set up everything from scratch:
+Paste this into PowerShell on any Windows 11 machine to set up everything from scratch:
 
 ```powershell
-irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 | iex
+$f="$env:TEMP\Invoke-WorkshopBootstrap.ps1"; irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 -OutFile $f; & $f
 ```
 
 This downloads and runs the interactive bootstrap wizard, which:

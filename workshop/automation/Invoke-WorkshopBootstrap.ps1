@@ -5,13 +5,15 @@
     Run this once on a vanilla Windows 11 machine. It detects and installs every
     missing dependency, creates and populates the config file interactively,
     downloads assets, validates prerequisites, and reports readiness.
-.EXAMPLE
-    powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
+
+    Two ways to run:
+    1. From a cloned repo:  powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
+    2. From any machine:    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1)))
 #>
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$ConfigPath = (Join-Path -Path $PSScriptRoot -ChildPath 'workshop-config.json'),
+    [string]$ConfigPath,
 
     [Parameter()]
     [string]$RepoUrl = 'https://github.com/judeper/copilot-studio-workshop.git'

@@ -9,10 +9,10 @@ Use this runbook for three readiness passes: first pass 7 to 14 days before deli
 - Yellow means keep the module on the agenda, but pre-stage a facilitator demo and tell the room where hands-on stops.
 - Red means treat the environment as not ready until the blocker is fixed or the module is formally removed from the delivery plan.
 
-**Recommended:** Paste this one-liner into PowerShell on any Windows 11 machine:
+**Recommended:** Paste this into PowerShell on any Windows 11 machine:
 
 ```
-irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 | iex
+$f="$env:TEMP\Invoke-WorkshopBootstrap.ps1"; irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1 -OutFile $f; & $f
 ```
 
 Or if the repo is already cloned: `powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1`
