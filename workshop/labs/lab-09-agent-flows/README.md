@@ -48,6 +48,8 @@ In this lab, you will connect the Adaptive Card from Lab 08 to a Power Automate 
 5. In **List Name**, select `Devices`.
 6. In **Id**, insert the `DeviceSharePointId` trigger input.
 
+> **Tip:** The adaptive card outputs the device ID as a text string. If the flow fails with a type error, select the **Expression** tab in the **Id** field and enter `int(triggerBody()?['DeviceSharePointId'])` to convert the text value to an integer before sending it to SharePoint.
+
 #### Step 5 — Create the request record in SharePoint
 1. Add a new SharePoint **Create item** action.
 2. Rename the step to `Create Device Request`.

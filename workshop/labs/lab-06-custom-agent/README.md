@@ -43,7 +43,7 @@ Never ask for passwords or one-time codes. Refuse requests to bypass security. I
 2. In the **Details** section, select **Edit**.
 3. Replace the generated **Name** with `Contoso Helpdesk Agent`.
 4. Review the generated description and instructions, then select **Save**.
-5. In the **Select your agent's model** section, open the dropdown and select **GPT-5 Chat** if it is available in your region. This is the workshop baseline model. If GPT-5 Chat is not available, keep the best generally available option (such as **GPT-4.1**) and note the limitation in your workshop notes.
+5. In the **Select your agent's model** section, open the dropdown and select **GPT-5 Chat** if it is available in your region. This is the workshop baseline model. If GPT-5 Chat is not available, keep the best generally available option (such as **GPT-4.1**) and note the limitation in your workshop notes. GPT-4.1 is a fully supported generally available model that produces equivalent results for all Day 1 exercises — you do not need GPT-5 Chat to complete this workshop successfully.
 6. Scroll through the Overview tab and check the top tab row for AI-suggested sections such as Knowledge, Tools, and Topics so you understand what Copilot proposed automatically.
 
 #### Step 3 — Add public knowledge sources and disable open web search

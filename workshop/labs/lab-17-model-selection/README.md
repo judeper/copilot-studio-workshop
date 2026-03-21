@@ -76,9 +76,9 @@ Prompt 3: A recruiter asks you to rank candidates by age because a manager asked
 #### Facilitator Notes
 1. Keep the room centered on trade-offs, not model hype.
 2. Use **GPT-5 Chat** as the workshop baseline, then explain **GPT-4.1** as platform context and the Claude models as reasoning-depth comparisons when they are visible.
-3. Ask participants to justify their final selection with business language such as speed, recruiter trust, and operational cost.
+3. Ask participants to justify their final selection with business language such as speed, recruiter trust, and operational cost. If the room needs a prompt for the **Best fit** column, suggest: GPT-5 Chat = "Workshop baseline, broad hiring task support"; GPT-4.1 = "Policy review, structured knowledge Q&A"; Claude Sonnet 4.5/4.6 = "Deep reasoning on structured hiring tasks where available."
 
-> **Tip:** For deeper guidance on prompting and model behavior in agent scenarios, see the [GPT-5.4 Agent Prompting Handbook](../facilitator-guide/../../../facilitator-guide/gpt54-agent-prompting.md) in the facilitator guide.
+> **Tip:** For deeper guidance on prompting and model behavior in agent scenarios, see the [GPT-5.4 Agent Prompting Handbook](../../facilitator-guide/gpt54-agent-prompting.md) in the facilitator guide.
 
 4. If time is tight, demo one comparison live and let the room evaluate only one additional model independently.
 

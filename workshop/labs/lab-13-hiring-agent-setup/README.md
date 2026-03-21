@@ -63,6 +63,9 @@ In this lab, you will stand up the Day 2 Hiring Agent scenario that you will ext
 #### Part 4 — Create the Hiring Agent
 1. Return to **Copilot Studio** and select **Agents**.
 2. Select the dropdown arrow next to **Create blank agent**, and then select **Advanced create**.
+
+> **Tip:** If the dropdown arrow is not visible next to **Create blank agent**, navigate to **Solutions**, open the **Operative** solution, select **+ New** > **Agent**, and create the agent from within the solution. This ensures it is automatically scoped to the Operative solution.
+
 3. In the **Agent settings** dialog, under **Advanced settings**, set **Solution** to **Operative**.
 4. Leave the **Schema name** at its default value (such as `ppa_agent1`). If the **Confirm and create** button is grayed out after changing the schema name, revert to the default — you will rename the agent in the next step.
 5. Select **Confirm and create**.

@@ -14,7 +14,7 @@ In this lab, you will automate the first step of the Hiring Agent pipeline. When
 2. [Maker] Confirm that you can create a SharePoint document library and a Power Automate connection.
 3. [Maker] Confirm that the **Resume** Dataverse table (displayed as **Resumes** in Power Automate table pickers) exists from the imported hiring solution.
 4. [IT Pro] Confirm that your tenant policies allow SharePoint, Dataverse, and Microsoft Teams connections.
-5. [Maker] Download or locate one sample resume PDF for testing. Two fictitious sample resumes are available in `workshop\assets\` (`AVERY EXAMPLE (FICTITIOUS).pdf` and `TAYLOR TESTPERSON (FICTITIOUS).pdf`).
+5. [Maker] Download or locate one sample resume PDF for testing. Two fictitious sample resumes are available in `workshop/assets/` (`AVERY EXAMPLE (FICTITIOUS).pdf` and `TAYLOR TESTPERSON (FICTITIOUS).pdf`).
 
 #### Step-by-Step Instructions
 #### Part 1 — Create the SharePoint drop-off location

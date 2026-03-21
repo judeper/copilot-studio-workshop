@@ -85,7 +85,7 @@ Do not answer questions about protected characteristics, private personal matter
 > Note: If your environment already exposes the hiring tables from the imported solution, use those records so the connected agent answers from live hiring data rather than static examples.
 
 #### Part 5 — Connect the Interview Prep Agent to Hiring Agent
-1. Before connecting, open **Interview Prep Agent** and select **Publish** (or **Save** if publish is unavailable in trial) so it is discoverable by other agents.
+1. Open **Interview Prep Agent** and confirm it has been saved. You do not need to publish to a channel for connected-agent discovery within the same environment — saving is sufficient. If you have made any changes, select **Save** now.
 2. Return to **Hiring Agent**.
 3. Open the **Agents** tab and select **Add**.
 4. In the **Choose how you want to extend your agent** dialog, scroll to **Select an agent in your environment**.

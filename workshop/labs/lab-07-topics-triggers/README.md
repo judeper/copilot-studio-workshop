@@ -47,7 +47,7 @@ In this lab, you will add a structured topic that helps employees discover avail
 1. In the connector output settings, store the response in a variable named `VarDevices`. Select the variable, open its properties, and change the scope from **Topic** to **Global** so later topics can access the results.
 2. Add a **Send a message** node after the connector.
 3. Switch the message to **Formula** mode if your tenant supports it.
-4. Enter a formula such as `"Available devices:" & Char(10) & Concat(Global.VarDevices.value, "- " & ThisRecord.Title & " | " & ThisRecord.Model & Char(10))`. If the formula editor shows errors with `ThisRecord`, try using the unqualified column names `Title` and `Model` instead.
+4. Enter a formula such as `"Available devices:" & Char(10) & Concat(Global.VarDevices.value, "- " & Title & " | " & Model & Char(10))`. If the editor flags an error with unqualified column names, switch to `ThisRecord.Title` and `ThisRecord.Model` instead.
 5. Add an **Ask a question** node after the message.
 6. Use the question `Would you like to request one of these devices now?` and choose a **Yes/No** response type.
 

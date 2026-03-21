@@ -39,6 +39,8 @@ Use the Acknowledge SharePoint ticket tool to generate and send a confirmation e
 Do not wait for user input. Work autonomously.
 ```
 
+> **Note:** `{Body}` in the text above is a static placeholder only. You will replace it with actual SharePoint field expressions in Step 3 when you edit this flow in Power Automate.
+
 10. Select **Create trigger**.
 
 #### Step 3 — Edit the trigger payload in Power Automate
