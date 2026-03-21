@@ -213,10 +213,9 @@ function Connect-WorkshopPnPOnline {
             $connectParameters['Interactive'] = $true
         }
         'DeviceLogin' {
-            # DeviceLogin requires delegated permissions — use PnP's built-in multi-tenant app
-            # which already has the right delegated scopes and redirect URIs configured.
-            # Custom app IDs only work for DeviceLogin if delegated SharePoint permissions are added.
-            $connectParameters['DeviceLogin'] = $true
+            # PnP.PowerShell v3.x has issues with -DeviceLogin in PS 7.
+            # Use -Interactive (browser popup) as the reliable alternative.
+            $connectParameters['Interactive'] = $true
         }
         'CertificateThumbprint' {
             if ([string]::IsNullOrWhiteSpace($CertificateThumbprint)) {
