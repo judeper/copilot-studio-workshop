@@ -57,45 +57,28 @@ A two-day, hands-on workshop for building, extending, and governing AI agents wi
 
 ## Facilitator Automation
 
-Setup scripts live in [`workshop/automation/`](workshop/automation/) and run on the facilitator machine from a local clone of this repository. Open PowerShell in the repository root, then run:
+Run the bootstrap wizard on a fresh Windows 11 machine — it installs all dependencies, walks through configuration, and validates everything:
 
 ```powershell
-# 1) Create local config from the example
-Copy-Item -Path .\workshop\automation\workshop-config.example.json `
-		  -Destination .\workshop\automation\workshop-config.json
-# Expected result: workshop-config.json exists in .\workshop\automation\
+powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
+```
 
-# 2) Edit workshop-config.json and replace placeholder values
-# Required: TenantId, EnvironmentUrl, SharePoint.AdminUrl, SharePoint.SiteUrl, SharePoint.PnPClientId
-# Expected result: required fields contain real tenant values (no placeholder strings)
+The wizard handles: git + pac CLI + Node.js installation (via winget), PowerShell module installation, interactive config setup, pac CLI authentication, Entra app validation, asset downloads, and a full readiness check.
 
-# 3) Install local prerequisites
-powershell -File .\workshop\automation\Install-WorkshopPrerequisites.ps1
-# Expected result: script completes without errors; pac is available and PnP.PowerShell is ready
+After the wizard completes:
 
-# 4) Download Day 2 setup assets into workshop/assets
-powershell -File .\workshop\automation\Get-WorkshopDay2Assets.ps1
-# Expected result: Operative_1_0_0_0.zip, job-roles.csv, and evaluation-criteria.csv exist in .\workshop\assets\
-
-# 5) Validate tools, config values, and local Day 2 assets
-powershell -File .\workshop\automation\Invoke-WorkshopPrereqCheck.ps1
-# Expected result: validation reports all required checks as pass/ready
-
-# 6) Pre-stage shared Day 1 prerequisites
+```powershell
+# Pre-stage shared Day 1 site (Contoso IT site, lists, schema, and sample data)
 powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
-# Expected result: Contoso IT site and shared prerequisites are created without pre-completing later student labs
 
-# 7) Optional: pre-import Operative solution in a separate demo environment only
-powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution
-# Expected result: Operative solution import succeeds in the demo environment only
-
-# 8) Optional: batch-provision per-student environments (requires Entra app with certificate)
+# Optional: batch-provision per-student environments (requires Entra app with certificate)
 powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
-# Expected result: each student gets a Sandbox environment with Dataverse, SharePoint site, Teams team, and credits
 
-# 9) Optional: tear down student environments after the workshop
+# Optional: pre-import Operative solution in a separate demo environment only
+powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution
+
+# Post-workshop: tear down all student environments
 powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete
-# Expected result: all student environments, sites, and teams are permanently removed
 ```
 
 See the [Facilitator Guide](workshop/facilitator-guide/facilitator-guide.md) for the full delivery checklist.

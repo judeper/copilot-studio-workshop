@@ -7,8 +7,10 @@
 
 ## Commands
 
-- Before running facilitator automation, copy `workshop\automation\workshop-config.example.json` to `workshop\automation\workshop-config.json` and replace the tenant, environment, SharePoint, and Day 2 asset placeholders.
-- Install local prerequisites:
+- **First-time setup on a fresh machine** — run the interactive bootstrap wizard that installs all dependencies (git, pac CLI, Node.js via winget), PowerShell modules, creates the config interactively, downloads assets, and validates everything:
+  - `powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1`
+- After the bootstrap wizard completes, the individual scripts can be run separately:
+- Install local prerequisites (if not using the bootstrap wizard):
   - `powershell -File .\workshop\automation\Install-WorkshopPrerequisites.ps1`
 - Download the Day 2 setup assets into `workshop\assets`:
   - `powershell -File .\workshop\automation\Get-WorkshopDay2Assets.ps1`

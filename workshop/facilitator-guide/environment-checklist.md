@@ -9,22 +9,15 @@ Use this runbook for three readiness passes: first pass 7 to 14 days before deli
 - Yellow means keep the module on the agenda, but pre-stage a facilitator demo and tell the room where hands-on stops.
 - Red means treat the environment as not ready until the blocker is fixed or the module is formally removed from the delivery plan.
 
-Canonical facilitator setup sequence (run on the facilitator machine from repository root):
+**Recommended:** Run the interactive bootstrap wizard which handles all setup steps automatically (installs tools, creates config, downloads assets, validates everything):
 
-1. Copy `workshop/automation/workshop-config.example.json` to `workshop/automation/workshop-config.json`.
-  Expected result: `workshop-config.json` exists in `workshop/automation`.
-2. Edit `workshop/automation/workshop-config.json` and replace tenant, SharePoint, environment, and `SharePoint.PnPClientId` placeholders.
-  Expected result: required fields contain real tenant values, not placeholder text.
-3. Run `workshop/automation/Install-WorkshopPrerequisites.ps1` once.
-  Expected result: script completes without errors; `pac` is available and `PnP.PowerShell` is ready.
-4. Run `workshop/automation/Get-WorkshopDay2Assets.ps1` to localize Day 2 files into `workshop\assets` before validation.
-  Expected result: `Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv` exist in `workshop\assets`.
-5. Run `workshop/automation/Invoke-WorkshopPrereqCheck.ps1`.
-  Expected result: validation reports all required checks as pass/ready.
-6. Run `workshop/automation/Invoke-WorkshopLabSetup.ps1 -Mode StudentReady`.
-  Expected result: shared prerequisites are created and later student-owned labs remain uncompleted.
-7. Optional: run `workshop/automation/Import-WorkshopOperativeAssets.ps1 -ImportSolution` only in a separate facilitator demo environment.
-  Expected result: Operative solution import succeeds only in the demo environment.
+```
+powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
+```
+
+After the wizard, run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to pre-stage the shared Day 1 site.
+
+Manual setup steps (if not using the bootstrap wizard): copy `workshop-config.example.json` to `workshop-config.json`, edit placeholders, run `Install-WorkshopPrerequisites.ps1`, run `Get-WorkshopDay2Assets.ps1`, run `Invoke-WorkshopPrereqCheck.ps1`, then run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady`.
 
 - If the dry run still needs a fresh facilitator environment, populate the optional `EnvironmentBootstrap` block in `../automation/workshop-config.json` and run `../automation/Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment` directly, or `../automation/Invoke-WorkshopLabSetup.ps1 -CreateEnvironment -Mode StudentReady` if you want the rest of the provisioning flow to continue. This wraps the officially documented `pac admin create` flow, still requires an already-authenticated admin-capable `pac` profile plus available capacity/licensing, and updates `EnvironmentUrl` when the created URL can be resolved.
 - `SharePoint.PnPLoginMode` defaults to `DeviceLogin` for terminal-friendly sign-in.

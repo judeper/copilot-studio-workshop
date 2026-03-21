@@ -27,52 +27,41 @@ Recommended baseline:
 
 > **Note:** If several attendees skip Day 1, open Day 2 with a stricter prerequisite check and be ready to pair them with stronger table groups.
 
-## Dry-run automation helpers
+## Automated setup
 
-Use the PowerShell toolkit in [`../automation/`](../automation/) when you want a repeatable facilitator setup without consuming student-owned lab work.
+Use the bootstrap wizard in [`../automation/`](../automation/) to set up the facilitator machine from scratch. It works on a vanilla Windows 11 machine — it detects and installs every missing dependency, walks through configuration interactively, downloads assets, and validates everything.
 
-Zero-assumption setup sequence (facilitator machine):
-
-1. Open PowerShell on the facilitator machine and change directory to the local repository root.
-2. Create the config file locally by copying `workshop/automation/workshop-config.example.json` to `workshop/automation/workshop-config.json`.
-3. Edit `workshop/automation/workshop-config.json` and replace placeholders for tenant, SharePoint, environment, and `SharePoint.PnPClientId`. Keep the default Day 2 asset paths if you localize Lab 13 files into `workshop\assets`.
-4. Run `Install-WorkshopPrerequisites.ps1` once to install `PnP.PowerShell` and confirm `pac` is available.
-5. Run `Get-WorkshopDay2Assets.ps1` to localize `Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv` from the public Microsoft [`agent-academy` Operative Mission 01 source](https://github.com/microsoft/agent-academy/tree/main/docs/operative/01-get-started) into `workshop\assets`.
-6. Run `Invoke-WorkshopPrereqCheck.ps1` to validate local tools, populated config values, and localized Day 2 asset paths.
-7. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to pre-stage Lab 00 shared prerequisites while preserving later student-owned exercises.
-8. Optional: run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` only in a separate facilitator demo environment when you intentionally want the Lab 13 solution package pre-staged.
-9. Optional: batch-provision per-student environments by populating `Identity.ParticipantEmails` in the config and running `Invoke-StudentEnvironmentProvisioning.ps1`. Each student gets a Sandbox environment with Dataverse, SharePoint TeamSite, Teams team, Copilot Studio credits, and Environment Maker role. See the [Environment Checklist](environment-checklist.md#optional-batch-student-environment-provisioning) for Entra app permission prerequisites.
-10. Post-workshop: tear down student environments with `Remove-StudentEnvironments.ps1 -HardDelete` to permanently free all names, aliases, and resources for reuse.
-
-Canonical commands from repository root:
+**Run once, before anything else:**
 
 ```powershell
-Copy-Item -Path .\workshop\automation\workshop-config.example.json `
-		  -Destination .\workshop\automation\workshop-config.json
-# Expected result: workshop-config.json exists in .\workshop\automation\
+powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
+```
 
-powershell -File .\workshop\automation\Install-WorkshopPrerequisites.ps1
-# Expected result: script completes without errors; pac is available and PnP.PowerShell is ready
+The wizard handles these steps automatically:
 
-powershell -File .\workshop\automation\Get-WorkshopDay2Assets.ps1
-# Expected result: Operative_1_0_0_0.zip, job-roles.csv, and evaluation-criteria.csv exist in .\workshop\assets\
+1. **CLI tools** — Installs git, Power Platform CLI (pac), and Node.js via winget if missing.
+2. **PowerShell modules** — Installs PnP.PowerShell, Microsoft.Graph, and PowerApps Admin modules.
+3. **Config file** — Creates `workshop-config.json` from the example template and walks through each required value interactively (tenant name, SharePoint URLs, Entra app client ID, auth mode).
+4. **pac CLI auth** — Checks for an active Power Platform CLI profile and launches interactive sign-in if needed.
+5. **Entra app validation** — Tests PnP connectivity (if using certificate auth), shows the required permission checklist, and offers to import `.pfx` certificates.
+6. **Day 2 assets** — Downloads all workshop assets from the public GitHub repository.
+7. **Prerequisites check** — Runs the full validation suite and reports pass/fail for every component.
+8. **Readiness dashboard** — Shows green/yellow status for each component and the exact next-step commands to run.
 
-powershell -File .\workshop\automation\Invoke-WorkshopPrereqCheck.ps1
-# Expected result: validation reports all required checks as pass/ready
+After the wizard completes:
 
+```powershell
+# Pre-stage shared Day 1 site (creates Contoso IT site, lists, schema, and sample data)
 powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
-# Expected result: Contoso IT site and shared prerequisites are created without pre-completing later student labs
 
-# Optional: batch-provision per-student environments (requires Entra app with certificate — see environment checklist)
-powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1 -ValidateOnly
-# Expected result: config validation passes; no changes made
-
+# Optional: batch-provision per-student environments (requires Entra app with certificate)
 powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
-# Expected result: each student gets a Sandbox env with Dataverse, SharePoint site, Teams team, and credits
+
+# Optional: pre-import Operative solution in a separate demo environment only
+powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution
 
 # Post-workshop: tear down all student environments
 powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete
-# Expected result: all student environments, sites, teams, and groups permanently removed
 ```
 
 Decision point:
