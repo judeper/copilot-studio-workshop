@@ -355,35 +355,11 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
                 $studentRecord.SharePointUrl = $expectedSiteUrl
                 Write-Log -Level PASS -Message "SharePoint site ready: $expectedSiteUrl" -Component 'SP'
 
-                # Connect to the new site and create lists
+                # Connect to the new site and initialize full schema + sample data
                 Connect-PnPOnline -Url $expectedSiteUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
 
-                # Reuse the existing list/schema creation patterns from Initialize-WorkshopSharePoint.ps1
-                . (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-WorkshopSharePoint.ps1') -ConfigPath $ConfigPath -ValidateOnly -ErrorAction SilentlyContinue 2>$null
-                # The above won't work as a dot-source with params — instead create lists inline
-                $devicesList = Get-PnPList -Identity 'Devices' -ErrorAction SilentlyContinue
-                if ($null -eq $devicesList) {
-                    New-PnPList -Title 'Devices' -Template GenericList -OnQuickLaunch | Out-Null
-                    Write-Log -Level PASS -Message "Created Devices list." -Component 'SP'
-                }
-
-                $ticketsList = Get-PnPList -Identity 'Tickets' -ErrorAction SilentlyContinue
-                if ($null -eq $ticketsList) {
-                    New-PnPList -Title 'Tickets' -Template GenericList -OnQuickLaunch | Out-Null
-                    Write-Log -Level PASS -Message "Created Tickets list." -Component 'SP'
-                }
-
-                $deviceRequestsList = Get-PnPList -Identity 'Device Requests' -ErrorAction SilentlyContinue
-                if ($null -eq $deviceRequestsList) {
-                    New-PnPList -Title 'Device Requests' -Template GenericList -OnQuickLaunch | Out-Null
-                    Write-Log -Level PASS -Message "Created Device Requests list." -Component 'SP'
-                }
-
-                $resumesLib = Get-PnPList -Identity 'Incoming Resumes' -ErrorAction SilentlyContinue
-                if ($null -eq $resumesLib) {
-                    New-PnPList -Title 'Incoming Resumes' -Template DocumentLibrary -OnQuickLaunch | Out-Null
-                    Write-Log -Level PASS -Message "Created Incoming Resumes library." -Component 'SP'
-                }
+                . (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-WorkshopSiteContent.ps1')
+                Initialize-WorkshopSiteContent -Config $config -CreateDeviceRequestsList $true -CreateIncomingResumesLibrary $true
 
                 Disconnect-PnPOnline -ErrorAction SilentlyContinue
                 Start-Sleep -Seconds 5

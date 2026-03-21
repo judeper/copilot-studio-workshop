@@ -488,3 +488,85 @@ function Read-StudentEnvironmentMap {
 
     return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json -Depth 10
 }
+
+function Ensure-SecurityGroup {
+    <#
+    .SYNOPSIS
+        Ensures a Microsoft Entra security group exists and contains the specified members.
+    .DESCRIPTION
+        Requires an active Connect-MgGraph session with Group.ReadWrite.All permission.
+        Creates the group if it does not exist, then adds any missing members.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$DisplayName,
+
+        [Parameter()]
+        [string]$Description = '',
+
+        [Parameter()]
+        [string[]]$MemberEmails = @()
+    )
+
+    $existingGroup = Invoke-MgGraphRequest -Method GET `
+        -Uri "https://graph.microsoft.com/v1.0/groups?`$filter=displayName eq '$DisplayName' and securityEnabled eq true&`$select=id,displayName" `
+        -ErrorAction Stop
+
+    $group = $existingGroup.value | Select-Object -First 1
+
+    if ($null -eq $group) {
+        Write-Log -Level INFO -Message "Creating security group '$DisplayName'..." -Component 'GROUP'
+        $groupBody = @{
+            displayName     = $DisplayName
+            description     = $Description
+            mailEnabled     = $false
+            mailNickname    = ($DisplayName -replace '[^a-zA-Z0-9]', '')
+            securityEnabled = $true
+        } | ConvertTo-Json -Depth 5
+
+        $group = Invoke-MgGraphRequest -Method POST `
+            -Uri 'https://graph.microsoft.com/v1.0/groups' `
+            -Body $groupBody `
+            -ContentType 'application/json'
+        Write-Log -Level PASS -Message "Security group '$DisplayName' created (id=$($group.id))." -Component 'GROUP'
+    } else {
+        Write-Log -Level PASS -Message "Security group '$DisplayName' already exists (id=$($group.id))." -Component 'GROUP'
+    }
+
+    if ($MemberEmails.Count -eq 0) {
+        return $group
+    }
+
+    # Get current members
+    $currentMembers = Invoke-MgGraphRequest -Method GET `
+        -Uri "https://graph.microsoft.com/v1.0/groups/$($group.id)/members?`$select=id,userPrincipalName" `
+        -ErrorAction SilentlyContinue
+    $currentUpns = @()
+    if ($currentMembers.value) {
+        $currentUpns = @($currentMembers.value | ForEach-Object { $_.userPrincipalName })
+    }
+
+    foreach ($email in $MemberEmails) {
+        if ($email -in $currentUpns) {
+            Write-Log -Level PASS -Message "$email is already a member of '$DisplayName'." -Component 'GROUP'
+            continue
+        }
+        try {
+            $user = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/users/$email" -ErrorAction Stop
+            $memberBody = @{
+                '@odata.id' = "https://graph.microsoft.com/v1.0/directoryObjects/$($user.id)"
+            } | ConvertTo-Json
+
+            Invoke-MgGraphRequest -Method POST `
+                -Uri "https://graph.microsoft.com/v1.0/groups/$($group.id)/members/`$ref" `
+                -Body $memberBody `
+                -ContentType 'application/json'
+            Write-Log -Level PASS -Message "Added $email to '$DisplayName'." -Component 'GROUP'
+        }
+        catch {
+            Write-Log -Level WARN -Message "Failed to add $email to '$DisplayName': $_" -Component 'GROUP'
+        }
+    }
+
+    return $group
+}
