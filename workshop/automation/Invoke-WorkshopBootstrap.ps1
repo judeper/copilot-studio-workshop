@@ -274,13 +274,16 @@ if ($detectedTenantId) {
 }
 $config.TenantId = $tenantId
 
-# Derive SharePoint URLs
+# Derive SharePoint URLs from tenant name
 $adminUrl = "https://$tenantName-admin.sharepoint.com"
 $siteUrl = "https://$tenantName.sharepoint.com/sites/ContosoIT"
 
-Write-Host "`n--- SharePoint Configuration ---" -ForegroundColor Cyan
-$config.SharePoint.AdminUrl = Prompt-Value -Prompt 'SharePoint Admin URL' -Default $adminUrl -Required
-$config.SharePoint.SiteUrl = Prompt-Value -Prompt 'SharePoint Site URL' -Default $siteUrl -Required
+Write-Host "`n--- SharePoint Configuration (auto-derived from tenant name) ---" -ForegroundColor Cyan
+Write-Host "  Admin URL:  $adminUrl" -ForegroundColor White
+Write-Host "  Site URL:   $siteUrl  (Contoso IT workshop site)" -ForegroundColor White
+$config.SharePoint.AdminUrl = $adminUrl
+$config.SharePoint.SiteUrl = $siteUrl
+
 $config.SharePoint.PnPClientId = Prompt-Value -Prompt 'Entra App Client ID (for PnP auth)' -Default ([string]$config.SharePoint.PnPClientId) -Required
 
 # Auth mode
