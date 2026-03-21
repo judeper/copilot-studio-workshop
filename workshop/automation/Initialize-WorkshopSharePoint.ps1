@@ -352,7 +352,11 @@ if ($null -eq $existingSite) {
     }
 
     Write-StepResult -Level INFO -Message "Creating SharePoint site '$siteTitle' because it does not exist yet."
-    New-PnPSite -Type TeamSite -Title $siteTitle -Alias $siteAlias -Description $siteDescription | Out-Null
+    # Use TeamSiteWithoutMicrosoft365Group — no M365 Group needed, works from admin URL
+    New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
+        -Title $siteTitle `
+        -Url $siteUrl `
+        -Description $siteDescription | Out-Null
     Wait-ForSiteProvisioning -SiteUrl $siteUrl
 }
 else {

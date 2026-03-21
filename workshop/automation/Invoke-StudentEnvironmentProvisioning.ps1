@@ -336,12 +336,12 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
                 $existingSite = Get-PnPTenantSite -Identity $expectedSiteUrl -ErrorAction SilentlyContinue
                 if ($null -eq $existingSite) {
                     $facilitatorUpn = if (-not [string]::IsNullOrWhiteSpace([string]$bootstrapConfig.AdminUser)) { [string]$bootstrapConfig.AdminUser } else { $studentEmail }
-                    New-PnPSite -Type TeamSite `
+                    # Use TeamSiteWithoutMicrosoft365Group — no M365 Group needed, works from admin URL
+                    New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
                         -Title "Contoso IT - $studentAlias" `
-                        -Alias $groupAlias `
-                        -SiteAlias $siteAlias `
+                        -Url $expectedSiteUrl `
                         -Description "Workshop site for $studentAlias" `
-                        -Owners $facilitatorUpn | Out-Null
+                        -Owner $facilitatorUpn | Out-Null
 
                     # Poll for site readiness
                     for ($spAttempt = 1; $spAttempt -le 30; $spAttempt++) {
