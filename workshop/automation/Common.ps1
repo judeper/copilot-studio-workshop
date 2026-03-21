@@ -261,7 +261,7 @@ function Get-StudentAlias {
     return $alias.Trim().ToLowerInvariant()
 }
 
-function Get-SafeSharePointAlias {
+function Get-SafeGroupAlias {
     param(
         [Parameter(Mandatory = $true)]
         [string]$Prefix,
@@ -271,7 +271,26 @@ function Get-SafeSharePointAlias {
     )
 
     $raw = "$Prefix$StudentAlias"
-    $safe = $raw -replace '[^a-zA-Z0-9_.]', ''
+    $safe = $raw -replace '[^a-zA-Z0-9_]', ''
+    if ($safe.Length -gt 64) {
+        $safe = $safe.Substring(0, 64)
+    }
+
+    return $safe
+}
+
+function Get-SafeSiteAlias {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Prefix,
+
+        [Parameter(Mandatory = $true)]
+        [string]$StudentAlias
+    )
+
+    $raw = "$Prefix-$StudentAlias"
+    $safe = $raw -replace '[^a-zA-Z0-9_-]', ''
+    $safe = $safe.Trim('-')
     if ($safe.Length -gt 64) {
         $safe = $safe.Substring(0, 64)
     }
@@ -291,7 +310,12 @@ function Get-SafeDomainName {
     $raw = "$Prefix-$StudentAlias"
     $safe = $raw -replace '[^a-zA-Z0-9\-]', ''
     $safe = $safe.Trim('-')
-    return $safe.ToLowerInvariant()
+    $safe = $safe.ToLowerInvariant()
+    if ($safe.Length -gt 24) {
+        $safe = $safe.Substring(0, 24)
+    }
+    $safe = $safe.TrimEnd('-')
+    return $safe
 }
 
 function Get-PacEnvironmentListJson {

@@ -301,7 +301,12 @@ $createArguments = @(
     '--domain', $domainName,
     '--region', $region,
     '--currency', $currency,
-    '--language', $language
+    '--language', $language,
+    # D365_CDSSampleApp triggers Dataverse provisioning as a side effect.
+    # Without a template, Sandbox environments are created without Dataverse,
+    # which blocks Copilot Studio. This template is enabled for unitedstates
+    # but may be disabled in other regions — verify with pac admin list-app-templates.
+    '--templates', 'D365_CDSSampleApp'
 )
 
 if (-not [string]::IsNullOrWhiteSpace($adminUser) -and -not (Test-PlaceholderValue -Value $adminUser)) {
