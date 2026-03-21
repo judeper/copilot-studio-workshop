@@ -336,12 +336,31 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
                 $existingSite = Get-PnPTenantSite -Identity $expectedSiteUrl -ErrorAction SilentlyContinue
                 if ($null -eq $existingSite) {
                     $facilitatorUpn = if (-not [string]::IsNullOrWhiteSpace([string]$bootstrapConfig.AdminUser)) { [string]$bootstrapConfig.AdminUser } else { $studentEmail }
-                    # Use TeamSiteWithoutMicrosoft365Group — no M365 Group needed, works from admin URL
-                    New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
-                        -Title "Contoso IT - $studentAlias" `
-                        -Url $expectedSiteUrl `
-                        -Description "Workshop site for $studentAlias" `
-                        -Owner $facilitatorUpn | Out-Null
+
+                    try {
+                        # Connect to root tenant URL — New-PnPSite calls SPSiteManager/create on the root site
+                        $rootTenantUrl = "https://$tenantDomain.sharepoint.com"
+                        Connect-PnPOnline -Url $rootTenantUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
+                        New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
+                            -Title "Contoso IT - $studentAlias" `
+                            -Url $expectedSiteUrl `
+                            -Description "Workshop site for $studentAlias" | Out-Null
+                    }
+                    catch {
+                        Write-Log -Level WARN -Message "New-PnPSite failed: $($_.Exception.Message). Trying New-PnPTenantSite..." -Component 'SP'
+                        # Fallback: classic admin cmdlet from admin URL
+                        Connect-PnPOnline -Url $adminUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
+                        New-PnPTenantSite `
+                            -Title "Contoso IT - $studentAlias" `
+                            -Url $expectedSiteUrl `
+                            -Template 'STS#3' `
+                            -Owner $facilitatorUpn `
+                            -TimeZone 13 `
+                            -Wait
+                    }
+
+                    # Reconnect to admin URL for tenant-level polling
+                    Connect-PnPOnline -Url $adminUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
 
                     # Poll for site readiness
                     for ($spAttempt = 1; $spAttempt -le 30; $spAttempt++) {

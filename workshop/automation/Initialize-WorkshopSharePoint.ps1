@@ -345,6 +345,14 @@ else {
 Write-Section "Connecting to SharePoint admin center"
 Connect-WorkshopPnPOnline -Url $adminUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -Label 'SharePoint admin center'
 
+# Ensure custom app authentication is not disabled (blocks site creation in newer tenants)
+try {
+    Set-PnPTenant -DisableCustomAppAuthentication $false -ErrorAction SilentlyContinue
+}
+catch {
+    Write-StepResult -Level WARN -Message "Could not verify DisableCustomAppAuthentication setting: $($_.Exception.Message)"
+}
+
 $existingSite = Get-PnPTenantSite -Identity $siteUrl -ErrorAction SilentlyContinue
 if ($null -eq $existingSite) {
     if ($ValidateOnly) {
@@ -352,11 +360,32 @@ if ($null -eq $existingSite) {
     }
 
     Write-StepResult -Level INFO -Message "Creating SharePoint site '$siteTitle' because it does not exist yet."
-    # Use TeamSiteWithoutMicrosoft365Group — no M365 Group needed, works from admin URL
-    New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
-        -Title $siteTitle `
-        -Url $siteUrl `
-        -Description $siteDescription | Out-Null
+
+    # Derive root tenant URL from admin URL (New-PnPSite needs root, not admin)
+    $rootTenantUrl = $adminUrl -replace '-admin\.sharepoint\.com', '.sharepoint.com'
+
+    try {
+        # Connect to root tenant URL — New-PnPSite calls SPSiteManager/create which lives on the root site
+        Connect-WorkshopPnPOnline -Url $rootTenantUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -Label 'tenant root (for site creation)'
+        New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
+            -Title $siteTitle `
+            -Url $siteUrl `
+            -Description $siteDescription | Out-Null
+    }
+    catch {
+        Write-StepResult -Level WARN -Message "New-PnPSite failed: $($_.Exception.Message). Trying New-PnPTenantSite..."
+
+        # Fallback: use the classic admin cmdlet from admin URL
+        Connect-WorkshopPnPOnline -Url $adminUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -Label 'SharePoint admin center (fallback)'
+        New-PnPTenantSite `
+            -Title $siteTitle `
+            -Url $siteUrl `
+            -Template 'STS#3' `
+            -Owner (Get-PnPProperty -ClientObject (Get-PnPWeb) -Property CurrentUser).Email `
+            -TimeZone 13 `
+            -Wait
+    }
+
     Wait-ForSiteProvisioning -SiteUrl $siteUrl
 }
 else {
