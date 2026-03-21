@@ -69,7 +69,7 @@ Resume: /ResumeFile
 7. Select the columns **Requisition Number**, **Job Title**, **Department**, **Location**, **Must Have Skills**, **Nice to Have Skills**, and **Status**.
 8. Set the filter to **Status = Open**.
 9. Open the prompt **Settings** menu and raise **Record retrieval** high enough to cover your open requisitions.
-10. Change the **Model** from **GPT-4.1 mini** (the default) to **GPT-5 Chat** if your environment includes it, because this prompt accepts document and image input.
+10. Change the **Model** from **GPT-4.1 mini** (the default) to **GPT-5 Chat** if your environment includes it, because this prompt accepts document and image input. If GPT-5 Chat is not available, select **GPT-4.1**, which is generally available and also supports document and image analysis.
 11. Set the **Output** type to **JSON** and save the prompt.
 
 #### Part 3 — Test grounded matching

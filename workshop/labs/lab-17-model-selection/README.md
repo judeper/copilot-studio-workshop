@@ -42,7 +42,7 @@ Prompt 3: A recruiter asks you to rank candidates by age because a manager asked
 4. If **Claude Sonnet 4.6** is available, repeat the same process.
 5. After each run, capture your observations in the scorecard below.
 
-> **Tip:** You may also see **GPT-5 Auto** (Preview), **GPT-5 Reasoning** (Preview), **RL FineTuned O4 mini** (Experimental), and **Claude Opus 4.5** (Experimental) in the picker. These are not covered in this workshop but you can test them for comparison if time allows. Record them in the empty rows at the bottom of the scorecard.
+> **Tip:** You may also see **GPT-5 Reasoning** (Preview), **GPT-5 Auto** (Preview), and experimental models such as **GPT-5.3 Chat**, **GPT-5.4 Reasoning**, or **Grok 4.1 Fast** (US Early Access only) in the picker. These are not covered in this workshop but you can test them for comparison if time allows. Record them in the empty rows at the bottom of the scorecard.
 
 > **Tip:** For the **Best fit in this workshop** column, consider which tasks each model handles best. For example: broad hiring task support, structured knowledge Q&A, or deep reasoning on complex hiring scenarios. Use your observations from the three test prompts to justify your choice.
 
@@ -80,7 +80,7 @@ Prompt 3: A recruiter asks you to rank candidates by age because a manager asked
 2. Use **GPT-5 Chat** as the workshop baseline, then explain **GPT-4.1** as platform context and the Claude models as reasoning-depth comparisons when they are visible.
 3. Ask participants to justify their final selection with business language such as speed, recruiter trust, and operational cost. If the room needs a prompt for the **Best fit** column, suggest: GPT-5 Chat = "Workshop baseline, broad hiring task support"; GPT-4.1 = "Policy review, structured knowledge Q&A"; Claude Sonnet 4.5/4.6 = "Deep reasoning on structured hiring tasks where available."
 
-> **Tip:** For deeper guidance on prompting and model behavior in agent scenarios, see the [GPT-5.4 Agent Prompting Handbook](../../facilitator-guide/gpt54-agent-prompting.md) in the facilitator guide.
+> **Tip:** Your facilitator can provide supplemental guidance on model prompting and agent behavior patterns if needed.
 
 4. If time is tight, demo one comparison live and let the room evaluate only one additional model independently.
 

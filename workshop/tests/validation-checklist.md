@@ -396,15 +396,15 @@ Escalate if the environment hides all model-selection controls needed to set a D
 - Facilitator is using the March 2026 safety path with GA controls only.
 
 ### Success Criteria
-1. The Conversation Start topic includes the AI disclosure, agent moderation is set to High, and the `Candidate Screening Notes` prompt has the configured sensitivity levels.
+1. The Conversation Start topic includes the AI disclosure, agent moderation is set to High, and the `Candidate Screening Notes` prompt has the content moderation slider set to High.
 2. Red-team prompts 1 through 9 are refused, redirected, or safely constrained.
 3. The clean in-scope control prompt returns a normal hiring-related answer and the participant notes which protection layer fired for each case.
 
 ### Common Failure Modes
 | Symptom | Root Cause | Resolution |
 | --- | --- | --- |
-| Unsafe prompts still get full answers. | Agent moderation, prompt sensitivity, or guardrail instructions are too weak. | Raise the relevant safety control, save, and retest in a new session. |
-| Safe prompts are blocked too aggressively. | Prompt-specific moderation is overfiring. | Keep the agent baseline strong and tune only the specific prompt sensitivity that is too strict. |
+| Unsafe prompts still get full answers. | Agent moderation, prompt content moderation, or guardrail instructions are too weak. | Raise the relevant safety control, save, and retest in a new session. |
+| Safe prompts are blocked too aggressively. | Prompt-specific content moderation level is overfiring. | Keep the agent baseline strong and lower only the specific prompt content moderation level that is too strict. |
 | Published behavior differs from the test pane. | The On Error topic or published version is out of sync. | Review the On Error message, republish, and test again in a fresh channel session. |
 
 ### Facilitator Escalation Trigger
