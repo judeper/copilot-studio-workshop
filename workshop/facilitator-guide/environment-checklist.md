@@ -1,6 +1,6 @@
 # Pre-Event Environment Checklist
 
-Use this runbook for the full readiness pass one to two weeks before delivery, again the day before, and once more on the morning of Day 1. Use the [Environment Smoke Tests](../tests/environment-smoke-tests.md) for the opening-room fast path; use this checklist when you need the complete pre-event go/no-go review.
+Use this runbook for three readiness passes: first pass 7 to 14 days before delivery, second pass 1 to 2 days before delivery, and a final pass on the morning of Day 1. Use the [Environment Smoke Tests](../tests/environment-smoke-tests.md) for the opening-room fast path; use this checklist when you need the complete pre-event go/no-go review.
 
 ## How to use this checklist
 
@@ -8,12 +8,26 @@ Use this runbook for the full readiness pass one to two weeks before delivery, a
 - Green means continue hands-on as planned.
 - Yellow means keep the module on the agenda, but pre-stage a facilitator demo and tell the room where hands-on stops.
 - Red means treat the environment as not ready until the blocker is fixed or the module is formally removed from the delivery plan.
-- Optional automation path: copy `../automation/workshop-config.example.json` to `../automation/workshop-config.json`, replace the tenant, SharePoint, environment, and `SharePoint.PnPClientId` placeholders, keep the default Day 2 asset paths if you will localize into `workshop\assets`, and run `../automation/Install-WorkshopPrerequisites.ps1` once. `SharePoint.PnPLoginMode` defaults to `DeviceLogin` for terminal-friendly sign-in.
-- Use the Day 2 asset download helper to localize `Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv` from the public Microsoft [`agent-academy` Operative Mission 01 source](https://github.com/microsoft/agent-academy/tree/main/docs/operative/01-get-started) into `workshop\assets` before validation; this only prepares local files and does not import them into the environment.
+
+Canonical facilitator setup sequence (run on the facilitator machine from repository root):
+
+1. Copy `workshop/automation/workshop-config.example.json` to `workshop/automation/workshop-config.json`.
+  Expected result: `workshop-config.json` exists in `workshop/automation`.
+2. Edit `workshop/automation/workshop-config.json` and replace tenant, SharePoint, environment, and `SharePoint.PnPClientId` placeholders.
+  Expected result: required fields contain real tenant values, not placeholder text.
+3. Run `workshop/automation/Install-WorkshopPrerequisites.ps1` once.
+  Expected result: script completes without errors; `pac` is available and `PnP.PowerShell` is ready.
+4. Run `workshop/automation/Get-WorkshopDay2Assets.ps1` to localize Day 2 files into `workshop\assets` before validation.
+  Expected result: `Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv` exist in `workshop\assets`.
+5. Run `workshop/automation/Invoke-WorkshopPrereqCheck.ps1`.
+  Expected result: validation reports all required checks as pass/ready.
+6. Run `workshop/automation/Invoke-WorkshopLabSetup.ps1 -Mode StudentReady`.
+  Expected result: shared prerequisites are created and later student-owned labs remain uncompleted.
+7. Optional: run `workshop/automation/Import-WorkshopOperativeAssets.ps1 -ImportSolution` only in a separate facilitator demo environment.
+  Expected result: Operative solution import succeeds only in the demo environment.
+
 - If the dry run still needs a fresh facilitator environment, populate the optional `EnvironmentBootstrap` block in `../automation/workshop-config.json` and run `../automation/Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment` directly, or `../automation/Invoke-WorkshopLabSetup.ps1 -CreateEnvironment -Mode StudentReady` if you want the rest of the provisioning flow to continue. This wraps the officially documented `pac admin create` flow, still requires an already-authenticated admin-capable `pac` profile plus available capacity/licensing, and updates `EnvironmentUrl` when the created URL can be resolved.
-- Run `../automation/Invoke-WorkshopPrereqCheck.ps1` to validate local tools, populated config values, and localized asset paths before setup; it does not download the files, confirm live SharePoint access, or execute tenant settings.
-- Run `../automation/Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to pre-stage Lab 00 shared prerequisites and any optional SharePoint artifacts from config without pre-completing later student-owned work such as Labs 09, 13, and 16 or the broader agent, MCP, Teams, and evaluation exercises.
-- Use `../automation/Import-WorkshopOperativeAssets.ps1 -ImportSolution` only in a separate facilitator demo environment after confirming the intended `pac` auth profile is active; it imports only the solution ZIP and leaves the CSV import plus later Day 2 setup to the walkthrough.
+- `SharePoint.PnPLoginMode` defaults to `DeviceLogin` for terminal-friendly sign-in.
 
 ## Tenant, identity, and licensing
 

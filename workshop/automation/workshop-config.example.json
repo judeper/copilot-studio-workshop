@@ -7,27 +7,38 @@
     "Region": "unitedstates",
     "DomainName": "contoso-copilot-workshop",
     "Currency": "USD",
-    "Language": "English",
     "AdminUser": "",
-    "SecurityGroupId": ""
+    "SecurityGroupId": "",
+    "CopilotStudioCreditsPerEnvironment": 25000,
+    "BatchSize": 5,
+    "PreProvisionDayBefore": true
   },
   "SharePoint": {
     "AdminUrl": "https://<replace-with-tenant>-admin.sharepoint.com",
     "SiteUrl": "https://<replace-with-tenant>.sharepoint.com/sites/ContosoIT",
     "SiteTitle": "Contoso IT",
     "SiteAlias": "ContosoIT",
+    "SitePrefix": "ContosoIT",
     "SiteDescription": "Copilot Studio workshop data source",
     "PnPClientId": "<replace-with-entra-app-client-id>",
     "PnPLoginMode": "DeviceLogin",
     "PnPCertificateThumbprint": ""
   },
+  "Teams": {
+    "WorkshopTeamName": "Copilot Studio Workshop",
+    "StudentTeamPrefix": "Contoso Recruiting"
+  },
   "Identity": {
     "AgentCreatorsGroupName": "AgentCreators",
     "ParticipantEmails": []
   },
+  "Workshop": {
+    "Wave": "",
+    "Concurrency": 5
+  },
   "Day1": {
-    "CreateDeviceRequestsList": false,
-    "CreateIncomingResumesLibrary": false,
+    "CreateDeviceRequestsList": true,
+    "CreateIncomingResumesLibrary": true,
     "SampleDevices": [
       {
         "Title": "Surface Laptop 13",

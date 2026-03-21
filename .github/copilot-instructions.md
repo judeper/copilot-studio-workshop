@@ -34,6 +34,28 @@
   - one check from `workshop\tests\environment-smoke-tests.md`
   - the `Validation` section in the specific lab README you changed
 
+## Automation architecture
+
+### Common.ps1 shared utilities
+- `Common.ps1` is dot-sourced by all automation scripts and provides: config I/O (`Get-WorkshopConfig`, `Save-WorkshopConfig`), validation helpers (`Get-RequiredString`, `Test-PlaceholderValue`), module/command guards (`Require-Module`, `Require-Command`), console output (`Write-Section`, `Write-StepResult`), logging (`Initialize-WorkshopLog`, `Write-Log`), native-process wrappers (`Invoke-NativeCommand`), and student-provisioning building blocks (`Get-StudentAlias`, `Get-SafeSharePointAlias`, `Get-SafeDomainName`, `Get-PacEnvironmentListJson`, `Resolve-EnvironmentGuid`, `Get-PowerPlatformAccessToken`, `Set-EnvironmentCopilotCredits`, `Confirm-EnvironmentCopilotCredits`, `Invoke-WithRetry`, `Save-StudentEnvironmentMap`, `Read-StudentEnvironmentMap`).
+- When adding new shared functions, follow the existing patterns in `Common.ps1`: mandatory parameter attributes, `[CmdletBinding()]` on scripts, `$ErrorActionPreference = 'Stop'`, and `Set-StrictMode -Version Latest` at the top of each script.
+
+### Config schema (workshop-config.example.json)
+- Top-level keys: `TenantId`, `EnvironmentUrl`, `EnvironmentBootstrap`, `SharePoint`, `Teams`, `Identity`, `Workshop`, `Day1`, `Day2`.
+- `EnvironmentBootstrap` contains: `DisplayName`, `Type`, `DomainName`, `Region`, `Currency`, `AdminUser`, `SecurityGroupId`, `CopilotStudioCreditsPerEnvironment`, `BatchSize`, `PreProvisionDayBefore`.
+- `SharePoint` contains: `AdminUrl`, `SiteUrl`, `SiteTitle`, `SiteAlias`, `SitePrefix`, `SiteDescription`, `PnPClientId`, `PnPLoginMode`, `PnPCertificateThumbprint`.
+- `Teams` contains: `WorkshopTeamName`, `StudentTeamPrefix`.
+- `Identity` contains: `AgentCreatorsGroupName`, `ParticipantEmails` (array of student email addresses for batch provisioning).
+- `Workshop` contains: `Wave`, `Concurrency`.
+- When adding new config fields, add them to `workshop-config.example.json` with placeholder values and document them in the facilitator guide.
+
+### Batch student provisioning (planned — not yet implemented)
+- The utility functions in `Common.ps1` (`Get-StudentAlias`, `Get-SafeSharePointAlias`, `Get-SafeDomainName`, `Resolve-EnvironmentGuid`, `Set-EnvironmentCopilotCredits`, `Invoke-WithRetry`, `Save-StudentEnvironmentMap`) are building blocks for a planned batch student environment provisioning script.
+- The provisioning flow will create per-student Power Platform Sandbox environments with Dataverse, SharePoint sites, Teams teams, and Copilot Studio credit allocations.
+- `Get-SafeSharePointAlias` strips characters outside `[a-zA-Z0-9_.]` and truncates to 64 chars to comply with M365 Group mail alias rules.
+- `Get-SafeDomainName` preserves hyphens (valid in Power Platform domain names) but strips other special characters.
+- The Licensing API (`https://api.powerplatform.com`) requires a separate access token from the Graph and PnP sessions. Use `Get-PowerPlatformAccessToken` for client-credentials token acquisition scoped to `https://api.powerplatform.com/.default`.
+
 ## High-level architecture
 
 - `workshop\participant-guide` defines the learner journey, the mixed audience, and the Day 1 to Day 2 progression.
@@ -43,6 +65,8 @@
   - Labs `13`-`24` are the Day 2 Operative track. They import the `Operative` solution, use Dataverse and the `Hiring Hub` app, then extend the `Hiring Agent` with instructions, multi-agent behavior, automation, model selection, moderation, multimodal prompts, document generation, MCP, feedback, and evaluation.
   - Lab `25` is an optional VS Code workflow that edits the cloud agent definition locally and syncs it back to Copilot Studio.
 - `workshop\automation` is for facilitator or demo preparation, not for skipping the student journey. `StudentReady` intentionally leaves later student-owned work unfinished, while `FacilitatorDemo` can pre-stage Day 2 assets in a separate demo environment. `Generate-WorkshopPDFs.js` produces 10 branded PDFs (4 student workbooks + 6 facilitator references) from the Markdown sources into `workshop\pdf-output\`.
+- `workshop\automation\Common.ps1` is the shared utility module dot-sourced by all PowerShell scripts. It contains config I/O, validation helpers, console and file logging, and building blocks for batch student provisioning (alias derivation, environment GUID resolution, Power Platform Licensing API wrappers, retry logic, and student-environment map persistence).
+- `workshop\automation\workshop-config.example.json` defines the full config schema including `EnvironmentBootstrap` (environment creation settings and per-student credit allocation), `SharePoint` (site creation and PnP auth), `Teams` (team prefix for student teams), `Identity` (participant email list for batch provisioning), and `Workshop` (wave and concurrency settings).
 - `workshop\assets` contains the Day 2 setup files (`Operative_1_0_0_0.zip`, `job-roles.csv`, `evaluation-criteria.csv`), sample resumes, starter templates, and the `evaluation-test-cases.csv` template for Lab 24. Lab 13 points participants to the local `workshop/assets/` copies first, with facilitator-provided delivery channels as a fallback.
 - `workshop\tests` holds manual readiness and validation checklists. Use it as the canonical success/failure reference when editing lab steps or troubleshooting guidance.
 - Day 2 assumes Day 1 completion, the Recruit badge, or equivalent Copilot Studio familiarity. Preserve that dependency when restructuring docs.
@@ -57,4 +81,5 @@
 - Prefer generally available platform guidance. The repo standard is `GPT-5 Chat` as the baseline model when available in the participant's region, with `GPT-4.1` (labeled "Default" in the picker) as the explicit GA fallback. Use current GA terminology such as the unified activity and transcript view, and the in-product MCP onboarding wizard rather than hand-editing secrets or describing non-GA flows. Per-prompt content moderation uses a single Low/Moderate/High slider covering all four harm categories collectively.
 - When you change instructions, model guidance, or validation prompts, expect fresh Copilot Studio sessions to matter. Multiple labs and the validation checklist require `New test session` after changes so stale conversation context does not hide regressions.
 - If you touch facilitator automation, keep `pac` imports pointed at a separate facilitator demo environment and verify the active `pac` profile first. SharePoint automation assumes PnP PowerShell sign-in, with `DeviceLogin` as the default login mode unless `workshop-config.json` says otherwise.
+- Multi-service auth from a single Entra app requires separate tokens per API resource: `https://api.powerplatform.com/.default` for Licensing API, `Connect-MgGraph` for Graph/Teams, `Connect-PnPOnline` for SharePoint, and `Add-PowerAppsAccount` for PowerApps admin cmdlets. These sessions do not share tokens and do not interfere.
 - If you edit the MCP or VS Code content, keep the browser-based Copilot Studio path as the core workshop flow. The VS Code extension is optional, and MCP setup should continue to use the supported wizard plus narrow, governed Microsoft 365 servers.

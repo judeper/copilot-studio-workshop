@@ -29,16 +29,44 @@ Recommended baseline:
 
 ## Dry-run automation helpers
 
-Use the PowerShell toolkit in [`../automation/`](../automation/) when you want a repeatable facilitator setup without consuming the student-owned lab work.
+Use the PowerShell toolkit in [`../automation/`](../automation/) when you want a repeatable facilitator setup without consuming student-owned lab work.
 
-Recommended flow:
+Zero-assumption setup sequence (facilitator machine):
 
-1. Copy `workshop/automation/workshop-config.example.json` to `workshop/automation/workshop-config.json` and replace the tenant, SharePoint, environment, and `SharePoint.PnPClientId` placeholders. Keep the default Day 2 asset paths if you plan to localize the Lab 13 files into `workshop\assets`, or update those paths if you store the files elsewhere. `SharePoint.PnPLoginMode` defaults to `DeviceLogin` for terminal-friendly sign-in.
-2. Run `Install-WorkshopPrerequisites.ps1` once on the facilitator machine to install `PnP.PowerShell` and confirm that `pac` is available.
-3. Use the Day 2 asset download helper to localize `Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv` from the public Microsoft [`agent-academy` Operative Mission 01 source](https://github.com/microsoft/agent-academy/tree/main/docs/operative/01-get-started) into `workshop\assets`; this prepares local input files only and does not import anything into Power Platform for you. Lab 13 now directs participants to the local `workshop/assets/` copies first, so confirm these files are present before delivery.
-4. Run `Invoke-WorkshopPrereqCheck.ps1` to validate the required local tools, populated config values, and localized Day 2 asset paths; it does not download the files, test live SharePoint access, or execute tenant settings for you.
-5. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to pre-stage Lab 00 shared prerequisites by creating the shared `Contoso IT` site, core lists, sample data, and any optional SharePoint artifacts enabled in config while preserving later student-owned work such as Labs 09, 13, and 16 plus the broader agent, MCP, Teams, and evaluation exercises.
-6. Run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` only against a separate facilitator demo environment when you intentionally want the Lab 13 solution package pre-staged; it imports only the solution ZIP, not the CSV data import, agent creation, or later Day 2 labs.
+1. Open PowerShell on the facilitator machine and change directory to the local repository root.
+2. Create the config file locally by copying `workshop/automation/workshop-config.example.json` to `workshop/automation/workshop-config.json`.
+3. Edit `workshop/automation/workshop-config.json` and replace placeholders for tenant, SharePoint, environment, and `SharePoint.PnPClientId`. Keep the default Day 2 asset paths if you localize Lab 13 files into `workshop\assets`.
+4. Run `Install-WorkshopPrerequisites.ps1` once to install `PnP.PowerShell` and confirm `pac` is available.
+5. Run `Get-WorkshopDay2Assets.ps1` to localize `Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv` from the public Microsoft [`agent-academy` Operative Mission 01 source](https://github.com/microsoft/agent-academy/tree/main/docs/operative/01-get-started) into `workshop\assets`.
+6. Run `Invoke-WorkshopPrereqCheck.ps1` to validate local tools, populated config values, and localized Day 2 asset paths.
+7. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to pre-stage Lab 00 shared prerequisites while preserving later student-owned exercises.
+8. Optional: run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` only in a separate facilitator demo environment when you intentionally want the Lab 13 solution package pre-staged.
+
+Canonical commands from repository root:
+
+```powershell
+Copy-Item -Path .\workshop\automation\workshop-config.example.json `
+		  -Destination .\workshop\automation\workshop-config.json
+# Expected result: workshop-config.json exists in .\workshop\automation\
+
+powershell -File .\workshop\automation\Install-WorkshopPrerequisites.ps1
+# Expected result: script completes without errors; pac is available and PnP.PowerShell is ready
+
+powershell -File .\workshop\automation\Get-WorkshopDay2Assets.ps1
+# Expected result: Operative_1_0_0_0.zip, job-roles.csv, and evaluation-criteria.csv exist in .\workshop\assets\
+
+powershell -File .\workshop\automation\Invoke-WorkshopPrereqCheck.ps1
+# Expected result: validation reports all required checks as pass/ready
+
+powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
+# Expected result: Contoso IT site and shared prerequisites are created without pre-completing later student labs
+```
+
+Decision point:
+
+- Use `-Mode StudentReady` for participant environments.
+- Use `-ImportSolution` only for a separate facilitator demo environment.
+- Expected result for optional import: Operative solution import succeeds only in the selected demo environment.
 
 > **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID and defaults to `DeviceLogin` unless you switch `SharePoint.PnPLoginMode` to `Interactive`. Any solution import uses the currently authenticated `pac` profile. Verify both point to the intended tenant and demo environment before running the scripts.
 
