@@ -359,20 +359,26 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
             $existingClientId = $existingApp.appId
             Write-Status -Label 'Entra App' -Status "Found existing app: $appDisplayName ($existingClientId)" -Color 'Green'
 
-            # Ensure publicClient redirect URI is set (required for DeviceLogin)
+            # Ensure publicClient config and delegated permissions are correct
             try {
                 $fullApp = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/applications?`$filter=appId eq '$existingClientId'&`$select=id,publicClient"
                 $appObjectId = $fullApp.value[0].id
-                $existingRedirects = $fullApp.value[0].publicClient.redirectUris
-                $nativeUri = 'https://login.microsoftonline.com/common/oauth2/nativeclient'
-                if ($existingRedirects -notcontains $nativeUri) {
-                    $patchBody = @{ publicClient = @{ redirectUris = @($nativeUri) } } | ConvertTo-Json -Depth 5
-                    Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/v1.0/applications/$appObjectId" -Body $patchBody -ContentType 'application/json'
-                    Write-Status -Label 'Entra App' -Status 'Added DeviceLogin redirect URI' -Color 'Green'
-                }
+
+                # Patch: add http://localhost redirect URI + enable public client flows + add delegated perms
+                $patchBody = @{
+                    publicClient = @{
+                        redirectUris = @(
+                            'https://login.microsoftonline.com/common/oauth2/nativeclient'
+                            'http://localhost'
+                        )
+                    }
+                    isFallbackPublicClient = $true
+                } | ConvertTo-Json -Depth 5
+                Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/v1.0/applications/$appObjectId" -Body $patchBody -ContentType 'application/json'
+                Write-Status -Label 'Entra App' -Status 'Verified redirect URIs and public client flow' -Color 'Green'
             }
             catch {
-                Write-Status -Label 'Entra App' -Status "Could not verify redirect URI: $_" -Color 'Yellow'
+                Write-Status -Label 'Entra App' -Status "Could not patch app config: $_" -Color 'Yellow'
             }
         } else {
             # Define required API permissions
@@ -380,27 +386,35 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
             $graphAppId = '00000003-0000-0000-c000-000000000000'     # Microsoft Graph
 
             $appBody = @{
-                displayName    = $appDisplayName
-                signInAudience = 'AzureADMyOrg'
-                publicClient   = @{
+                displayName            = $appDisplayName
+                signInAudience         = 'AzureADMyOrg'
+                isFallbackPublicClient = $true
+                publicClient           = @{
                     redirectUris = @(
                         'https://login.microsoftonline.com/common/oauth2/nativeclient'
+                        'http://localhost'
                     )
                 }
                 requiredResourceAccess = @(
                     @{
                         resourceAppId  = $graphAppId
                         resourceAccess = @(
+                            # Application permissions (for batch provisioning with certificate)
                             @{ id = '62a82d76-70ea-41e2-9197-370581804d09'; type = 'Role' }  # Group.ReadWrite.All
                             @{ id = '7ab1d382-f21e-4acd-a863-ba3e13f7da61'; type = 'Role' }  # Directory.Read.All
                             @{ id = 'df021288-bdef-4463-88db-98f22de89214'; type = 'Role' }  # User.Read.All
                             @{ id = '23fc2474-f741-46ce-8465-674744c5c361'; type = 'Role' }  # Team.Create
+                            # Delegated permissions (for interactive browser auth)
+                            @{ id = '4e46008b-f24c-477d-8fff-7bb4ec7aafe0'; type = 'Scope' } # Group.ReadWrite.All
+                            @{ id = 'a154be20-db9c-4678-8ab7-66f6cc099a59'; type = 'Scope' } # User.Read.All
+                            @{ id = 'e1fe6dd8-ba31-4d61-89e7-88639da4683d'; type = 'Scope' } # User.Read
                         )
                     }
                     @{
                         resourceAppId  = $spOnlineAppId
                         resourceAccess = @(
-                            @{ id = '678536fe-1083-478a-9c59-b99265e6b0d3'; type = 'Role' }  # Sites.FullControl.All
+                            @{ id = '678536fe-1083-478a-9c59-b99265e6b0d3'; type = 'Role' }  # Sites.FullControl.All (app)
+                            @{ id = '56680e0d-d2a3-4ae1-80d8-3c4f2571571d'; type = 'Scope' } # AllSites.FullControl (delegated)
                         )
                     }
                 )

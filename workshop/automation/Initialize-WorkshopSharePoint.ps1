@@ -213,8 +213,9 @@ function Connect-WorkshopPnPOnline {
             $connectParameters['Interactive'] = $true
         }
         'DeviceLogin' {
-            # PnP.PowerShell v3.x has issues with -DeviceLogin in PS 7.
-            # Use -Interactive (browser popup) as the reliable alternative.
+            # PnP v3.x requires ClientId for all flows. DeviceLogin is unreliable in PS 7.
+            # Use -Interactive with our ClientId (app has delegated perms + http://localhost redirect).
+            $connectParameters['ClientId'] = $ClientId
             $connectParameters['Interactive'] = $true
         }
         'CertificateThumbprint' {
