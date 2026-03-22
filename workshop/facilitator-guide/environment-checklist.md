@@ -1,6 +1,6 @@
 # Pre-Event Environment Checklist
 
-Use this runbook for three readiness passes: first pass 7 to 14 days before delivery, second pass 1 to 2 days before delivery, and a final pass on the morning of Day 1. Use the [Environment Smoke Tests](../tests/environment-smoke-tests.md) for the opening-room fast path; use this checklist when you need the complete pre-event go/no-go review.
+Use this runbook for three readiness passes: first pass 7 to 14 days before delivery, second pass 1 to 2 days before delivery, and a final pass on the morning of Day 1. Use the [Environment Smoke Tests](../tests/environment-smoke-tests.md) for the opening-room fast path; use this checklist when you need the complete pre-event go/no-go review. If you are new to the repo, start with the **Quick facilitator runbook** in the [Facilitator Guide](./facilitator-guide.md) and then return here for the full review.
 
 ## How to use this checklist
 

@@ -112,7 +112,7 @@ Treat setup as three separate readiness tracks:
 
 The current automation is optimized for a **clean validated facilitator demo base**, not a fully prebuilt “all labs completed” demo environment. If you need completed end-state artifacts for rescue demos, keep separate checkpoints, screenshots, or demo snapshots in addition to the automated setup above.
 
-See the [Facilitator Guide](workshop/facilitator-guide/facilitator-guide.md) for the full delivery checklist.
+See the [Facilitator Guide](workshop/facilitator-guide/facilitator-guide.md) for the quick facilitator runbook and the full delivery checklist.
 
 ## PDF Workbooks
 

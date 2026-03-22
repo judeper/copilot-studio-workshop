@@ -113,6 +113,27 @@ Recommended setup order:
 
 > **Scope decision:** The repo currently optimizes for a **clean validated demo base** for facilitators, not a fully prebuilt “all labs completed” fallback environment. If you need completed end-state artifacts for later-lab rescue demos, maintain separate checkpoints, screenshots, or facilitator-owned snapshots in addition to the automated setup.
 
+## Quick facilitator runbook
+
+If you are a new facilitator, follow this exact order:
+
+1. Run the bootstrap wizard on a clean Windows machine.
+2. Confirm the readiness dashboard is good enough to continue.
+3. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to create the shared Day 1 baseline.
+4. Decide whether students will use the shared baseline only or per-student environments.
+5. Reserve or create a **separate facilitator demo environment** before any demo-only Day 2 import.
+6. If you need Day 2 demo pre-staging, switch `pac` to that facilitator demo environment and run `Import-WorkshopOperativeAssets.ps1 -ImportSolution`.
+7. If you need isolated student environments, run `Invoke-StudentEnvironmentProvisioning.ps1` only after the shared prerequisites are already stable.
+8. Validate the facilitator demo base separately from the student path.
+9. Keep the facilitator demo environment private to facilitators; do not use it as the student build environment.
+10. Keep the detailed checklist open for final go/no-go review and fallback planning.
+
+Expected outcome after this runbook:
+
+- The shared Day 1 prerequisites are ready.
+- The facilitator has a separate demo base for rescue demos.
+- Student environments are ready for hands-on without being pre-solved past the shared prerequisites.
+
 ## Suggested delivery flow
 
 ### Day 1: Recruit foundations
