@@ -336,19 +336,92 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
     Write-Host "  This requires Global Administrator or Application Administrator role." -ForegroundColor Yellow
 
     try {
-        # Ensure Graph connection
+        # Ensure Graph connection with the scopes needed to create apps, inspect resource permissions,
+        # and create delegated permission grants.
+        $requiredGraphScopes = @(
+            'Application.ReadWrite.All'
+            'DelegatedPermissionGrant.ReadWrite.All'
+            'Application.Read.All'
+        )
+
         $graphConnected = $false
-        try {
-            Invoke-MgGraphRequest -Method GET -Uri 'https://graph.microsoft.com/v1.0/me' -ErrorAction Stop | Out-Null
-            $graphConnected = $true
-        } catch {}
+        $graphContext = Get-MgContext -ErrorAction SilentlyContinue
+        if ($graphContext -and $graphContext.TenantId -eq $tenantId) {
+            $grantedScopes = @($graphContext.Scopes)
+            $missingScopes = $requiredGraphScopes | Where-Object { $_ -notin $grantedScopes }
+            if ($missingScopes.Count -eq 0) {
+                $graphConnected = $true
+            }
+        }
 
         if (-not $graphConnected) {
             Write-Host "`nSign in with an admin account to create the Entra app..." -ForegroundColor Yellow
-            Connect-MgGraph -TenantId $tenantId -Scopes 'Application.ReadWrite.All','DelegatedPermissionGrant.ReadWrite.All' -NoWelcome
+            Write-Host "  A device code will be shown in the terminal if a browser popup is not available." -ForegroundColor Yellow
+            Disconnect-MgGraph -ErrorAction SilentlyContinue
+            Connect-MgGraph -TenantId $tenantId -Scopes $requiredGraphScopes -UseDeviceCode -ContextScope Process -NoWelcome
         }
 
         $appDisplayName = "Copilot Studio Workshop - $tenantName"
+        $spOnlineAppId = '00000003-0000-0ff1-ce00-000000000000'  # SharePoint Online
+        $graphAppId = '00000003-0000-0000-c000-000000000000'     # Microsoft Graph
+
+        $resourceServicePrincipals = @{}
+        function Resolve-ResourcePermissionId {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$ResourceAppId,
+
+                [Parameter(Mandatory = $true)]
+                [ValidateSet('Role', 'Scope')]
+                [string]$PermissionType,
+
+                [Parameter(Mandatory = $true)]
+                [string]$PermissionValue
+            )
+
+            if (-not $resourceServicePrincipals.ContainsKey($ResourceAppId)) {
+                $response = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '$ResourceAppId'&`$select=id,displayName,appRoles,oauth2PermissionScopes"
+                $servicePrincipal = $response.value | Select-Object -First 1
+                if ($null -eq $servicePrincipal) {
+                    throw "Could not load service principal metadata for resource app '$ResourceAppId'."
+                }
+
+                $resourceServicePrincipals[$ResourceAppId] = $servicePrincipal
+            }
+
+            $resourceServicePrincipal = $resourceServicePrincipals[$ResourceAppId]
+            $permissionCollection = if ($PermissionType -eq 'Role') { $resourceServicePrincipal.appRoles } else { $resourceServicePrincipal.oauth2PermissionScopes }
+            $permission = $permissionCollection | Where-Object { $_.value -eq $PermissionValue -and ($null -eq $_.isEnabled -or $_.isEnabled) } | Select-Object -First 1
+            if ($null -eq $permission) {
+                throw "Could not resolve $PermissionType '$PermissionValue' on resource '$($resourceServicePrincipal.displayName)' ($ResourceAppId)."
+            }
+
+            return [string]$permission.id
+        }
+
+        $requiredResourceAccess = @(
+            @{
+                resourceAppId  = $graphAppId
+                resourceAccess = @(
+                    # Application permissions (for batch provisioning with certificate)
+                    @{ id = (Resolve-ResourcePermissionId -ResourceAppId $graphAppId -PermissionType 'Role' -PermissionValue 'Group.ReadWrite.All'); type = 'Role' }
+                    @{ id = (Resolve-ResourcePermissionId -ResourceAppId $graphAppId -PermissionType 'Role' -PermissionValue 'Directory.Read.All'); type = 'Role' }
+                    @{ id = (Resolve-ResourcePermissionId -ResourceAppId $graphAppId -PermissionType 'Role' -PermissionValue 'User.Read.All'); type = 'Role' }
+                    @{ id = (Resolve-ResourcePermissionId -ResourceAppId $graphAppId -PermissionType 'Role' -PermissionValue 'Team.Create'); type = 'Role' }
+                    # Delegated permissions (for interactive/browser auth)
+                    @{ id = (Resolve-ResourcePermissionId -ResourceAppId $graphAppId -PermissionType 'Scope' -PermissionValue 'Group.ReadWrite.All'); type = 'Scope' }
+                    @{ id = (Resolve-ResourcePermissionId -ResourceAppId $graphAppId -PermissionType 'Scope' -PermissionValue 'User.Read.All'); type = 'Scope' }
+                    @{ id = (Resolve-ResourcePermissionId -ResourceAppId $graphAppId -PermissionType 'Scope' -PermissionValue 'User.Read'); type = 'Scope' }
+                )
+            }
+            @{
+                resourceAppId  = $spOnlineAppId
+                resourceAccess = @(
+                    @{ id = (Resolve-ResourcePermissionId -ResourceAppId $spOnlineAppId -PermissionType 'Role' -PermissionValue 'Sites.FullControl.All'); type = 'Role' }
+                    @{ id = (Resolve-ResourcePermissionId -ResourceAppId $spOnlineAppId -PermissionType 'Scope' -PermissionValue 'AllSites.FullControl'); type = 'Scope' }
+                )
+            }
+        )
 
         # Check if app already exists
         $existingApps = Invoke-MgGraphRequest -Method GET `
@@ -375,7 +448,8 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
                         )
                     }
                     isFallbackPublicClient = $true
-                } | ConvertTo-Json -Depth 5
+                    requiredResourceAccess = $requiredResourceAccess
+                } | ConvertTo-Json -Depth 10
                 Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/v1.0/applications/$appObjectId" -Body $patchBody -ContentType 'application/json'
                 Write-Status -Label 'Entra App' -Status 'Verified redirect URIs and public client flow' -Color 'Green'
 
@@ -405,10 +479,6 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
                 Write-Status -Label 'Entra App' -Status "Could not patch app config: $_" -Color 'Yellow'
             }
         } else {
-            # Define required API permissions
-            $spOnlineAppId = '00000003-0000-0ff1-ce00-000000000000'  # SharePoint Online
-            $graphAppId = '00000003-0000-0000-c000-000000000000'     # Microsoft Graph
-
             $appBody = @{
                 displayName            = $appDisplayName
                 signInAudience         = 'AzureADMyOrg'
@@ -420,29 +490,7 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
                         'http://127.0.0.1'
                     )
                 }
-                requiredResourceAccess = @(
-                    @{
-                        resourceAppId  = $graphAppId
-                        resourceAccess = @(
-                            # Application permissions (for batch provisioning with certificate)
-                            @{ id = '62a82d76-70ea-41e2-9197-370581804d09'; type = 'Role' }  # Group.ReadWrite.All
-                            @{ id = '7ab1d382-f21e-4acd-a863-ba3e13f7da61'; type = 'Role' }  # Directory.Read.All
-                            @{ id = 'df021288-bdef-4463-88db-98f22de89214'; type = 'Role' }  # User.Read.All
-                            @{ id = '23fc2474-f741-46ce-8465-674744c5c361'; type = 'Role' }  # Team.Create
-                            # Delegated permissions (for interactive browser auth)
-                            @{ id = '4e46008b-f24c-477d-8fff-7bb4ec7aafe0'; type = 'Scope' } # Group.ReadWrite.All
-                            @{ id = 'a154be20-db9c-4678-8ab7-66f6cc099a59'; type = 'Scope' } # User.Read.All
-                            @{ id = 'e1fe6dd8-ba31-4d61-89e7-88639da4683d'; type = 'Scope' } # User.Read
-                        )
-                    }
-                    @{
-                        resourceAppId  = $spOnlineAppId
-                        resourceAccess = @(
-                            @{ id = '678536fe-1083-478a-9c59-b99265e6b0d3'; type = 'Role' }  # Sites.FullControl.All (app)
-                            @{ id = '56680e0d-d2a3-4ae1-80d8-3c4f2571571d'; type = 'Scope' } # AllSites.FullControl (delegated)
-                        )
-                    }
-                )
+                requiredResourceAccess = $requiredResourceAccess
             } | ConvertTo-Json -Depth 10
 
             $newApp = Invoke-MgGraphRequest -Method POST `
