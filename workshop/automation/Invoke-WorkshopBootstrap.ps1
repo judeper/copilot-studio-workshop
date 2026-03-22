@@ -345,7 +345,7 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
 
         if (-not $graphConnected) {
             Write-Host "`nSign in with an admin account to create the Entra app..." -ForegroundColor Yellow
-            Connect-MgGraph -TenantId $tenantId -Scopes 'Application.ReadWrite.All' -NoWelcome
+            Connect-MgGraph -TenantId $tenantId -Scopes 'Application.ReadWrite.All','DelegatedPermissionGrant.ReadWrite.All' -NoWelcome
         }
 
         $appDisplayName = "Copilot Studio Workshop - $tenantName"
@@ -378,6 +378,28 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
                 } | ConvertTo-Json -Depth 5
                 Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/v1.0/applications/$appObjectId" -Body $patchBody -ContentType 'application/json'
                 Write-Status -Label 'Entra App' -Status 'Verified redirect URIs and public client flow' -Color 'Green'
+
+                # Ensure SharePoint oauth2PermissionGrant exists for existing app too
+                try {
+                    $appSpId = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '$existingClientId'&`$select=id").value[0].id
+                    $spResourceId = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '00000003-0000-0ff1-ce00-000000000000'&`$select=id").value[0].id
+                    $existingGrants = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/oauth2PermissionGrants?`$filter=clientId eq '$appSpId' and resourceId eq '$spResourceId'").value
+                    if (-not $existingGrants -or $existingGrants.Count -eq 0) {
+                        $grantBody = @{
+                            clientId    = $appSpId
+                            consentType = 'AllPrincipals'
+                            resourceId  = $spResourceId
+                            scope       = 'AllSites.FullControl'
+                        } | ConvertTo-Json
+                        Invoke-MgGraphRequest -Method POST -Uri 'https://graph.microsoft.com/v1.0/oauth2PermissionGrants' -Body $grantBody -ContentType 'application/json' | Out-Null
+                        Write-Status -Label 'SP Consent' -Status 'Created missing SharePoint permission grant' -Color 'Green'
+                    } else {
+                        Write-Status -Label 'SP Consent' -Status 'SharePoint permission grant verified' -Color 'Green'
+                    }
+                }
+                catch {
+                    Write-Status -Label 'SP Consent' -Status "Could not verify SP grant: $($_.Exception.Message)" -Color 'Yellow'
+                }
             }
             catch {
                 Write-Status -Label 'Entra App' -Status "Could not patch app config: $_" -Color 'Yellow'
@@ -456,6 +478,32 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
             Write-Host "  https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/CallAnAPI/appId/$existingClientId" -ForegroundColor Cyan
             Write-Host "`n  Press Enter after granting admin consent..." -ForegroundColor Yellow
             Read-Host
+
+            # Ensure SharePoint oauth2PermissionGrant exists
+            # The portal "Grant admin consent" button sometimes silently fails to write the
+            # SharePoint resource consent record, which causes PnP tenant admin operations
+            # (Get-PnPTenant, New-PnPSite) to fail with "unauthorized operation".
+            try {
+                $appSpId = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '$existingClientId'&`$select=id").value[0].id
+                $spResourceId = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '00000003-0000-0ff1-ce00-000000000000'&`$select=id").value[0].id
+                $existingGrants = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/oauth2PermissionGrants?`$filter=clientId eq '$appSpId' and resourceId eq '$spResourceId'").value
+                if (-not $existingGrants -or $existingGrants.Count -eq 0) {
+                    $grantBody = @{
+                        clientId    = $appSpId
+                        consentType = 'AllPrincipals'
+                        resourceId  = $spResourceId
+                        scope       = 'AllSites.FullControl'
+                    } | ConvertTo-Json
+                    Invoke-MgGraphRequest -Method POST -Uri 'https://graph.microsoft.com/v1.0/oauth2PermissionGrants' -Body $grantBody -ContentType 'application/json' | Out-Null
+                    Write-Status -Label 'SP Consent' -Status 'Created SharePoint AllSites.FullControl permission grant' -Color 'Green'
+                } else {
+                    Write-Status -Label 'SP Consent' -Status 'SharePoint permission grant verified' -Color 'Green'
+                }
+            }
+            catch {
+                Write-Status -Label 'SP Consent' -Status "Could not verify SP grant: $($_.Exception.Message)" -Color 'Yellow'
+                Write-Host "  If PnP tenant admin fails later, manually grant consent in the portal." -ForegroundColor Yellow
+            }
         }
 
         Disconnect-MgGraph -ErrorAction SilentlyContinue
