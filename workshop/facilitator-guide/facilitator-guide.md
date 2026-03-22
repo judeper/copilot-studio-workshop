@@ -49,7 +49,7 @@ The wizard handles these steps automatically:
 2. **CLI tools** — Installs git, Power Platform CLI (pac), and Node.js via winget if missing. Halts if required tools (git, pac) cannot be installed.
 3. **PowerShell modules** — Installs PnP.PowerShell, Microsoft.Graph, and PowerApps Admin modules. Halts if required modules fail.
 4. **Config file** — Creates `workshop-config.json` from the example template and walks through each required value interactively: tenant name (auto-derives all SharePoint URLs), TenantId (auto-detected from pac auth if available).
-5. **Entra app registration** — Auto-creates an Entra app with the required API permissions (Group.ReadWrite.All, User.Read.All, Team.Create, Sites.FullControl.All) via Microsoft Graph, creates the service principal, and provides a direct Azure portal link for admin consent.
+5. **Entra app registration** — Auto-creates an Entra app with the required API permissions (Group.ReadWrite.All, User.Read.All, Team.Create, Sites.FullControl.All) via Microsoft Graph, creates the service principal, provides a direct Azure portal link for admin consent, and programmatically verifies that the SharePoint `oauth2PermissionGrant` (`AllSites.FullControl`) exists — this grant is critical for PnP tenant admin operations and the portal consent button sometimes silently fails to create it.
 6. **pac CLI auth** — Checks for an active Power Platform CLI profile and launches interactive sign-in if needed.
 7. **Day 2 assets** — Downloads all workshop assets from the public GitHub repository.
 8. **Prerequisites check** — Runs the full validation suite and reports pass/fail for every component.
@@ -77,7 +77,7 @@ Decision point:
 - Use `-ImportSolution` only for a separate facilitator demo environment.
 - Expected result for optional import: Operative solution import succeeds only in the selected demo environment.
 
-> **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID and defaults to `DeviceLogin` unless you switch `SharePoint.PnPLoginMode` to `Interactive`. Any solution import uses the currently authenticated `pac` profile. Verify both point to the intended tenant and demo environment before running the scripts.
+> **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID. The default login mode is `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. You can override this by setting `SharePoint.PnPLoginMode` to `DeviceLogin`, `Interactive`, or `CertificateThumbprint` in `workshop-config.json`. Any solution import uses the currently authenticated `pac` profile. Verify both point to the intended tenant and demo environment before running the scripts.
 
 ## Suggested delivery flow
 
