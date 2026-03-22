@@ -146,13 +146,16 @@ function Wait-ForSiteProvisioning {
         [Parameter(Mandatory = $true)]
         [string]$SiteUrl,
 
+        [Parameter(Mandatory = $true)]
+        [object]$AdminConnection,
+
         [Parameter()]
         [int]$TimeoutSeconds = 300
     )
 
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     while ((Get-Date) -lt $deadline) {
-        $tenantSite = Get-PnPTenantSite -Identity $SiteUrl -ErrorAction SilentlyContinue
+        $tenantSite = Get-PnPTenantSite -Identity $SiteUrl -Connection $AdminConnection -ErrorAction SilentlyContinue
         if ($null -ne $tenantSite) {
             return
         }
@@ -203,6 +206,9 @@ function Connect-WorkshopPnPOnline {
         [AllowEmptyString()]
         [string]$CertificateThumbprint,
 
+        [Parameter()]
+        [switch]$ReturnConnection,
+
         [Parameter(Mandatory = $true)]
         [string]$Label
     )
@@ -213,6 +219,9 @@ function Connect-WorkshopPnPOnline {
             throw "A certificate thumbprint is required when SharePoint.PnPLoginMode is CertificateThumbprint."
         }
         Write-StepResult -Level INFO -Message "Connecting to $Label using certificate auth."
+        if ($ReturnConnection) {
+            return Connect-PnPOnline -Url $Url -Tenant $Tenant -ClientId $ClientId -Thumbprint $CertificateThumbprint -ReturnConnection -ErrorAction Stop
+        }
         Connect-PnPOnline -Url $Url -Tenant $Tenant -ClientId $ClientId -Thumbprint $CertificateThumbprint -ErrorAction Stop
         return
     }
@@ -228,19 +237,38 @@ function Connect-WorkshopPnPOnline {
     foreach ($method in $methods) {
         try {
             Write-StepResult -Level INFO -Message "Connecting to $Label using PnP login mode '$method'."
+            $connection = $null
             switch ($method) {
                 'OSLogin' {
                     # WAM (Web Account Manager) — native Windows broker, no localhost redirect needed
-                    Connect-PnPOnline -Url $Url -ClientId $ClientId -OSLogin -ErrorAction Stop
+                    if ($ReturnConnection) {
+                        $connection = Connect-PnPOnline -Url $Url -ClientId $ClientId -OSLogin -ReturnConnection -ErrorAction Stop
+                    }
+                    else {
+                        Connect-PnPOnline -Url $Url -ClientId $ClientId -OSLogin -ErrorAction Stop
+                    }
                 }
                 'Interactive' {
                     # MSAL browser popup — requires http://127.0.0.1 redirect URI
-                    Connect-PnPOnline -Url $Url -ClientId $ClientId -Interactive -ErrorAction Stop
+                    if ($ReturnConnection) {
+                        $connection = Connect-PnPOnline -Url $Url -ClientId $ClientId -Interactive -ReturnConnection -ErrorAction Stop
+                    }
+                    else {
+                        Connect-PnPOnline -Url $Url -ClientId $ClientId -Interactive -ErrorAction Stop
+                    }
                 }
                 'DeviceLogin' {
                     # Device code flow — no redirect URI involved, requires -Tenant
-                    Connect-PnPOnline -Url $Url -ClientId $ClientId -Tenant $Tenant -DeviceLogin -ErrorAction Stop
+                    if ($ReturnConnection) {
+                        $connection = Connect-PnPOnline -Url $Url -ClientId $ClientId -Tenant $Tenant -DeviceLogin -ReturnConnection -ErrorAction Stop
+                    }
+                    else {
+                        Connect-PnPOnline -Url $Url -ClientId $ClientId -Tenant $Tenant -DeviceLogin -ErrorAction Stop
+                    }
                 }
+            }
+            if ($ReturnConnection) {
+                return $connection
             }
             return  # success
         }
@@ -350,26 +378,26 @@ else {
 }
 
 Write-Section "Connecting to SharePoint admin center"
-Connect-WorkshopPnPOnline -Url $adminUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -Label 'SharePoint admin center'
+$adminConnection = Connect-WorkshopPnPOnline -Url $adminUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -ReturnConnection -Label 'SharePoint admin center'
 
 # Ensure custom app authentication is not disabled (blocks site creation in newer tenants)
 try {
-    Set-PnPTenant -DisableCustomAppAuthentication $false -ErrorAction SilentlyContinue
+    Set-PnPTenant -DisableCustomAppAuthentication $false -Connection $adminConnection -ErrorAction SilentlyContinue
 }
 catch {
     Write-StepResult -Level WARN -Message "Could not verify DisableCustomAppAuthentication setting: $($_.Exception.Message)"
 }
 
-$existingSite = Get-PnPTenantSite -Identity $siteUrl -ErrorAction SilentlyContinue
+$existingSite = Get-PnPTenantSite -Identity $siteUrl -Connection $adminConnection -ErrorAction SilentlyContinue
 if ($null -eq $existingSite) {
     # Check if the site is in the recycle bin (leftover from a previous test run)
-    $deletedSite = Get-PnPTenantDeletedSite -Identity $siteUrl -ErrorAction SilentlyContinue
+    $deletedSite = Get-PnPTenantDeletedSite -Identity $siteUrl -Connection $adminConnection -ErrorAction SilentlyContinue
     if ($deletedSite) {
         if ($ValidateOnly) {
             throw "SharePoint site '$siteUrl' is in the recycle bin. Re-run without -ValidateOnly to purge and recreate it."
         }
         Write-StepResult -Level WARN -Message "Site '$siteUrl' found in recycle bin from a previous run — purging."
-        Remove-PnPTenantDeletedSite -Identity $siteUrl -Force
+        Remove-PnPTenantDeletedSite -Identity $siteUrl -Connection $adminConnection -Force
         Write-StepResult -Level PASS -Message "Purged '$siteUrl' from recycle bin."
         Start-Sleep -Seconds 10
     }
@@ -385,27 +413,30 @@ if ($null -eq $existingSite) {
 
     try {
         # Connect to root tenant URL — New-PnPSite calls SPSiteManager/create which lives on the root site
-        Connect-WorkshopPnPOnline -Url $rootTenantUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -Label 'tenant root (for site creation)'
+        $rootConnection = Connect-WorkshopPnPOnline -Url $rootTenantUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -ReturnConnection -Label 'tenant root (for site creation)'
         New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
             -Title $siteTitle `
             -Url $siteUrl `
+            -Connection $rootConnection `
             -Description $siteDescription | Out-Null
     }
     catch {
         Write-StepResult -Level WARN -Message "New-PnPSite failed: $($_.Exception.Message). Trying New-PnPTenantSite..."
 
         # Fallback: use the classic admin cmdlet from admin URL
-        Connect-WorkshopPnPOnline -Url $adminUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -Label 'SharePoint admin center (fallback)'
+        $adminWeb = Get-PnPWeb -Connection $adminConnection -ErrorAction Stop
+        $adminCurrentUser = Get-PnPProperty -ClientObject $adminWeb -Property CurrentUser
         New-PnPTenantSite `
             -Title $siteTitle `
             -Url $siteUrl `
             -Template 'STS#3' `
-            -Owner (Get-PnPProperty -ClientObject (Get-PnPWeb) -Property CurrentUser).Email `
+            -Owner $adminCurrentUser.Email `
+            -Connection $adminConnection `
             -TimeZone 13 `
             -Wait
     }
 
-    Wait-ForSiteProvisioning -SiteUrl $siteUrl
+    Wait-ForSiteProvisioning -SiteUrl $siteUrl -AdminConnection $adminConnection
 }
 else {
     Write-StepResult -Level PASS -Message "SharePoint site '$siteUrl' already exists."

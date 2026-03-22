@@ -77,7 +77,7 @@ Decision point:
 - Use `-ImportSolution` only for a separate facilitator demo environment.
 - Expected result for optional import: Operative solution import succeeds only in the selected demo environment.
 
-> **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID. The default login mode is `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. You can override this by setting `SharePoint.PnPLoginMode` to `DeviceLogin`, `Interactive`, or `CertificateThumbprint` in `workshop-config.json`. Any solution import uses the currently authenticated `pac` profile. Verify both point to the intended tenant and demo environment before running the scripts.
+> **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID. The default login mode is `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. You can override this by setting `SharePoint.PnPLoginMode` to `DeviceLogin`, `Interactive`, or `CertificateThumbprint` in `workshop-config.json`. If setup runs under `DeviceLogin`, the first provisioning pass can prompt separately for the SharePoint admin center, tenant root, and target site; that is expected. Any solution import uses the currently authenticated `pac` profile. Verify both point to the intended tenant and demo environment before running the scripts.
 
 ## Suggested delivery flow
 
