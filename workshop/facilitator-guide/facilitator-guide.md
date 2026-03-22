@@ -83,6 +83,36 @@ Decision point:
 
 > **Student domain naming:** Per-student Power Platform domains are derived from `EnvironmentBootstrap.DomainName`, but the automation now shortens the prefix when needed so the student alias still survives inside the 24-character platform limit. This keeps domains unique across students instead of truncating them all to the same shared prefix.
 
+## Environment tracks and recommended setup order
+
+Treat the workshop as three separate readiness tracks, not one blended setup job:
+
+1. **Shared prerequisites**
+   - Facilitator machine readiness
+   - Tenant/app/auth readiness
+   - Shared Day 1 `Contoso IT` SharePoint site and sample data
+   - Day 2 localized assets
+
+2. **Facilitator-only demo base**
+   - A separate Power Platform environment reserved for facilitator demos and rescue moments
+   - Optional Day 2 Operative import only in that demo environment
+   - A validated fallback path for the riskiest modules
+
+3. **Student hands-on environments**
+   - Either the shared `StudentReady` path or per-student provisioning
+   - Ready for labs, but intentionally not pre-solved past the shared prerequisites
+
+Recommended setup order:
+
+1. Run the bootstrap wizard and make sure the readiness dashboard is green enough to continue.
+2. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to establish the shared Day 1 baseline.
+3. Reserve or create a **separate facilitator demo environment** and switch the active `pac` profile to it before any optional demo-only imports.
+4. If Day 2 demo pre-staging is needed, run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` only in that facilitator demo environment.
+5. If you want isolated student environments, run `Invoke-StudentEnvironmentProvisioning.ps1` after the shared prerequisites are already stable.
+6. Validate the facilitator demo path and the student path separately. A green student setup does not prove the facilitator rescue path is ready, and a green facilitator demo does not prove hands-on students can build forward unaided.
+
+> **Scope decision:** The repo currently optimizes for a **clean validated demo base** for facilitators, not a fully prebuilt “all labs completed” fallback environment. If you need completed end-state artifacts for later-lab rescue demos, maintain separate checkpoints, screenshots, or facilitator-owned snapshots in addition to the automated setup.
+
 ## Suggested delivery flow
 
 ### Day 1: Recruit foundations

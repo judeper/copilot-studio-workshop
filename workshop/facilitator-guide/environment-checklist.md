@@ -26,6 +26,20 @@ Manual setup steps (if not using the bootstrap wizard): copy `workshop-config.ex
 - If the dry run still needs a fresh facilitator environment, populate the optional `EnvironmentBootstrap` block in `../automation/workshop-config.json` and run `../automation/Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment` directly, or `../automation/Invoke-WorkshopLabSetup.ps1 -CreateEnvironment -Mode StudentReady` if you want the rest of the provisioning flow to continue. This wraps the officially documented `pac admin create` flow, still requires an already-authenticated admin-capable `pac` profile plus available capacity/licensing, and updates `EnvironmentUrl` when the created URL can be resolved.
 - `SharePoint.PnPLoginMode` defaults to `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. If setup runs under `DeviceLogin`, expect separate browser/device-code prompts for the SharePoint admin center, tenant root, and target site during first-time site provisioning. The bootstrap wizard ensures the Entra app's SharePoint `oauth2PermissionGrant` (`AllSites.FullControl`) is created — without this, PnP tenant admin operations fail even for Global Admins.
 
+Review the workshop in this order so a new facilitator does not mix the setup tracks together:
+
+1. **Shared prerequisites** — bootstrap, tenant/app/auth readiness, the shared Day 1 SharePoint baseline, and the Day 2 assets
+2. **Facilitator demo base** — a separate facilitator-only Power Platform environment used for demos and recovery
+3. **Student hands-on path** — either the shared `StudentReady` route or the optional per-student provisioning route
+
+### Facilitator-only demo base
+
+- [ ] A separate facilitator demo environment exists and is reserved for facilitator-only demos and recovery use
+- [ ] Before any optional Day 2 import, `pac auth list` / `pac auth who` confirm the active profile points to that facilitator demo environment
+- [ ] If Day 2 demo pre-staging is needed, `Import-WorkshopOperativeAssets.ps1 -ImportSolution` has been validated only in that facilitator demo environment
+- [ ] The facilitator can demonstrate the highest-risk modules from this demo environment without depending on student environments
+- [ ] If the delivery plan needs completed end-state artifacts beyond the clean demo base, separate checkpoints, screenshots, or facilitator-owned snapshots are prepared because the repo does not currently auto-build every later-lab outcome
+
 ### Optional: batch student environment provisioning
 
 If provisioning per-student environments (instead of a shared environment), additional Entra app permissions and prerequisites are required:

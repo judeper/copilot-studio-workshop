@@ -27,6 +27,7 @@
   - `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1`
 - Import the Operative solution into the active demo environment:
   - `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution`
+- Keep facilitator demo preparation and student hands-on preparation separate. The repo currently optimizes for a clean validated facilitator demo base, not a fully prebuilt “all labs completed” fallback environment.
 - Generate branded PDF files for students and facilitators (requires Node.js and npm):
   - `cd workshop\automation && npm install && node Generate-WorkshopPDFs.js`
   - Output: `workshop\pdf-output\` (10 numbered PDFs: 4 student, 6 facilitator)
@@ -81,6 +82,7 @@
   - Labs `13`-`24` are the Day 2 Operative track. They import the `Operative` solution, use Dataverse and the `Hiring Hub` app, then extend the `Hiring Agent` with instructions, multi-agent behavior, automation, model selection, moderation, multimodal prompts, document generation, MCP, feedback, and evaluation.
   - Lab `25` is an optional VS Code workflow that edits the cloud agent definition locally and syncs it back to Copilot Studio.
 - `workshop\automation` is for facilitator or demo preparation, not for skipping the student journey. `StudentReady` intentionally leaves later student-owned work unfinished, while `FacilitatorDemo` can pre-stage Day 2 assets in a separate demo environment. `Generate-WorkshopPDFs.js` produces 10 branded PDFs (4 student workbooks + 6 facilitator references) from the Markdown sources into `workshop\pdf-output\`.
+- Future edits should preserve the three-track rollout model: shared prerequisites, facilitator-only demo base, and student hands-on environments. Do not blur facilitator demo imports or fallback artifacts into the student hands-on path.
 - `workshop\automation\Common.ps1` is the shared utility module dot-sourced by all PowerShell scripts. It contains config I/O, validation helpers, console and file logging, and building blocks for batch student provisioning (alias derivation, environment GUID resolution, Power Platform Licensing API wrappers, retry logic, and student-environment map persistence).
 - `workshop\automation\workshop-config.example.json` defines the full config schema including `EnvironmentBootstrap` (environment creation settings and per-student credit allocation), `SharePoint` (site creation and PnP auth), `Teams` (team prefix for student teams), `Identity` (participant email list for batch provisioning), and `Workshop` (wave and concurrency settings).
 - `workshop\assets` contains the Day 2 setup files (`Operative_1_0_0_0.zip`, `job-roles.csv`, `evaluation-criteria.csv`), sample resumes, starter templates, and the `evaluation-test-cases.csv` template for Lab 24. Lab 13 points participants to the local `workshop/assets/` copies first, with facilitator-provided delivery channels as a fallback.

@@ -85,21 +85,32 @@ pwsh -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
 After the wizard completes:
 
 ```powershell
-# Pre-stage shared Day 1 site (Contoso IT site, lists, schema, and sample data)
+# 1. Pre-stage shared Day 1 prerequisites (Contoso IT site, lists, schema, and sample data)
 powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
 
-# Optional: batch-provision per-student environments (requires Entra app with certificate)
-powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
+# 2. Optional: create or reserve a separate facilitator demo environment
+powershell -File .\workshop\automation\Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment
 
-# Optional: pre-import Operative solution in a separate demo environment only
+# 3. Optional: pre-import Operative solution in the facilitator demo environment only
 powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution
 
-# Reset shared environment for re-testing (deletes ContosoIT site + purges recycle bin)
+# 4. Optional: batch-provision per-student environments for hands-on
+powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
+
+# 5. Reset the shared environment for re-testing (deletes ContosoIT site + purges recycle bin)
 pwsh -File .\workshop\automation\Reset-WorkshopEnvironment.ps1 -HardDelete
 
-# Post-workshop: tear down all student environments
+# 6. Post-workshop: tear down all student environments
 powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete
 ```
+
+Treat setup as three separate readiness tracks:
+
+- **Shared prerequisites** — bootstrap, the shared Day 1 SharePoint site, and Day 2 assets.
+- **Facilitator demo base** — a separate demo environment used only for facilitator fallback demos and optional Day 2 solution imports.
+- **Student hands-on environments** — either the shared `StudentReady` path or the optional per-student provisioning path.
+
+The current automation is optimized for a **clean validated facilitator demo base**, not a fully prebuilt “all labs completed” demo environment. If you need completed end-state artifacts for rescue demos, keep separate checkpoints, screenshots, or demo snapshots in addition to the automated setup above.
 
 See the [Facilitator Guide](workshop/facilitator-guide/facilitator-guide.md) for the full delivery checklist.
 
