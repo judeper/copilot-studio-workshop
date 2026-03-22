@@ -37,16 +37,19 @@ Write-Section "Loading workshop configuration"
 $config = Get-WorkshopConfig -Path $ConfigPath
 
 $tenantId = Get-RequiredString -Value ([string]$config.TenantId) -Name 'TenantId'
+$participantEmails = @($config.Identity.ParticipantEmails)
 $rawEnvironmentUrl = [string]$config.EnvironmentUrl
+$environmentUrlReady = $true
 if (Test-PlaceholderValue -Value $rawEnvironmentUrl) {
-    if ($null -ne $config.EnvironmentBootstrap) {
+    if ($Mode -eq 'FacilitatorDemo') {
         throw "Config value 'EnvironmentUrl' is not ready yet. Run Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment (or Invoke-WorkshopLabSetup.ps1 -CreateEnvironment) to create the facilitator environment and capture its URL before prerequisite validation."
     }
-
-    throw "Config value 'EnvironmentUrl' is required."
+    $environmentUrlReady = $false
+    $environmentUrl = $rawEnvironmentUrl
 }
-
-$environmentUrl = Get-RequiredString -Value $rawEnvironmentUrl -Name 'EnvironmentUrl'
+else {
+    $environmentUrl = Get-RequiredString -Value $rawEnvironmentUrl -Name 'EnvironmentUrl'
+}
 $siteUrl = Get-RequiredString -Value ([string]$config.SharePoint.SiteUrl) -Name 'SharePoint.SiteUrl'
 $siteTitle = Get-RequiredString -Value ([string]$config.SharePoint.SiteTitle) -Name 'SharePoint.SiteTitle'
 $siteAlias = Get-RequiredString -Value ([string]$config.SharePoint.SiteAlias) -Name 'SharePoint.SiteAlias'
@@ -69,6 +72,9 @@ if ($sharePointPnPLoginMode -eq 'CertificateThumbprint') {
 }
 
 Write-StepResult -Level PASS -Message "Loaded config for tenant '$tenantId' and environment '$environmentUrl'."
+if (-not $environmentUrlReady) {
+    Write-StepResult -Level WARN -Message "EnvironmentUrl still contains a placeholder value. Shared prerequisite validation can continue, but facilitator environment-specific steps are not ready yet."
+}
 Write-StepResult -Level PASS -Message "Configured SharePoint site '$siteTitle' at '$siteUrl' with alias '$siteAlias'."
 Write-StepResult -Level PASS -Message "Configured SharePoint PnP sign-in with login mode '$sharePointPnPLoginMode' and a client ID."
 if ($sharePointPnPLoginMode -eq 'CertificateThumbprint') {
@@ -76,17 +82,21 @@ if ($sharePointPnPLoginMode -eq 'CertificateThumbprint') {
 }
 
 # Validate Identity.ClientSecret availability (needed for per-student provisioning)
-$clientSecret = [string]$config.Identity.ClientSecret
-$clientSecretEnvVar = [string]$config.Identity.ClientSecretEnvVar
-$hasClientSecret = -not [string]::IsNullOrWhiteSpace($clientSecret) -and -not (Test-PlaceholderValue -Value $clientSecret)
-$hasEnvVarSecret = -not [string]::IsNullOrWhiteSpace($clientSecretEnvVar) -and (Test-Path "Env:\$clientSecretEnvVar")
-if ($hasClientSecret -or $hasEnvVarSecret) {
-    Write-StepResult -Level PASS -Message "Identity.ClientSecret is available (needed for per-student credit allocation and PowerApps admin auth)."
-} elseif (-not [string]::IsNullOrWhiteSpace($clientSecretEnvVar)) {
-    Write-StepResult -Level WARN -Message "Identity.ClientSecretEnvVar is set to '$clientSecretEnvVar' but the environment variable is not defined. Per-student credit allocation will be skipped."
+$resolvedClientSecret = Resolve-ConfiguredClientSecret -Config $config
+if ($resolvedClientSecret.Value) {
+    $secretSource = if ($resolvedClientSecret.Source -eq 'EnvironmentVariable') {
+        "environment variable '$($resolvedClientSecret.EnvironmentVariableName)'"
+    }
+    else {
+        'workshop-config.json'
+    }
+    Write-StepResult -Level PASS -Message "Identity.ClientSecret is available via $secretSource (supports app-only PowerApps admin auth such as DLP checks after one-time delegated Power Platform app registration)."
+} elseif (-not [string]::IsNullOrWhiteSpace($resolvedClientSecret.EnvironmentVariableName)) {
+    Write-StepResult -Level WARN -Message "Identity.ClientSecretEnvVar is set to '$($resolvedClientSecret.EnvironmentVariableName)' but the environment variable is not defined. App-only PowerApps admin auth will be skipped, and Copilot credit allocation may require manual PPAC allocation."
 } else {
-    Write-StepResult -Level WARN -Message "Neither Identity.ClientSecret nor Identity.ClientSecretEnvVar is configured. Per-student credit allocation and PowerApps admin auth will be skipped."
+    Write-StepResult -Level WARN -Message "Neither Identity.ClientSecret nor Identity.ClientSecretEnvVar is configured. App-only PowerApps admin auth will be skipped, and Copilot credit allocation will be manual."
 }
+Write-StepResult -Level INFO -Message "This check can't verify Power Platform management-app registration. Before relying on app-only Power Platform admin calls, make sure the workshop app has the Power Apps Service delegated permission with admin consent and that a delegated Power Platform admin has run New-PowerAppManagementApp or pac admin application register once."
 
 Write-Section "Checking local tooling"
 Require-Module -Name 'PnP.PowerShell'
@@ -102,6 +112,52 @@ else {
     }
     else {
         Write-StepResult -Level WARN -Message "Power Platform CLI (pac) is not installed. Install it before you attempt environment bootstrap or a facilitator demo import."
+    }
+}
+
+Write-Section "Validating student provisioning prerequisites"
+if ($participantEmails.Count -eq 0) {
+    Write-StepResult -Level INFO -Message 'No participant emails are configured, so per-student provisioning checks were skipped.'
+}
+else {
+    Write-StepResult -Level PASS -Message "Configured $($participantEmails.Count) participant email(s) for per-student provisioning."
+
+    if (Test-PlaceholderValue -Value $sharePointPnPCertificateThumbprint) {
+        Write-StepResult -Level WARN -Message "SharePoint.PnPCertificateThumbprint is not configured. Per-student provisioning is not ready until bootstrap imports or creates a certificate and registers it on the workshop app."
+    }
+    else {
+        Require-Module -Name 'Microsoft.Graph.Authentication'
+        $studentProvisioningReadiness = Test-AppOnlyCertificateReadiness -TenantId $tenantId -ClientId $sharePointPnPClientId -Thumbprint $sharePointPnPCertificateThumbprint -SharePointAdminUrl ([string]$config.SharePoint.AdminUrl)
+        if ($studentProvisioningReadiness.CertificateFound) {
+            Write-StepResult -Level PASS -Message "Found the student-provisioning certificate '$($studentProvisioningReadiness.Certificate.Thumbprint)' in Cert:\CurrentUser\My."
+        }
+        else {
+            Write-StepResult -Level WARN -Message "The configured student-provisioning certificate '$sharePointPnPCertificateThumbprint' was not found in Cert:\CurrentUser\My."
+        }
+
+        if ($studentProvisioningReadiness.CertificateExpired) {
+            Write-StepResult -Level WARN -Message "The configured student-provisioning certificate expired on $($studentProvisioningReadiness.Certificate.NotAfter.ToUniversalTime().ToString('u'))."
+        }
+
+        if ($studentProvisioningReadiness.GraphConnected) {
+            Write-StepResult -Level PASS -Message 'Certificate-based Microsoft Graph app-only auth succeeded for student provisioning.'
+        }
+        elseif ($studentProvisioningReadiness.CertificateFound -and -not $studentProvisioningReadiness.CertificateExpired) {
+            Write-StepResult -Level WARN -Message 'Certificate-based Microsoft Graph app-only auth is not ready for student provisioning.'
+        }
+
+        if ($studentProvisioningReadiness.SharePointConnected) {
+            Write-StepResult -Level PASS -Message 'Certificate-based SharePoint app-only auth succeeded for student provisioning.'
+        }
+        elseif ($studentProvisioningReadiness.CertificateFound -and -not $studentProvisioningReadiness.CertificateExpired) {
+            Write-StepResult -Level WARN -Message 'Certificate-based SharePoint app-only auth is not ready for student provisioning.'
+        }
+
+        Write-StepResult -Level INFO -Message 'This check confirms SharePoint app-only connectivity, but some tenants still deny app-only site creation. When that happens, Invoke-StudentEnvironmentProvisioning.ps1 falls back to delegated PnP sign-in for the site-creation step.'
+
+        foreach ($studentProvisioningError in $studentProvisioningReadiness.Errors) {
+            Write-StepResult -Level WARN -Message $studentProvisioningError
+        }
     }
 }
 

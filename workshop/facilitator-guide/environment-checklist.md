@@ -32,13 +32,18 @@ If provisioning per-student environments (instead of a shared environment), addi
 
 - [ ] Entra app registration has **Microsoft Graph** application permissions: `Team.Create`, `User.Read.All`, `Group.ReadWrite.All`
 - [ ] Entra app registration has **SharePoint** application permission: `Sites.FullControl.All`
-- [ ] Entra app is registered via `New-PowerAppManagementApp` for Power Platform Licensing API access
-- [ ] Certificate (.pfx with private key) is imported into the facilitator machine certificate store (`Cert:\CurrentUser\My`)
+- [ ] Entra app registration has the **Power Apps Service** delegated permission for **Access the Power Apps Service API** and admin consent
+- [ ] A delegated Power Platform admin has registered the Entra app with Power Platform once (for example via `New-PowerAppManagementApp` or `pac admin application register`)
+- [ ] Bootstrap has either reused, imported, or created the student-provisioning certificate and saved its thumbprint in `SharePoint.PnPCertificateThumbprint`
+- [ ] `Invoke-WorkshopPrereqCheck.ps1` reports that student-provisioning SharePoint app-only auth succeeds
+- [ ] Be ready to complete delegated SharePoint sign-in during provisioning if the tenant rejects app-only site creation or site-content initialization; the script falls back to the configured PnP login mode, can grant the facilitator account site-collection-admin access, and then resumes from the saved student map on retry
 - [ ] `Microsoft.PowerApps.Administration.PowerShell` module v2.0.150+ is installed (for `Add-PowerAppsAccount -ClientSecret`)
 - [ ] `Identity.ParticipantEmails` is populated in `workshop-config.json`
-- [ ] `Identity.ClientSecret` is set for Power Platform Licensing API token acquisition
+- [ ] A client secret is available either in `Identity.ClientSecret` or, preferably, via `Identity.ClientSecretEnvVar` (the bootstrap wizard can generate and store one in `COPILOT_WORKSHOP_APP_SECRET`; this supports app-only PowerApps admin auth after the one-time registration above)
 - [ ] Tenant has sufficient Copilot Studio credit capacity for all students (default: 25,000 per student)
 - [ ] `D365_CDSSampleApp` template is enabled for the target region — verify with `pac admin list-app-templates` (enabled for `unitedstates`, may be disabled in other regions)
+- [ ] If preview app-only credit allocation still returns 403, the facilitator has a manual PPAC credit-allocation fallback ready
+- [ ] `EnvironmentBootstrap.DomainName` is set to a workshop-safe base prefix; student environment domains are auto-shortened as needed so each student alias remains unique within the 24-character limit
 - Run: `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1`
 - Post-workshop cleanup: `powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete`
 

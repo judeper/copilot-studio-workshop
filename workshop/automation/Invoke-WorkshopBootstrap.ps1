@@ -200,6 +200,163 @@ Write-Host "Working directory: $repoRoot" -ForegroundColor Gray
 
 . $commonPath
 
+$script:WorkshopGraphAdminScopes = @(
+    'Application.ReadWrite.All'
+    'DelegatedPermissionGrant.ReadWrite.All'
+    'Application.Read.All'
+)
+
+function Connect-WorkshopGraphAdminSession {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId,
+
+        [Parameter()]
+        [string[]]$RequiredScopes = $script:WorkshopGraphAdminScopes
+    )
+
+    $graphContext = Get-MgContext -ErrorAction SilentlyContinue
+    if ($graphContext -and $graphContext.TenantId -eq $TenantId) {
+        $grantedScopes = @($graphContext.Scopes)
+        $missingScopes = $RequiredScopes | Where-Object { $_ -notin $grantedScopes }
+        if ($missingScopes.Count -eq 0) {
+            return
+        }
+    }
+
+    Write-Host "`nSign in with an admin account to continue..." -ForegroundColor Yellow
+    Write-Host "  A device code will be shown in the terminal if a browser popup is not available." -ForegroundColor Yellow
+    Disconnect-MgGraph -ErrorAction SilentlyContinue
+    Connect-MgGraph -TenantId $TenantId -Scopes $RequiredScopes -UseDeviceCode -ContextScope Process -NoWelcome
+}
+
+function Get-WorkshopApplicationRegistration {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+
+        [Parameter()]
+        [string[]]$Select = @('id', 'appId', 'displayName')
+    )
+
+    $selectClause = [string]::Join(',', $Select)
+    return Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/applications(appId='$ClientId')?`$select=$selectClause"
+}
+
+function Ensure-WorkshopAppCertificateCredential {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+
+        [Parameter(Mandatory = $true)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate,
+
+        [Parameter()]
+        [string]$DisplayName = 'Workshop Provisioning Certificate'
+    )
+
+    $app = Get-WorkshopApplicationRegistration -ClientId $ClientId -Select @('id', 'appId', 'displayName', 'keyCredentials')
+    $existingKeyCredentials = @($app.keyCredentials)
+    $thumbprintBase64 = [Convert]::ToBase64String($Certificate.GetCertHash())
+    $matchingKey = $existingKeyCredentials | Where-Object { [string]$_.customKeyIdentifier -eq $thumbprintBase64 } | Select-Object -First 1
+    if ($matchingKey) {
+        return [pscustomobject]@{
+            Added = $false
+            AppId = $app.id
+        }
+    }
+
+    $preservedKeyCredentials = foreach ($existingKey in $existingKeyCredentials) {
+        if ([string]::IsNullOrWhiteSpace([string]$existingKey.key)) {
+            throw "Existing certificate credential '$($existingKey.displayName)' is missing key material in the Graph response; refusing to overwrite it."
+        }
+
+        @{
+            customKeyIdentifier = $existingKey.customKeyIdentifier
+            displayName         = $existingKey.displayName
+            endDateTime         = ([DateTimeOffset]$existingKey.endDateTime).ToUniversalTime().ToString('o')
+            key                 = $existingKey.key
+            keyId               = [string]$existingKey.keyId
+            startDateTime       = ([DateTimeOffset]$existingKey.startDateTime).ToUniversalTime().ToString('o')
+            type                = $existingKey.type
+            usage               = $existingKey.usage
+        }
+    }
+
+    $newKeyCredential = @{
+        customKeyIdentifier = $thumbprintBase64
+        displayName         = $DisplayName
+        endDateTime         = $Certificate.NotAfter.ToUniversalTime().ToString('o')
+        key                 = [Convert]::ToBase64String($Certificate.RawData)
+        keyId               = ([Guid]::NewGuid()).ToString()
+        startDateTime       = $Certificate.NotBefore.ToUniversalTime().ToString('o')
+        type                = 'AsymmetricX509Cert'
+        usage               = 'Verify'
+    }
+
+    $keyCredentialsToPersist = @()
+    $keyCredentialsToPersist += @($preservedKeyCredentials)
+    $keyCredentialsToPersist += $newKeyCredential
+
+    $patchBody = @{
+        keyCredentials = $keyCredentialsToPersist
+    } | ConvertTo-Json -Depth 10
+
+    Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/v1.0/applications/$($app.id)" -Body $patchBody -ContentType 'application/json' | Out-Null
+    return [pscustomobject]@{
+        Added = $true
+        AppId = $app.id
+    }
+}
+
+function New-WorkshopAppClientSecret {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+
+        [Parameter()]
+        [string]$DisplayName = 'Copilot Studio Workshop Provisioning Secret',
+
+        [Parameter()]
+        [int]$ValidityMonths = 12
+    )
+
+    $app = Get-WorkshopApplicationRegistration -ClientId $ClientId -Select @('id', 'appId', 'displayName')
+    $body = @{
+        passwordCredential = @{
+            displayName = $DisplayName
+            endDateTime = (Get-Date).AddMonths($ValidityMonths).ToUniversalTime().ToString('o')
+        }
+    } | ConvertTo-Json -Depth 5
+
+    $response = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/applications/$($app.id)/addPassword" -Body $body -ContentType 'application/json'
+    if ([string]::IsNullOrWhiteSpace([string]$response.secretText)) {
+        throw 'Microsoft Graph did not return the generated client secret.'
+    }
+
+    return [pscustomobject]@{
+        SecretText  = [string]$response.secretText
+        EndDateTime = [DateTimeOffset]$response.endDateTime
+    }
+}
+
+function Import-WorkshopPfxCertificateFile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath
+    )
+
+    try {
+        return Import-PfxCertificate -FilePath $FilePath -CertStoreLocation Cert:\CurrentUser\My -ErrorAction Stop
+    }
+    catch {
+        Write-Status -Label 'Certificate' -Status "Initial import failed: $($_.Exception.Message)" -Color 'Yellow'
+        Write-Host "  If the .pfx is password-protected, enter the password now." -ForegroundColor Yellow
+        $password = Read-Host '  PFX password' -AsSecureString
+        return Import-PfxCertificate -FilePath $FilePath -CertStoreLocation Cert:\CurrentUser\My -Password $password -ErrorAction Stop
+    }
+}
+
 # ============================================================================
 # Step 1: CLI Tools
 # ============================================================================
@@ -338,28 +495,7 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
     try {
         # Ensure Graph connection with the scopes needed to create apps, inspect resource permissions,
         # and create delegated permission grants.
-        $requiredGraphScopes = @(
-            'Application.ReadWrite.All'
-            'DelegatedPermissionGrant.ReadWrite.All'
-            'Application.Read.All'
-        )
-
-        $graphConnected = $false
-        $graphContext = Get-MgContext -ErrorAction SilentlyContinue
-        if ($graphContext -and $graphContext.TenantId -eq $tenantId) {
-            $grantedScopes = @($graphContext.Scopes)
-            $missingScopes = $requiredGraphScopes | Where-Object { $_ -notin $grantedScopes }
-            if ($missingScopes.Count -eq 0) {
-                $graphConnected = $true
-            }
-        }
-
-        if (-not $graphConnected) {
-            Write-Host "`nSign in with an admin account to create the Entra app..." -ForegroundColor Yellow
-            Write-Host "  A device code will be shown in the terminal if a browser popup is not available." -ForegroundColor Yellow
-            Disconnect-MgGraph -ErrorAction SilentlyContinue
-            Connect-MgGraph -TenantId $tenantId -Scopes $requiredGraphScopes -UseDeviceCode -ContextScope Process -NoWelcome
-        }
+        Connect-WorkshopGraphAdminSession -TenantId $tenantId
 
         $appDisplayName = "Copilot Studio Workshop - $tenantName"
         $spOnlineAppId = '00000003-0000-0ff1-ce00-000000000000'  # SharePoint Online
@@ -574,6 +710,9 @@ $domainDefault = "$tenantName-workshop"
 $config.EnvironmentBootstrap.DomainName = $domainDefault
 Write-Host "`n  Environment domain: $domainDefault.crm.dynamics.com" -ForegroundColor White
 
+$studentProvisioningConfigured = $false
+$studentProvisioningCertificateReady = $true
+
 # Student provisioning
 Write-Host "`n--- Student Provisioning (Optional) ---" -ForegroundColor Cyan
 if (Prompt-YesNo -Question 'Provision per-student environments?' -Default $false) {
@@ -608,33 +747,134 @@ if (Prompt-YesNo -Question 'Provision per-student environments?' -Default $false
     }
 
     if ($emails.Count -gt 0) {
+        $studentProvisioningConfigured = $true
         $config.Identity.ParticipantEmails = @($emails)
         Write-Status -Label 'Students' -Status "$($emails.Count) email(s) configured" -Color 'Green'
 
         # Per-student provisioning requires app-only auth (certificate)
         Write-Host "`n  Per-student provisioning requires app-only (certificate) authentication." -ForegroundColor Yellow
-        $pfxFiles = Get-ChildItem -Path $repoRoot -Filter '*.pfx' -ErrorAction SilentlyContinue
-        if ($pfxFiles) {
-            Write-Host "  Found .pfx file(s): $($pfxFiles.Name -join ', ')" -ForegroundColor Cyan
-            if (Prompt-YesNo -Question "  Import $($pfxFiles[0].Name) into your certificate store?") {
-                try {
-                    $cert = Import-PfxCertificate -FilePath $pfxFiles[0].FullName -CertStoreLocation Cert:\CurrentUser\My -ErrorAction Stop
-                    $config.SharePoint.PnPLoginMode = 'CertificateThumbprint'
-                    $config.SharePoint.PnPCertificateThumbprint = $cert.Thumbprint
-                    Write-Status -Label 'Certificate' -Status "Imported (thumbprint: $($cert.Thumbprint))" -Color 'Green'
-                    Write-Status -Label 'Auth mode' -Status 'Switched to CertificateThumbprint for batch provisioning' -Color 'Green'
-                }
-                catch {
-                    Write-Status -Label 'Certificate' -Status "Import failed: $_" -Color 'Red'
-                    Write-Host "  The .pfx may be password-protected. Import it manually:" -ForegroundColor Yellow
-                    Write-Host "  Import-PfxCertificate -FilePath '$($pfxFiles[0].FullName)' -CertStoreLocation Cert:\CurrentUser\My -Password (Read-Host -AsSecureString)" -ForegroundColor Gray
+        $studentProvisioningCertificateReady = $false
+        $provisioningCertificate = $null
+
+        $configuredThumbprint = [string]$config.SharePoint.PnPCertificateThumbprint
+        if (-not (Test-PlaceholderValue -Value $configuredThumbprint)) {
+            $provisioningCertificate = Get-CurrentUserCertificate -Thumbprint $configuredThumbprint
+            if ($provisioningCertificate) {
+                Write-Status -Label 'Certificate' -Status "Using existing local certificate ($($provisioningCertificate.Thumbprint))" -Color 'Green'
+            }
+            else {
+                Write-Status -Label 'Certificate' -Status "Configured thumbprint '$configuredThumbprint' was not found locally -- looking for a .pfx or creating a new certificate." -Color 'Yellow'
+            }
+        }
+
+        if ($provisioningCertificate -and $provisioningCertificate.NotAfter -le (Get-Date)) {
+            Write-Status -Label 'Certificate' -Status "Configured certificate expired on $($provisioningCertificate.NotAfter.ToUniversalTime().ToString('u')) -- a new certificate is required." -Color 'Yellow'
+            $provisioningCertificate = $null
+        }
+
+        if (-not $provisioningCertificate) {
+            $pfxFiles = Get-ChildItem -Path $repoRoot -Filter '*.pfx' -ErrorAction SilentlyContinue
+            if ($pfxFiles) {
+                Write-Host "  Found .pfx file(s): $($pfxFiles.Name -join ', ')" -ForegroundColor Cyan
+                if (Prompt-YesNo -Question "  Import $($pfxFiles[0].Name) into your certificate store?" -Default $true) {
+                    try {
+                        $provisioningCertificate = Import-WorkshopPfxCertificateFile -FilePath $pfxFiles[0].FullName
+                        Write-Status -Label 'Certificate' -Status "Imported (thumbprint: $($provisioningCertificate.Thumbprint))" -Color 'Green'
+                    }
+                    catch {
+                        Write-Status -Label 'Certificate' -Status "Import failed: $($_.Exception.Message)" -Color 'Red'
+                    }
                 }
             }
-        } else {
-            Write-Host "  No .pfx file found in repo root. You can set the certificate thumbprint manually in workshop-config.json." -ForegroundColor Yellow
+        }
+
+        if ($provisioningCertificate -and $provisioningCertificate.NotAfter -le (Get-Date)) {
+            Write-Status -Label 'Certificate' -Status "Imported certificate expired on $($provisioningCertificate.NotAfter.ToUniversalTime().ToString('u')) -- a new certificate is required." -Color 'Yellow'
+            $provisioningCertificate = $null
+        }
+
+        if (-not $provisioningCertificate -and (Prompt-YesNo -Question '  Create a new self-signed workshop certificate now?' -Default $true)) {
+            try {
+                $certificateName = "Copilot Studio Workshop - $tenantName Provisioning"
+                $provisioningCertificate = New-WorkshopSelfSignedCertificate -CommonName $certificateName -FriendlyName $certificateName
+                Write-Status -Label 'Certificate' -Status "Created self-signed certificate (thumbprint: $($provisioningCertificate.Thumbprint))" -Color 'Green'
+            }
+            catch {
+                Write-Status -Label 'Certificate' -Status "Certificate creation failed: $($_.Exception.Message)" -Color 'Red'
+            }
+        }
+
+        if ($provisioningCertificate) {
+            $config.SharePoint.PnPCertificateThumbprint = $provisioningCertificate.Thumbprint
+            if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match '^<') {
+                Write-Status -Label 'Entra App' -Status 'No workshop app client ID is configured, so the certificate could not be registered for app-only auth.' -Color 'Yellow'
+            }
+            else {
+                try {
+                    Connect-WorkshopGraphAdminSession -TenantId $tenantId
+                    $certificateRegistration = Ensure-WorkshopAppCertificateCredential -ClientId $existingClientId -Certificate $provisioningCertificate -DisplayName "Workshop Provisioning Certificate - $tenantName"
+                    if ($certificateRegistration.Added) {
+                        Write-Status -Label 'Entra App' -Status 'Registered certificate public key for app-only student provisioning' -Color 'Green'
+                    }
+                    else {
+                        Write-Status -Label 'Entra App' -Status 'Certificate public key already registered for app-only student provisioning' -Color 'Green'
+                    }
+                    $studentProvisioningCertificateReady = $true
+                }
+                catch {
+                    Write-Status -Label 'Entra App' -Status "Certificate registration failed: $($_.Exception.Message)" -Color 'Yellow'
+                }
+            }
+        }
+        else {
+            Write-Status -Label 'Certificate' -Status 'No usable certificate is configured yet. Student provisioning will remain blocked until one is created or imported.' -Color 'Yellow'
+        }
+
+        $resolvedClientSecret = Resolve-ConfiguredClientSecret -Config $config
+        if ($resolvedClientSecret.Value) {
+            $clientSecretSource = if ($resolvedClientSecret.Source -eq 'EnvironmentVariable') {
+                "environment variable '$($resolvedClientSecret.EnvironmentVariableName)'"
+            }
+            else {
+                'workshop-config.json'
+            }
+            Write-Status -Label 'Client Secret' -Status "Already available via $clientSecretSource" -Color 'Green'
+        }
+        elseif ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match '^<') {
+            Write-Status -Label 'Client Secret' -Status 'No workshop app client ID is configured, so client-secret generation was skipped.' -Color 'Yellow'
+        }
+        elseif (Prompt-YesNo -Question '  Generate and store a client secret for app-only PowerApps admin auth (for example DLP checks)?' -Default $false) {
+            try {
+                $clientSecretEnvVar = [string]$config.Identity.ClientSecretEnvVar
+                if ((Test-PlaceholderValue -Value $clientSecretEnvVar) -or [string]::IsNullOrWhiteSpace($clientSecretEnvVar)) {
+                    $clientSecretEnvVar = 'COPILOT_WORKSHOP_APP_SECRET'
+                }
+
+                $clientSecretEnvVar = Prompt-Value -Prompt '  Environment variable name for the client secret' -Default $clientSecretEnvVar -Required
+                $existingEnvSecret = [Environment]::GetEnvironmentVariable($clientSecretEnvVar, 'User')
+                if ([string]::IsNullOrWhiteSpace($existingEnvSecret) -or (Prompt-YesNo -Question "  Overwrite existing environment variable '$clientSecretEnvVar'?" -Default $false)) {
+                    Connect-WorkshopGraphAdminSession -TenantId $tenantId
+                    $clientSecretResult = New-WorkshopAppClientSecret -ClientId $existingClientId
+                    Set-UserEnvironmentVariable -Name $clientSecretEnvVar -Value $clientSecretResult.SecretText
+                    $config.Identity.ClientSecret = ''
+                    $config.Identity.ClientSecretEnvVar = $clientSecretEnvVar
+                    Write-Status -Label 'Client Secret' -Status "Stored in user environment variable '$clientSecretEnvVar' (expires $($clientSecretResult.EndDateTime.ToUniversalTime().ToString('u')))" -Color 'Green'
+                }
+                else {
+                    Write-Status -Label 'Client Secret' -Status "Kept the existing value in environment variable '$clientSecretEnvVar'." -Color 'Yellow'
+                }
+            }
+            catch {
+                Write-Status -Label 'Client Secret' -Status "Generation or storage failed: $($_.Exception.Message)" -Color 'Yellow'
+            }
+        }
+        else {
+            Write-Status -Label 'Client Secret' -Status 'Skipped -- app-only PowerApps admin checks remain optional/manual, and Copilot credit allocation may still require manual PPAC steps.' -Color 'Yellow'
         }
     }
 }
+
+Disconnect-MgGraph -ErrorAction SilentlyContinue
 
 # Save config
 try {
@@ -677,6 +917,8 @@ if (Test-CommandAvailable -Name 'pac') {
 Write-Banner 'Step 5: Entra App Connectivity Test'
 
 $clientId = [string]$config.SharePoint.PnPClientId
+$studentProvisioningConfigured = @($config.Identity.ParticipantEmails).Count -gt 0
+$studentProvisioningCertificateReady = -not $studentProvisioningConfigured
 if (-not [string]::IsNullOrWhiteSpace($clientId) -and $clientId -notmatch '^<') {
     if ($config.SharePoint.PnPLoginMode -eq 'CertificateThumbprint' -and -not [string]::IsNullOrWhiteSpace([string]$config.SharePoint.PnPCertificateThumbprint)) {
         try {
@@ -692,6 +934,27 @@ if (-not [string]::IsNullOrWhiteSpace($clientId) -and $clientId -notmatch '^<') 
     } else {
         # Test interactive auth (OSLogin/DeviceLogin/Interactive)
         Write-Status -Label 'PnP connectivity' -Status "Will use $($config.SharePoint.PnPLoginMode) -- connectivity tested during lab setup" -Color 'Green'
+    }
+
+    if ($studentProvisioningConfigured) {
+        try {
+            Import-Module Microsoft.Graph.Authentication -ErrorAction Stop | Out-Null
+            Import-Module PnP.PowerShell -ErrorAction Stop | Out-Null
+            $appOnlyReadiness = Test-AppOnlyCertificateReadiness -TenantId $tenantId -ClientId $clientId -Thumbprint ([string]$config.SharePoint.PnPCertificateThumbprint) -SharePointAdminUrl ([string]$config.SharePoint.AdminUrl)
+            if ($appOnlyReadiness.CertificateFound -and -not $appOnlyReadiness.CertificateExpired -and $appOnlyReadiness.GraphConnected -and $appOnlyReadiness.SharePointConnected) {
+                Write-Status -Label 'Student provisioning cert' -Status 'Graph + SharePoint app-only certificate auth succeeded' -Color 'Green'
+                $studentProvisioningCertificateReady = $true
+            }
+            else {
+                $studentProvisioningCertificateReady = $false
+                $studentProvisioningMessage = if ($appOnlyReadiness.Errors.Count -gt 0) { $appOnlyReadiness.Errors -join ' | ' } else { 'Certificate-based app-only auth is not ready yet.' }
+                Write-Status -Label 'Student provisioning cert' -Status $studentProvisioningMessage -Color 'Yellow'
+            }
+        }
+        catch {
+            $studentProvisioningCertificateReady = $false
+            Write-Status -Label 'Student provisioning cert' -Status "Certificate readiness test failed: $($_.Exception.Message)" -Color 'Yellow'
+        }
     }
 } else {
     Write-Status -Label 'Entra App' -Status 'No Client ID configured -- skipping connectivity test' -Color 'Yellow'
@@ -767,6 +1030,13 @@ $dashboard = @(
         }
     }
 )
+
+if ($studentProvisioningConfigured) {
+    $dashboard += @{
+        Label = 'Student provisioning cert auth'
+        Check = { $studentProvisioningCertificateReady }
+    }
+}
 
 $allGreen = $true
 $failedChecks = [System.Collections.ArrayList]@()

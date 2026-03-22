@@ -52,14 +52,126 @@ $sharePointConfig = $config.SharePoint
 $sitePrefix = if ([string]::IsNullOrWhiteSpace([string]$sharePointConfig.SitePrefix)) { 'ContosoIT' } else { [string]$sharePointConfig.SitePrefix }
 $adminUrl = Get-RequiredString -Value ([string]$sharePointConfig.AdminUrl) -Name 'SharePoint.AdminUrl'
 $pnpClientId = Get-RequiredString -Value ([string]$sharePointConfig.PnPClientId) -Name 'SharePoint.PnPClientId'
+$pnpLoginMode = if ([string]::IsNullOrWhiteSpace([string]$sharePointConfig.PnPLoginMode)) { 'OSLogin' } else { [string]$sharePointConfig.PnPLoginMode }
 $pnpCertThumbprint = [string]$sharePointConfig.PnPCertificateThumbprint
+$requiresAppOnlyCertificate = (-not $SkipSharePoint) -or (-not $SkipTeams)
+if ($requiresAppOnlyCertificate) {
+    if (Test-PlaceholderValue -Value $pnpCertThumbprint) {
+        throw "SharePoint.PnPCertificateThumbprint is required for per-student provisioning. Re-run bootstrap to import or create a certificate and register it on the workshop app."
+    }
+
+    $pnpCertThumbprint = Get-RequiredString -Value $pnpCertThumbprint -Name 'SharePoint.PnPCertificateThumbprint'
+    $provisioningCertificate = Get-CurrentUserCertificate -Thumbprint $pnpCertThumbprint
+    if ($null -eq $provisioningCertificate) {
+        throw "Certificate '$pnpCertThumbprint' was not found in Cert:\CurrentUser\My. Import or recreate it before running per-student provisioning."
+    }
+
+    if ($provisioningCertificate.NotAfter -le (Get-Date)) {
+        throw "Certificate '$($provisioningCertificate.Thumbprint)' expired on $($provisioningCertificate.NotAfter.ToUniversalTime().ToString('u')). Re-run bootstrap to create a fresh certificate before provisioning students."
+    }
+}
+
+$resolvedClientSecret = Resolve-ConfiguredClientSecret -Config $config
+$clientSecret = [string]$resolvedClientSecret.Value
 
 $teamsConfig = $config.Teams
 $teamPrefix = if ($null -eq $teamsConfig -or [string]::IsNullOrWhiteSpace([string]$teamsConfig.StudentTeamPrefix)) { 'Contoso Recruiting' } else { [string]$teamsConfig.StudentTeamPrefix }
 
 $mapFilePath = Join-Path -Path $PSScriptRoot -ChildPath 'student-environment-map.json'
 
+function Connect-SharePointDelegatedWithFallback {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Url,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LoginMode,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Label
+    )
+
+    $effectiveLoginMode = switch ($LoginMode) {
+        'OSLogin' { 'OSLogin' }
+        'Interactive' { 'Interactive' }
+        'DeviceLogin' { 'DeviceLogin' }
+        default { 'DeviceLogin' }
+    }
+
+    if ($effectiveLoginMode -ne $LoginMode) {
+        Write-Log -Level INFO -Message "SharePoint login mode '$LoginMode' can't be used for delegated fallback. Using '$effectiveLoginMode' instead." -Component 'SP'
+    }
+
+    $methods = switch ($effectiveLoginMode) {
+        'OSLogin' { @('OSLogin', 'DeviceLogin') }
+        'Interactive' { @('Interactive', 'DeviceLogin') }
+        default { @('DeviceLogin') }
+    }
+
+    $lastError = $null
+    foreach ($method in $methods) {
+        try {
+            Write-Log -Level INFO -Message "Connecting to $Label using delegated PnP login mode '$method'." -Component 'SP'
+            switch ($method) {
+                'OSLogin' {
+                    Connect-PnPOnline -Url $Url -ClientId $ClientId -OSLogin -ErrorAction Stop
+                }
+                'Interactive' {
+                    Connect-PnPOnline -Url $Url -ClientId $ClientId -Interactive -ErrorAction Stop
+                }
+                'DeviceLogin' {
+                    Connect-PnPOnline -Url $Url -ClientId $ClientId -Tenant $TenantId -DeviceLogin -ErrorAction Stop
+                }
+            }
+            return
+        }
+        catch {
+            $lastError = $_
+            if ($methods.Count -gt 1 -and $method -ne $methods[-1]) {
+                Write-Log -Level WARN -Message "$method failed for ${Label}: $($_.Exception.Message). Trying fallback..." -Component 'SP'
+            }
+        }
+    }
+
+    throw "Unable to connect to $Label after trying $($methods -join ', '). Last error: $lastError"
+}
+
+function Get-ConnectedPnPCurrentUserEmail {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Label
+    )
+
+    $web = Get-PnPWeb -ErrorAction Stop
+    $currentUser = Get-PnPProperty -ClientObject $web -Property CurrentUser
+    $currentUserEmail = [string]$currentUser.Email
+    if ([string]::IsNullOrWhiteSpace($currentUserEmail)) {
+        throw "Connected successfully to $Label, but couldn't determine the delegated user's email address."
+    }
+
+    return $currentUserEmail
+}
+
 Write-Log -Level PASS -Message "Loaded config: $($participantEmails.Count) students, region=$region, credits=$creditsPerEnv, batch=$batchSize"
+if ($requiresAppOnlyCertificate) {
+    Write-Log -Level PASS -Message "Using app-only certificate '$($provisioningCertificate.Thumbprint)' (expires $($provisioningCertificate.NotAfter.ToUniversalTime().ToString('u')))."
+}
+
+if (-not [string]::IsNullOrWhiteSpace($clientSecret)) {
+    $clientSecretSource = if ($resolvedClientSecret.Source -eq 'EnvironmentVariable') {
+        "environment variable '$($resolvedClientSecret.EnvironmentVariableName)'"
+    }
+    else {
+        'workshop-config.json'
+    }
+    Write-Log -Level PASS -Message "Client secret resolved from $clientSecretSource."
+}
 
 if ($ValidateOnly) {
     Write-Log -Level INFO -Message 'ValidateOnly mode — exiting after config validation.'
@@ -82,13 +194,20 @@ Write-Log -Level PASS -Message 'pac auth profile active.'
 
 if (-not $SkipDlpCheck) {
     Require-Module -Name 'Microsoft.PowerApps.Administration.PowerShell'
-    Write-Log -Level INFO -Message 'Authenticating PowerApps Admin module...'
-    Add-PowerAppsAccount -TenantID $tenantId -ApplicationId $pnpClientId -ClientSecret ([string]$config.Identity.ClientSecret) -ErrorAction SilentlyContinue
-    if (-not $?) {
-        Write-Log -Level WARN -Message 'Add-PowerAppsAccount failed — DLP check will be skipped. Ensure the facilitator verifies DLP manually.'
+    if ([string]::IsNullOrWhiteSpace($clientSecret)) {
+        Write-Log -Level WARN -Message 'No client secret is available — skipping PowerApps admin auth and DLP checks.'
         $SkipDlpCheck = $true
-    } else {
-        Write-Log -Level PASS -Message 'PowerApps Admin session established.'
+    }
+    else {
+        Write-Log -Level INFO -Message 'Authenticating PowerApps Admin module...'
+        Add-PowerAppsAccount -TenantID $tenantId -ApplicationId $pnpClientId -ClientSecret $clientSecret -ErrorAction SilentlyContinue
+        if (-not $?) {
+            Write-Log -Level WARN -Message 'Add-PowerAppsAccount failed — DLP check will be skipped. Confirm the workshop app was registered with Power Platform once by a delegated admin, then verify DLP manually.'
+            $SkipDlpCheck = $true
+        }
+        else {
+            Write-Log -Level PASS -Message 'PowerApps Admin session established.'
+        }
     }
 }
 
@@ -100,8 +219,13 @@ if (-not $SkipSharePoint) {
 if (-not $SkipTeams) {
     Require-Module -Name 'Microsoft.Graph.Authentication'
     Write-Log -Level INFO -Message 'Connecting to Microsoft Graph (app-only, certificate)...'
-    Connect-MgGraph -ClientId $pnpClientId -TenantId $tenantId -CertificateThumbprint $pnpCertThumbprint -NoWelcome
-    Write-Log -Level PASS -Message 'Microsoft Graph session established.'
+    try {
+        Connect-MgGraph -ClientId $pnpClientId -TenantId $tenantId -CertificateThumbprint $pnpCertThumbprint -ContextScope Process -NoWelcome
+        Write-Log -Level PASS -Message 'Microsoft Graph session established.'
+    }
+    catch {
+        throw "Microsoft Graph app-only auth failed with certificate '$pnpCertThumbprint'. Confirm the certificate is still in Cert:\CurrentUser\My and is registered on the workshop app. Details: $($_.Exception.Message)"
+    }
 }
 
 # ============================================================================
@@ -109,14 +233,23 @@ if (-not $SkipTeams) {
 # ============================================================================
 Write-Section 'Phase 3: Pre-flight validation'
 
-$existingMap = Read-StudentEnvironmentMap -Path $mapFilePath
+$existingMap = @(Read-StudentEnvironmentMap -Path $mapFilePath)
+$completedExistingEntries = @($existingMap | Where-Object { [string]$_.Status -eq 'Completed' })
+$retainedMapEntries = @($existingMap | Where-Object { [string]$_.Status -eq 'Completed' -or [string]$_.Status -eq 'Skipped' })
 if ($existingMap.Count -gt 0) {
-    Write-Log -Level WARN -Message "Found existing student map with $($existingMap.Count) entries. New students will be appended; duplicates skipped."
+    Write-Log -Level WARN -Message "Found existing student map with $($existingMap.Count) entries. Completed entries will be skipped; failed entries can be retried."
 }
 
 $alreadyProvisioned = @{}
-foreach ($entry in $existingMap) {
+foreach ($entry in $retainedMapEntries) {
     if ($entry.Email) { $alreadyProvisioned[$entry.Email.ToLowerInvariant()] = $true }
+}
+
+$existingEntriesByEmail = @{}
+foreach ($entry in $existingMap) {
+    if ($entry.Email) {
+        $existingEntriesByEmail[$entry.Email.ToLowerInvariant()] = $entry
+    }
 }
 
 $studentsToProvision = @($participantEmails | Where-Object {
@@ -135,18 +268,10 @@ Write-Log -Level INFO -Message "$($studentsToProvision.Count) students to provis
 # ============================================================================
 Write-Section 'Phase 4: Registering Power Platform Management App'
 
-$clientSecret = [string]$config.Identity.ClientSecret
 if (-not [string]::IsNullOrWhiteSpace($clientSecret) -and -not (Test-PlaceholderValue -Value $clientSecret)) {
-    Write-Log -Level INFO -Message 'Registering Entra app as Power Platform Management App (idempotent)...'
-    try {
-        New-PowerAppManagementApp -ApplicationId $pnpClientId -ErrorAction SilentlyContinue
-        Write-Log -Level PASS -Message 'New-PowerAppManagementApp completed.'
-    }
-    catch {
-        Write-Log -Level WARN -Message "New-PowerAppManagementApp returned: $_. Continuing — registration may already exist."
-    }
+    Write-Log -Level WARN -Message "Skipping New-PowerAppManagementApp in this app-only flow. Microsoft documents that a service principal can't register itself; a delegated Power Platform admin must register app '$pnpClientId' once with New-PowerAppManagementApp or pac admin application register."
 } else {
-    Write-Log -Level WARN -Message 'No Identity.ClientSecret configured — skipping Management App registration and credit allocation.'
+    Write-Log -Level WARN -Message 'No client secret is available — skipping app-only PowerApps admin checks and preview credit allocation.'
 }
 
 # ============================================================================
@@ -187,7 +312,7 @@ if (-not $SkipDlpCheck) {
 # ============================================================================
 Write-Section "Phase 6-8: Provisioning $($studentsToProvision.Count) student environments"
 
-$studentMap = [System.Collections.ArrayList]@($existingMap)
+$studentMap = [System.Collections.ArrayList]@($retainedMapEntries)
 $batchNumber = 0
 
 for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
@@ -203,15 +328,21 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
 
         Write-Log -Level INFO -Message "Provisioning $studentEmail (alias=$studentAlias, domain=$domainName)" -Component 'ENV'
 
+        $existingStudentRecord = $null
+        $studentEmailKey = $studentEmail.ToLowerInvariant()
+        if ($existingEntriesByEmail.ContainsKey($studentEmailKey)) {
+            $existingStudentRecord = $existingEntriesByEmail[$studentEmailKey]
+        }
+
         $studentRecord = [ordered]@{
             Email           = $studentEmail
             Alias           = $studentAlias
             DomainName      = $domainName
-            EnvironmentUrl  = $null
-            EnvironmentGuid = $null
-            SharePointUrl   = $null
-            GroupId         = $null
-            TeamsId         = $null
+            EnvironmentUrl  = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.EnvironmentUrl } else { $null }
+            EnvironmentGuid = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.EnvironmentGuid } else { $null }
+            SharePointUrl   = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.SharePointUrl } else { $null }
+            GroupId         = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.GroupId } else { $null }
+            TeamsId         = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.TeamsId } else { $null }
             Status          = 'InProgress'
         }
 
@@ -223,76 +354,113 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
         }
 
         try {
-            Write-Log -Level INFO -Message "Creating environment: $domainName" -Component 'ENV'
-            $createArgs = @(
-                'admin', 'create',
-                '--type', 'Sandbox',
-                '--domain', $domainName,
-                '--name', "Workshop - $studentAlias",
-                '--region', $region,
-                '--currency', $currency,
-                '--language', $language,
-                '--templates', 'D365_CDSSampleApp'
-            )
-            $createOutput = & pac @createArgs 2>&1
-            $createText = ($createOutput | ForEach-Object { $_.ToString() }) -join [System.Environment]::NewLine
-            if ($LASTEXITCODE -ne 0) {
-                Write-Log -Level ERROR -Message "pac admin create failed for $studentAlias : $createText" -Component 'ENV'
-                $studentRecord.Status = 'FailedEnvCreate'
-                [void]$studentMap.Add([pscustomobject]$studentRecord)
-                continue
+            $existingEnvironment = $null
+            try {
+                $existingEnvironment = Find-PacEnvironmentByDomainName -DomainName $domainName
             }
-            Write-Log -Level PASS -Message "pac admin create succeeded for $studentAlias" -Component 'ENV'
+            catch {
+                Write-Log -Level WARN -Message "Initial environment lookup failed before create: $_" -Component 'ENV'
+            }
 
-            # Poll for environment URL
-            $envUrl = $null
-            for ($attempt = 1; $attempt -le 12; $attempt++) {
-                Start-Sleep -Seconds 15
-                $envListOutput = & pac admin list 2>&1
-                $envListText = ($envListOutput | ForEach-Object { $_.ToString() }) -join [System.Environment]::NewLine
-                $urlMatches = [regex]::Matches($envListText, "https://[A-Za-z0-9.-]+$domainName[A-Za-z0-9.-]*/?" , 'IgnoreCase')
-                if ($urlMatches.Count -gt 0) {
-                    $envUrl = $urlMatches[0].Value.TrimEnd('/')
-                    break
+            if ($null -eq $existingEnvironment) {
+                Write-Log -Level INFO -Message "Creating environment: $domainName" -Component 'ENV'
+                $createArgs = @(
+                    'admin', 'create',
+                    '--type', 'Sandbox',
+                    '--domain', $domainName,
+                    '--name', "Workshop - $studentAlias",
+                    '--region', $region,
+                    '--currency', $currency,
+                    '--language', $language,
+                    '--templates', 'D365_CDSSampleApp'
+                )
+                $createOutput = & pac @createArgs 2>&1
+                $createText = ($createOutput | ForEach-Object { $_.ToString() }) -join [System.Environment]::NewLine
+                if ($LASTEXITCODE -ne 0) {
+                    try {
+                        $existingEnvironment = Find-PacEnvironmentByDomainName -DomainName $domainName
+                    }
+                    catch {
+                        Write-Log -Level WARN -Message "Environment lookup after create failure also failed: $_" -Component 'ENV'
+                    }
+
+                    if ($null -eq $existingEnvironment) {
+                        Write-Log -Level ERROR -Message "pac admin create failed for $studentAlias : $createText" -Component 'ENV'
+                        $studentRecord.Status = 'FailedEnvCreate'
+                        [void]$studentMap.Add([pscustomobject]$studentRecord)
+                        continue
+                    }
+
+                    Write-Log -Level WARN -Message "pac admin create returned a non-zero exit code, but an environment for '$domainName' already exists. Reusing the existing environment." -Component 'ENV'
                 }
-                Write-Log -Level INFO -Message "Waiting for environment URL (attempt $attempt/12)..." -Component 'ENV'
+                else {
+                    Write-Log -Level PASS -Message "pac admin create succeeded for $studentAlias" -Component 'ENV'
+                }
+            }
+            else {
+                Write-Log -Level WARN -Message "Environment '$domainName' already exists. Reusing it for this provisioning run." -Component 'ENV'
             }
 
-            if ($null -eq $envUrl) {
+            # Poll for environment URL via pac admin list --json
+            $resolvedEnvironment = $existingEnvironment
+            for ($attempt = 1; $attempt -le 12 -and $null -eq $resolvedEnvironment; $attempt++) {
+                Start-Sleep -Seconds 15
+                try {
+                    $resolvedEnvironment = Find-PacEnvironmentByDomainName -DomainName $domainName
+                }
+                catch {
+                    Write-Log -Level WARN -Message "Environment lookup failed during polling attempt $attempt/12: $_" -Component 'ENV'
+                }
+
+                if ($null -eq $resolvedEnvironment) {
+                    Write-Log -Level INFO -Message "Waiting for environment URL (attempt $attempt/12)..." -Component 'ENV'
+                }
+            }
+
+            if ($null -eq $resolvedEnvironment -or [string]::IsNullOrWhiteSpace([string]$resolvedEnvironment.EnvironmentUrl)) {
                 Write-Log -Level ERROR -Message "Could not resolve environment URL for $domainName after polling." -Component 'ENV'
                 $studentRecord.Status = 'FailedEnvUrlResolve'
                 [void]$studentMap.Add([pscustomobject]$studentRecord)
                 continue
             }
 
-            $studentRecord.EnvironmentUrl = $envUrl
-            Write-Log -Level PASS -Message "Environment URL: $envUrl" -Component 'ENV'
+            $envUrl = [string]$resolvedEnvironment.EnvironmentUrl
+            $studentRecord.EnvironmentUrl = $envUrl.TrimEnd('/')
+            Write-Log -Level PASS -Message "Environment URL: $($studentRecord.EnvironmentUrl)" -Component 'ENV'
 
             # Resolve GUID
-            $envGuid = $null
-            try {
-                $envGuid = Resolve-EnvironmentGuid -DomainName $domainName
+            $envGuid = [string]$resolvedEnvironment.EnvironmentId
+            if ([string]::IsNullOrWhiteSpace($envGuid)) {
+                $envGuid = [string]$resolvedEnvironment.environmentId
             }
-            catch {
-                Write-Log -Level WARN -Message "Resolve-EnvironmentGuid failed: $_. Trying pac admin list --json." -Component 'ENV'
+            if ([string]::IsNullOrWhiteSpace($envGuid)) {
+                $envGuid = [string]$resolvedEnvironment.EnvironmentID
+            }
+            if ([string]::IsNullOrWhiteSpace($envGuid)) {
+                try {
+                    $envGuid = Resolve-EnvironmentGuid -DomainName $domainName
+                }
+                catch {
+                    Write-Log -Level WARN -Message "Resolve-EnvironmentGuid failed after URL resolution: $_" -Component 'ENV'
+                }
             }
             $studentRecord.EnvironmentGuid = $envGuid
 
             # Allocate credits
             if (-not [string]::IsNullOrWhiteSpace($clientSecret) -and -not (Test-PlaceholderValue -Value $clientSecret) -and $envGuid) {
-                Write-Log -Level INFO -Message "Allocating $creditsPerEnv MCSSessions credits..." -Component 'CREDITS'
+                Write-Log -Level INFO -Message "Attempting preview app-only allocation of $creditsPerEnv MCSSessions credits..." -Component 'CREDITS'
                 try {
                     Invoke-WithRetry -ScriptBlock {
                         $token = Get-PowerPlatformAccessToken -TenantId $tenantId -ClientId $pnpClientId -ClientSecret $clientSecret
                         Set-EnvironmentCopilotCredits -EnvironmentGuid $envGuid -AccessToken $token -Credits $creditsPerEnv
-                    } -MaxAttempts 10 -DelaySeconds 30 -OperationName "Allocate credits for $studentAlias"
+                    } -MaxAttempts 10 -DelaySeconds 30 -OperationName "Allocate credits for $studentAlias" -NonRetryablePatterns @('403 \(Forbidden\)', 'StatusCode\s*:\s*403', 'Unauthorized')
 
                     $verifyToken = Get-PowerPlatformAccessToken -TenantId $tenantId -ClientId $pnpClientId -ClientSecret $clientSecret
                     Confirm-EnvironmentCopilotCredits -EnvironmentGuid $envGuid -AccessToken $verifyToken -ExpectedCredits $creditsPerEnv
                     Write-Log -Level PASS -Message "Credits allocated and verified." -Component 'CREDITS'
                 }
                 catch {
-                    Write-Log -Level WARN -Message "Credit allocation failed: $_. Facilitator must allocate manually." -Component 'CREDITS'
+                    Write-Log -Level WARN -Message "Credit allocation failed: $_. Microsoft currently documents Copilot credit allocation in Power Platform admin center, so the facilitator must allocate capacity manually." -Component 'CREDITS'
                 }
             }
 
@@ -333,30 +501,104 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
                     Remove-PnPTenantDeletedSite -Identity $expectedSiteUrl -Force
                 }
 
-                $existingSite = Get-PnPTenantSite -Identity $expectedSiteUrl -ErrorAction SilentlyContinue
+                $recordedSiteUrl = [string]$studentRecord.SharePointUrl
+                if (-not [string]::IsNullOrWhiteSpace($recordedSiteUrl) -and $recordedSiteUrl -eq $expectedSiteUrl) {
+                    Write-Log -Level INFO -Message "Reusing previously recorded SharePoint site '$expectedSiteUrl' for this retry." -Component 'SP'
+                    $existingSite = [pscustomobject]@{ Url = $expectedSiteUrl }
+                }
+                else {
+                    $existingSite = Get-PnPTenantSite -Identity $expectedSiteUrl -ErrorAction SilentlyContinue
+                }
                 if ($null -eq $existingSite) {
                     $facilitatorUpn = if (-not [string]::IsNullOrWhiteSpace([string]$bootstrapConfig.AdminUser)) { [string]$bootstrapConfig.AdminUser } else { $studentEmail }
+                    $rootTenantUrl = "https://$tenantDomain.sharepoint.com"
 
                     try {
                         # Connect to root tenant URL — New-PnPSite calls SPSiteManager/create on the root site
-                        $rootTenantUrl = "https://$tenantDomain.sharepoint.com"
                         Connect-PnPOnline -Url $rootTenantUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
                         New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
                             -Title "Contoso IT - $studentAlias" `
                             -Url $expectedSiteUrl `
+                            -Owner $facilitatorUpn `
                             -Description "Workshop site for $studentAlias" | Out-Null
                     }
                     catch {
-                        Write-Log -Level WARN -Message "New-PnPSite failed: $($_.Exception.Message). Trying New-PnPTenantSite..." -Component 'SP'
-                        # Fallback: classic admin cmdlet from admin URL
                         Connect-PnPOnline -Url $adminUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
-                        New-PnPTenantSite `
-                            -Title "Contoso IT - $studentAlias" `
-                            -Url $expectedSiteUrl `
-                            -Template 'STS#3' `
-                            -Owner $facilitatorUpn `
-                            -TimeZone 13 `
-                            -Wait
+                        Write-Log -Level WARN -Message "New-PnPSite failed: $($_.Exception.Message). Checking whether the site was created anyway..." -Component 'SP'
+
+                        $siteCreatedAfterModernAttempt = $false
+                        for ($modernProvisionAttempt = 1; $modernProvisionAttempt -le 6; $modernProvisionAttempt++) {
+                            $siteAfterModernAttempt = Get-PnPTenantSite -Identity $expectedSiteUrl -ErrorAction SilentlyContinue
+                            if ($null -ne $siteAfterModernAttempt) {
+                                $siteCreatedAfterModernAttempt = $true
+                                break
+                            }
+
+                            Start-Sleep -Seconds 5
+                        }
+
+                        if ($siteCreatedAfterModernAttempt) {
+                            Write-Log -Level WARN -Message "New-PnPSite returned an error, but the site exists and provisioning will continue." -Component 'SP'
+                        }
+                        else {
+                            Write-Log -Level WARN -Message "App-only SharePoint site creation was denied. Falling back to delegated sign-in using '$pnpLoginMode'." -Component 'SP'
+
+                            $delegatedModernAttemptFailed = $false
+                            try {
+                                Connect-SharePointDelegatedWithFallback `
+                                    -Url $rootTenantUrl `
+                                    -TenantId $tenantId `
+                                    -ClientId $pnpClientId `
+                                    -LoginMode $pnpLoginMode `
+                                    -Label 'the tenant root SharePoint site'
+
+                                New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
+                                    -Title "Contoso IT - $studentAlias" `
+                                    -Url $expectedSiteUrl `
+                                    -Owner $facilitatorUpn `
+                                    -Description "Workshop site for $studentAlias" | Out-Null
+                            }
+                            catch {
+                                $delegatedModernAttemptFailed = $true
+                                Write-Log -Level WARN -Message "Delegated New-PnPSite failed: $($_.Exception.Message). Checking whether the site was created anyway..." -Component 'SP'
+                            }
+
+                            if ($delegatedModernAttemptFailed) {
+                                Connect-PnPOnline -Url $adminUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
+
+                                $siteCreatedAfterDelegatedModernAttempt = $false
+                                for ($delegatedModernProvisionAttempt = 1; $delegatedModernProvisionAttempt -le 6; $delegatedModernProvisionAttempt++) {
+                                    $siteAfterDelegatedModernAttempt = Get-PnPTenantSite -Identity $expectedSiteUrl -ErrorAction SilentlyContinue
+                                    if ($null -ne $siteAfterDelegatedModernAttempt) {
+                                        $siteCreatedAfterDelegatedModernAttempt = $true
+                                        break
+                                    }
+
+                                    Start-Sleep -Seconds 5
+                                }
+
+                                if ($siteCreatedAfterDelegatedModernAttempt) {
+                                    Write-Log -Level WARN -Message "Delegated New-PnPSite returned an error, but the site exists and provisioning will continue." -Component 'SP'
+                                }
+                                else {
+                                    Write-Log -Level WARN -Message 'Delegated New-PnPSite did not create the site. Trying delegated New-PnPTenantSite...' -Component 'SP'
+                                    Connect-SharePointDelegatedWithFallback `
+                                        -Url $adminUrl `
+                                        -TenantId $tenantId `
+                                        -ClientId $pnpClientId `
+                                        -LoginMode $pnpLoginMode `
+                                        -Label 'the SharePoint admin center'
+
+                                    New-PnPTenantSite `
+                                        -Title "Contoso IT - $studentAlias" `
+                                        -Url $expectedSiteUrl `
+                                        -Template 'STS#3' `
+                                        -Owner $facilitatorUpn `
+                                        -TimeZone 13 `
+                                        -Wait
+                                }
+                            }
+                        }
                     }
 
                     # Reconnect to admin URL for tenant-level polling
@@ -375,17 +617,77 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
                 Write-Log -Level PASS -Message "SharePoint site ready: $expectedSiteUrl" -Component 'SP'
 
                 # Connect to the new site and initialize full schema + sample data
-                Connect-PnPOnline -Url $expectedSiteUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
-
                 . (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-WorkshopSiteContent.ps1')
-                Initialize-WorkshopSiteContent -Config $config -CreateDeviceRequestsList $true -CreateIncomingResumesLibrary $true
 
-                Disconnect-PnPOnline -ErrorAction SilentlyContinue
+                $siteContentInitialized = $false
+                try {
+                    Connect-PnPOnline -Url $expectedSiteUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
+                    Initialize-WorkshopSiteContent -Config $config -CreateDeviceRequestsList $true -CreateIncomingResumesLibrary $true
+                    $siteContentInitialized = $true
+                }
+                catch {
+                    Write-Log -Level WARN -Message "App-only site-content initialization failed: $($_.Exception.Message). Falling back to delegated sign-in for site initialization." -Component 'SP'
+                }
+                finally {
+                    Disconnect-PnPOnline -ErrorAction SilentlyContinue
+                }
+
+                if (-not $siteContentInitialized) {
+                    try {
+                        Connect-SharePointDelegatedWithFallback `
+                            -Url $adminUrl `
+                            -TenantId $tenantId `
+                            -ClientId $pnpClientId `
+                            -LoginMode $pnpLoginMode `
+                            -Label 'the SharePoint admin center'
+
+                        $delegatedAdminUpn = Get-ConnectedPnPCurrentUserEmail -Label 'the SharePoint admin center'
+                        $siteCollectionAdmins = @($studentEmail, $delegatedAdminUpn) |
+                            Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+                            Select-Object -Unique
+
+                        Write-Log -Level INFO -Message "Granting site collection admin access to $($siteCollectionAdmins -join ', ') before retrying site initialization." -Component 'SP'
+                        Set-PnPTenantSite -Identity $expectedSiteUrl -Owners $siteCollectionAdmins -Wait -ErrorAction Stop
+                    }
+                    finally {
+                        try {
+                            Disconnect-PnPOnline -ErrorAction Stop
+                        }
+                        catch {
+                        }
+                    }
+
+                    Connect-SharePointDelegatedWithFallback `
+                        -Url $expectedSiteUrl `
+                        -TenantId $tenantId `
+                        -ClientId $pnpClientId `
+                        -LoginMode $pnpLoginMode `
+                        -Label "the student SharePoint site '$expectedSiteUrl'"
+
+                    try {
+                        Initialize-WorkshopSiteContent -Config $config -CreateDeviceRequestsList $true -CreateIncomingResumesLibrary $true
+                    }
+                    finally {
+                        try {
+                            Disconnect-PnPOnline -ErrorAction Stop
+                        }
+                        catch {
+                        }
+                    }
+                }
+
                 Start-Sleep -Seconds 5
             }
             catch {
                 Write-Log -Level ERROR -Message "SharePoint provisioning failed for $studentAlias : $_" -Component 'SP'
-                Disconnect-PnPOnline -ErrorAction SilentlyContinue
+                if ($studentRecord.Status -eq 'InProgress') {
+                    $studentRecord.Status = 'FailedSharePoint'
+                }
+                try {
+                    Disconnect-PnPOnline -ErrorAction Stop
+                }
+                catch {
+                }
             }
         }
 
@@ -437,6 +739,9 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
             }
             catch {
                 Write-Log -Level ERROR -Message "Teams creation failed for $studentAlias : $_" -Component 'TEAMS'
+                if ($studentRecord.Status -eq 'InProgress') {
+                    $studentRecord.Status = 'FailedTeams'
+                }
             }
         }
 

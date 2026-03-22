@@ -71,6 +71,8 @@ powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -Impor
 powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete
 ```
 
+> **Per-student provisioning path:** If you answer **Yes** to student provisioning during the bootstrap wizard, the wizard now saves participant emails, reuses or imports an existing app-only certificate when available, creates a new self-signed certificate when needed, registers that certificate on the workshop Entra app, and can optionally generate a client secret into the configured user environment variable (`COPILOT_WORKSHOP_APP_SECRET` by default). `Invoke-WorkshopPrereqCheck.ps1` now reports shared facilitator readiness separately from student-provisioning readiness so you can see whether app-only SharePoint auth is actually ready before you run `Invoke-StudentEnvironmentProvisioning.ps1`. If the tenant still rejects app-only SharePoint site creation or site-content initialization, the provisioning script falls back to the configured delegated PnP login flow (`OSLogin`, `Interactive`, or `DeviceLogin`), grants the facilitator delegated account site-collection-admin access alongside the student, and retries from the saved student map instead of rebuilding the whole student environment from scratch.
+
 Decision point:
 
 - Use `-Mode StudentReady` for participant environments.
@@ -78,6 +80,8 @@ Decision point:
 - Expected result for optional import: Operative solution import succeeds only in the selected demo environment.
 
 > **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID. The default login mode is `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. You can override this by setting `SharePoint.PnPLoginMode` to `DeviceLogin`, `Interactive`, or `CertificateThumbprint` in `workshop-config.json`. If setup runs under `DeviceLogin`, the first provisioning pass can prompt separately for the SharePoint admin center, tenant root, and target site; that is expected. Any solution import uses the currently authenticated `pac` profile. Verify both point to the intended tenant and demo environment before running the scripts.
+
+> **Student domain naming:** Per-student Power Platform domains are derived from `EnvironmentBootstrap.DomainName`, but the automation now shortens the prefix when needed so the student alias still survives inside the 24-character platform limit. This keeps domains unique across students instead of truncating them all to the same shared prefix.
 
 ## Suggested delivery flow
 

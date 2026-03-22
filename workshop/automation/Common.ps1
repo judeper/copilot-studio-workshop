@@ -1,4 +1,4 @@
-Set-StrictMode -Version Latest
+﻿Set-StrictMode -Version Latest
 
 $script:LogFilePath = $null
 
@@ -122,7 +122,7 @@ function Test-PlaceholderValue {
         return $true
     }
 
-    return $Value -match '^<.+>$'
+    return $Value -match '<[^>]+>'
 }
 
 function Get-RequiredString {
@@ -140,7 +140,7 @@ function Get-RequiredString {
         throw "Config value '$Name' is required."
     }
 
-    if ($Value -match '^<.+>$') {
+    if (Test-PlaceholderValue -Value $Value) {
         throw "Config value '$Name' still contains a placeholder value: $Value"
     }
 
@@ -207,6 +207,194 @@ function Assert-FileExists {
     }
 
     return (Resolve-Path -LiteralPath $Path).Path
+}
+
+function Get-CurrentUserCertificate {
+    param(
+        [Parameter()]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$Thumbprint
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Thumbprint)) {
+        return $null
+    }
+
+    $normalizedThumbprint = ($Thumbprint -replace '\s', '').ToUpperInvariant()
+    return Get-ChildItem -Path 'Cert:\CurrentUser\My' -ErrorAction SilentlyContinue |
+        Where-Object { $_.Thumbprint.ToUpperInvariant() -eq $normalizedThumbprint } |
+        Sort-Object -Property NotAfter -Descending |
+        Select-Object -First 1
+}
+
+function New-WorkshopSelfSignedCertificate {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$CommonName,
+
+        [Parameter()]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$FriendlyName,
+
+        [Parameter()]
+        [int]$ValidityYears = 2
+    )
+
+    if ([string]::IsNullOrWhiteSpace($FriendlyName)) {
+        $FriendlyName = $CommonName
+    }
+
+    $subject = if ($CommonName -like 'CN=*') { $CommonName } else { "CN=$CommonName" }
+    return New-SelfSignedCertificate `
+        -CertStoreLocation 'Cert:\CurrentUser\My' `
+        -Subject $subject `
+        -FriendlyName $FriendlyName `
+        -KeyAlgorithm RSA `
+        -KeyLength 2048 `
+        -HashAlgorithm SHA256 `
+        -KeyExportPolicy Exportable `
+        -KeySpec Signature `
+        -NotAfter (Get-Date).AddYears($ValidityYears)
+}
+
+function Resolve-ConfiguredClientSecret {
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Config
+    )
+
+    $clientSecret = [string]$Config.Identity.ClientSecret
+    if (-not [string]::IsNullOrWhiteSpace($clientSecret) -and -not (Test-PlaceholderValue -Value $clientSecret)) {
+        return [pscustomobject]@{
+            Value                   = $clientSecret
+            Source                  = 'Config'
+            EnvironmentVariableName = $null
+        }
+    }
+
+    $envVarName = [string]$Config.Identity.ClientSecretEnvVar
+    if (-not [string]::IsNullOrWhiteSpace($envVarName) -and -not (Test-PlaceholderValue -Value $envVarName)) {
+        $envValue = [Environment]::GetEnvironmentVariable($envVarName, 'Process')
+        if ([string]::IsNullOrWhiteSpace($envValue)) {
+            $envValue = [Environment]::GetEnvironmentVariable($envVarName, 'User')
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($envValue)) {
+            return [pscustomobject]@{
+                Value                   = $envValue
+                Source                  = 'EnvironmentVariable'
+                EnvironmentVariableName = $envVarName
+            }
+        }
+    }
+
+    $resolvedEnvVarName = if ([string]::IsNullOrWhiteSpace($envVarName)) { $null } else { $envVarName }
+    return [pscustomobject]@{
+        Value                   = $null
+        Source                  = $null
+        EnvironmentVariableName = $resolvedEnvVarName
+    }
+}
+
+function Set-UserEnvironmentVariable {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    [Environment]::SetEnvironmentVariable($Name, $Value, 'User')
+    [Environment]::SetEnvironmentVariable($Name, $Value, 'Process')
+    Set-Item -Path "Env:$Name" -Value $Value
+}
+
+function Test-AppOnlyCertificateReadiness {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+
+        [Parameter()]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SharePointAdminUrl
+    )
+
+    $result = [ordered]@{
+        Thumbprint         = $Thumbprint
+        CertificateFound   = $false
+        CertificateExpired = $false
+        Certificate        = $null
+        GraphConnected     = $false
+        SharePointConnected = $false
+        Errors             = [System.Collections.ArrayList]@()
+    }
+
+    if (Test-PlaceholderValue -Value $Thumbprint) {
+        [void]$result.Errors.Add('No certificate thumbprint is configured.')
+        return [pscustomobject]$result
+    }
+
+    $certificate = Get-CurrentUserCertificate -Thumbprint $Thumbprint
+    if ($null -eq $certificate) {
+        [void]$result.Errors.Add("Certificate '$Thumbprint' was not found in Cert:\CurrentUser\My.")
+        return [pscustomobject]$result
+    }
+
+    $result.CertificateFound = $true
+    $result.Certificate = $certificate
+
+    if ($certificate.NotAfter -le (Get-Date)) {
+        $result.CertificateExpired = $true
+        [void]$result.Errors.Add("Certificate '$($certificate.Thumbprint)' expired on $($certificate.NotAfter.ToUniversalTime().ToString('u')).")
+        return [pscustomobject]$result
+    }
+
+    try {
+        try {
+            Disconnect-MgGraph -ErrorAction Stop
+        }
+        catch {
+        }
+        Connect-MgGraph -ClientId $ClientId -TenantId $TenantId -CertificateThumbprint $certificate.Thumbprint -ContextScope Process -NoWelcome
+        $result.GraphConnected = $true
+    }
+    catch {
+        [void]$result.Errors.Add("Graph app-only auth failed: $($_.Exception.Message)")
+    }
+    finally {
+        try {
+            Disconnect-MgGraph -ErrorAction Stop
+        }
+        catch {
+        }
+    }
+
+    try {
+        Connect-PnPOnline -Url $SharePointAdminUrl -ClientId $ClientId -Tenant $TenantId -Thumbprint $certificate.Thumbprint -ErrorAction Stop
+        $result.SharePointConnected = $true
+    }
+    catch {
+        [void]$result.Errors.Add("SharePoint app-only auth failed: $($_.Exception.Message)")
+    }
+    finally {
+        try {
+            Disconnect-PnPOnline -ErrorAction Stop
+        }
+        catch {
+        }
+    }
+
+    return [pscustomobject]$result
 }
 
 function Require-Module {
@@ -307,15 +495,43 @@ function Get-SafeDomainName {
         [string]$StudentAlias
     )
 
-    $raw = "$Prefix-$StudentAlias"
-    $safe = $raw -replace '[^a-zA-Z0-9\-]', ''
-    $safe = $safe.Trim('-')
-    $safe = $safe.ToLowerInvariant()
-    if ($safe.Length -gt 24) {
-        $safe = $safe.Substring(0, 24)
+    $safePrefix = ($Prefix -replace '[^a-zA-Z0-9\-]', '').Trim('-').ToLowerInvariant()
+    $safeAlias = ($StudentAlias -replace '[^a-zA-Z0-9\-]', '').Trim('-').ToLowerInvariant()
+    if ([string]::IsNullOrWhiteSpace($safeAlias)) {
+        throw 'Student alias must contain at least one letter or number.'
     }
-    $safe = $safe.TrimEnd('-')
-    return $safe
+
+    $maxLength = 24
+    $separator = '-'
+    $reservedAliasLength = [Math]::Min([Math]::Max($safeAlias.Length, 4), 8)
+    $aliasPart = if ($safeAlias.Length -gt $reservedAliasLength) {
+        $safeAlias.Substring(0, $reservedAliasLength)
+    }
+    else {
+        $safeAlias
+    }
+
+    $prefixMaxLength = $maxLength - $separator.Length - $aliasPart.Length
+    if ($prefixMaxLength -lt 1) {
+        if ($aliasPart.Length -gt $maxLength) {
+            return $aliasPart.Substring(0, $maxLength)
+        }
+
+        return $aliasPart
+    }
+
+    $prefixPart = if ($safePrefix.Length -gt $prefixMaxLength) {
+        $safePrefix.Substring(0, $prefixMaxLength)
+    }
+    else {
+        $safePrefix
+    }
+
+    if ([string]::IsNullOrWhiteSpace($prefixPart)) {
+        return $aliasPart
+    }
+
+    return "$prefixPart-$aliasPart".Trim('-')
 }
 
 function Get-PacEnvironmentListJson {
@@ -330,14 +546,40 @@ function Get-PacEnvironmentListJson {
     return $jsonLines | ConvertFrom-Json
 }
 
+function Find-PacEnvironmentByDomainName {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$DomainName
+    )
+
+    $normalizedDomainName = $DomainName.Trim().ToLowerInvariant()
+    $envList = @(Get-PacEnvironmentListJson)
+    return @(
+        $envList | Where-Object {
+            $environmentUrl = [string]$_.EnvironmentUrl
+            if ([string]::IsNullOrWhiteSpace($environmentUrl)) {
+                return $false
+            }
+
+            try {
+                $uri = [Uri]$environmentUrl
+                $hostLabel = ($uri.Host -split '\.')[0].ToLowerInvariant()
+                return $hostLabel -eq $normalizedDomainName
+            }
+            catch {
+                return $environmentUrl.ToLowerInvariant().Contains($normalizedDomainName)
+            }
+        } | Select-Object -First 1
+    )
+}
+
 function Resolve-EnvironmentGuid {
     param(
         [Parameter(Mandatory = $true)]
         [string]$DomainName
     )
 
-    $envList = Get-PacEnvironmentListJson
-    $target = $envList | Where-Object { $_.EnvironmentUrl -like "*$DomainName*" } | Select-Object -First 1
+    $target = Find-PacEnvironmentByDomainName -DomainName $DomainName
     if ($null -eq $target) {
         return $null
     }
@@ -446,7 +688,10 @@ function Invoke-WithRetry {
         [int]$DelaySeconds = 30,
 
         [Parameter()]
-        [string]$OperationName = 'operation'
+        [string]$OperationName = 'operation',
+
+        [Parameter()]
+        [string[]]$NonRetryablePatterns = @()
     )
 
     for ($i = 1; $i -le $MaxAttempts; $i++) {
@@ -454,6 +699,12 @@ function Invoke-WithRetry {
             return & $ScriptBlock
         }
         catch {
+            $errorText = $_.ToString()
+            $matchedNonRetryablePattern = $NonRetryablePatterns | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and $errorText -match $_ } | Select-Object -First 1
+            if ($matchedNonRetryablePattern) {
+                throw "$OperationName failed without retry because the error matched the non-retryable pattern '$matchedNonRetryablePattern'. Last error: $_"
+            }
+
             if ($i -ge $MaxAttempts) {
                 throw "$OperationName failed after $MaxAttempts attempts. Last error: $_"
             }
@@ -470,10 +721,12 @@ function Save-StudentEnvironmentMap {
         [string]$Path,
 
         [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
         [array]$StudentMap
     )
 
-    $StudentMap | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $Path -Encoding UTF8
+    $json = ConvertTo-Json -InputObject @($StudentMap) -Depth 10
+    Set-Content -LiteralPath $Path -Value $json -Encoding UTF8
 }
 
 function Read-StudentEnvironmentMap {
@@ -486,7 +739,17 @@ function Read-StudentEnvironmentMap {
         return @()
     }
 
-    return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json -Depth 10
+    $content = Get-Content -LiteralPath $Path -Raw
+    if ([string]::IsNullOrWhiteSpace($content)) {
+        return @()
+    }
+
+    $map = $content | ConvertFrom-Json -Depth 10
+    if ($null -eq $map) {
+        return @()
+    }
+
+    return @($map)
 }
 
 function Ensure-SecurityGroup {

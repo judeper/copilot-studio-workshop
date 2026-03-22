@@ -1,4 +1,4 @@
-[CmdletBinding(SupportsShouldProcess = $true)]
+﻿[CmdletBinding(SupportsShouldProcess = $true)]
 param(
     [Parameter()]
     [string]$ConfigPath = (Join-Path -Path $PSScriptRoot -ChildPath 'workshop-config.json'),
@@ -30,7 +30,7 @@ $adminUrl = Get-RequiredString -Value ([string]$sharePointConfig.AdminUrl) -Name
 $pnpClientId = Get-RequiredString -Value ([string]$sharePointConfig.PnPClientId) -Name 'SharePoint.PnPClientId'
 $pnpCertThumbprint = [string]$sharePointConfig.PnPCertificateThumbprint
 
-$studentMap = Read-StudentEnvironmentMap -Path $MapFilePath
+$studentMap = @(Read-StudentEnvironmentMap -Path $MapFilePath)
 if ($studentMap.Count -eq 0) {
     Write-Log -Level INFO -Message 'Student map is empty — nothing to clean up.'
     return
@@ -46,7 +46,129 @@ Require-Module -Name 'PnP.PowerShell'
 Connect-PnPOnline -Url $adminUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
 Write-Log -Level PASS -Message 'Connected to SharePoint admin center.'
 
+$environmentDeletePollIntervalSeconds = 15
+$environmentDeleteTimeoutMinutes = 10
+
+function Normalize-EnvironmentUrl {
+    param(
+        [Parameter()]
+        [string]$Url
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Url)) {
+        return $null
+    }
+
+    return $Url.Trim().TrimEnd('/')
+}
+
+function Get-PacAdminEnvironmentRecord {
+    param(
+        [Parameter()]
+        [string]$EnvironmentUrl,
+
+        [Parameter()]
+        [string]$EnvironmentGuid
+    )
+
+    $normalizedEnvironmentUrl = Normalize-EnvironmentUrl -Url $EnvironmentUrl
+    $pacOutput = & pac admin list --json 2>&1
+    $pacOutputText = ($pacOutput | Out-String).Trim()
+
+    if ($pacOutputText -match '(?mi)^Error:') {
+        throw "pac admin list failed. $pacOutputText"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($pacOutputText)) {
+        return $null
+    }
+
+    $jsonStartIndex = $pacOutputText.IndexOf('[')
+    $jsonEndIndex = $pacOutputText.LastIndexOf(']')
+    if ($jsonStartIndex -lt 0 -or $jsonEndIndex -lt $jsonStartIndex) {
+        throw "pac admin list did not return JSON. Output: $pacOutputText"
+    }
+
+    $jsonText = $pacOutputText.Substring($jsonStartIndex, $jsonEndIndex - $jsonStartIndex + 1)
+    $environments = @($jsonText | ConvertFrom-Json -Depth 10)
+
+    return $environments | Where-Object {
+        ($EnvironmentGuid -and $_.EnvironmentId -eq $EnvironmentGuid) -or
+        ($normalizedEnvironmentUrl -and (Normalize-EnvironmentUrl -Url ([string]$_.EnvironmentUrl)) -eq $normalizedEnvironmentUrl)
+    } | Select-Object -First 1
+}
+
+function Wait-ForPacEnvironmentDeletion {
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Student,
+
+        [Parameter()]
+        [int]$PollIntervalSeconds = $environmentDeletePollIntervalSeconds,
+
+        [Parameter()]
+        [int]$TimeoutMinutes = $environmentDeleteTimeoutMinutes
+    )
+
+    $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
+    $pollCount = 0
+
+    while ((Get-Date) -lt $deadline) {
+        $existingEnvironment = Get-PacAdminEnvironmentRecord -EnvironmentUrl $student.EnvironmentUrl -EnvironmentGuid $student.EnvironmentGuid
+        if (-not $existingEnvironment) {
+            Write-Log -Level PASS -Message 'Power Platform environment deletion verified.' -Component 'ENV'
+            return $true
+        }
+
+        $pollCount++
+        Write-Log -Level INFO -Message "Environment delete is still in progress (check $pollCount). Waiting ${PollIntervalSeconds}s before rechecking..." -Component 'ENV'
+        Start-Sleep -Seconds $PollIntervalSeconds
+    }
+
+    $existingEnvironment = Get-PacAdminEnvironmentRecord -EnvironmentUrl $student.EnvironmentUrl -EnvironmentGuid $student.EnvironmentGuid
+    if (-not $existingEnvironment) {
+        Write-Log -Level PASS -Message 'Power Platform environment deletion verified.' -Component 'ENV'
+        return $true
+    }
+
+    Write-Log -Level WARN -Message "Environment delete was requested but not confirmed within ${TimeoutMinutes} minute(s); leaving the map entry for follow-up." -Component 'ENV'
+    return $false
+}
+
+function Remove-PacAdminEnvironment {
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Student
+    )
+
+    $existingEnvironment = Get-PacAdminEnvironmentRecord -EnvironmentUrl $Student.EnvironmentUrl -EnvironmentGuid $Student.EnvironmentGuid
+    if (-not $existingEnvironment) {
+        Write-Log -Level PASS -Message 'Power Platform environment is already absent.' -Component 'ENV'
+        return $true
+    }
+
+    $environmentIdentifier = if (-not [string]::IsNullOrWhiteSpace([string]$Student.EnvironmentGuid)) {
+        $Student.EnvironmentGuid
+    } else {
+        $Student.EnvironmentUrl
+    }
+
+    Write-Log -Level INFO -Message "Submitting asynchronous delete request for environment: $($existingEnvironment.DisplayName) ($($existingEnvironment.EnvironmentUrl))" -Component 'ENV'
+    $deleteOutput = & pac admin delete --environment $environmentIdentifier --async 2>&1
+    $deleteOutputText = ($deleteOutput | Out-String).Trim()
+
+    if ($deleteOutputText -match '(?mi)^Error:') {
+        Write-Log -Level WARN -Message "pac admin delete failed for $environmentIdentifier. $deleteOutputText" -Component 'ENV'
+        return $false
+    }
+
+    Write-Log -Level INFO -Message "Delete request submitted. Polling pac admin list every ${environmentDeletePollIntervalSeconds}s for up to ${environmentDeleteTimeoutMinutes} minute(s)." -Component 'ENV'
+    return Wait-ForPacEnvironmentDeletion -Student $Student
+}
+
 Write-Section 'Cleaning up student environments'
+
+$completedStudentsWithoutRemainingArtifacts = New-Object System.Collections.Generic.List[string]
 
 foreach ($student in $studentMap) {
     $email = $student.Email
@@ -107,19 +229,30 @@ foreach ($student in $studentMap) {
     }
 
     # Step 4: Delete Power Platform environment
-    if (-not $SkipEnvironmentDelete -and $student.EnvironmentUrl) {
+    $environmentCleanupComplete = $true
+    if ($student.EnvironmentUrl -or $student.EnvironmentGuid) {
         try {
-            Write-Log -Level INFO -Message "Deleting environment: $($student.EnvironmentUrl)" -Component 'ENV'
-            & pac admin delete --environment $student.EnvironmentUrl 2>&1 | Out-Null
-            if ($LASTEXITCODE -ne 0) {
-                Write-Log -Level WARN -Message "pac admin delete failed for $($student.EnvironmentUrl)" -Component 'ENV'
+            if ($SkipEnvironmentDelete) {
+                $environmentCleanupComplete = -not (Get-PacAdminEnvironmentRecord -EnvironmentUrl $student.EnvironmentUrl -EnvironmentGuid $student.EnvironmentGuid)
+                if ($environmentCleanupComplete) {
+                    Write-Log -Level PASS -Message 'Power Platform environment is already absent.' -Component 'ENV'
+                } else {
+                    Write-Log -Level INFO -Message 'Skipping environment delete by request; leaving the map entry for follow-up.' -Component 'ENV'
+                }
             } else {
-                Write-Log -Level PASS -Message 'Power Platform environment deleted.' -Component 'ENV'
+                $environmentCleanupComplete = Remove-PacAdminEnvironment -Student $student
             }
         }
         catch {
+            $environmentCleanupComplete = $false
             Write-Log -Level WARN -Message "Environment delete failed: $_" -Component 'ENV'
         }
+    }
+
+    $hasRecordedSharePointOrGroupArtifacts = (-not [string]::IsNullOrWhiteSpace([string]$student.GroupId)) -or (-not [string]::IsNullOrWhiteSpace([string]$student.SharePointUrl))
+    if (-not $hasRecordedSharePointOrGroupArtifacts -and $environmentCleanupComplete) {
+        $completedStudentsWithoutRemainingArtifacts.Add($email)
+        Write-Log -Level INFO -Message 'No SharePoint site or M365 group is recorded for this student; the cleanup entry will be removed from the map.' -Component 'CLEANUP'
     }
 }
 
@@ -129,6 +262,15 @@ Disconnect-PnPOnline -ErrorAction SilentlyContinue
 if ($HardDelete) {
     Write-Log -Level INFO -Message 'Clearing student environment map after hard delete.'
     Save-StudentEnvironmentMap -Path $MapFilePath -StudentMap @()
+} elseif ($completedStudentsWithoutRemainingArtifacts.Count -gt 0) {
+    $remainingStudents = @(
+        $studentMap | Where-Object {
+            $completedStudentsWithoutRemainingArtifacts -notcontains $_.Email
+        }
+    )
+    $entryLabel = if ($completedStudentsWithoutRemainingArtifacts.Count -eq 1) { 'entry' } else { 'entries' }
+    Write-Log -Level INFO -Message "Removing $($completedStudentsWithoutRemainingArtifacts.Count) completed cleanup $entryLabel from the map."
+    Save-StudentEnvironmentMap -Path $MapFilePath -StudentMap $remainingStudents
 }
 
 Write-Log -Level PASS -Message 'Student environment cleanup complete.'
