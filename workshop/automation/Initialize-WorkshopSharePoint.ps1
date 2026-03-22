@@ -362,6 +362,18 @@ catch {
 
 $existingSite = Get-PnPTenantSite -Identity $siteUrl -ErrorAction SilentlyContinue
 if ($null -eq $existingSite) {
+    # Check if the site is in the recycle bin (leftover from a previous test run)
+    $deletedSite = Get-PnPTenantDeletedSite -Identity $siteUrl -ErrorAction SilentlyContinue
+    if ($deletedSite) {
+        if ($ValidateOnly) {
+            throw "SharePoint site '$siteUrl' is in the recycle bin. Re-run without -ValidateOnly to purge and recreate it."
+        }
+        Write-StepResult -Level WARN -Message "Site '$siteUrl' found in recycle bin from a previous run — purging."
+        Remove-PnPTenantDeletedSite -Identity $siteUrl -Force
+        Write-StepResult -Level PASS -Message "Purged '$siteUrl' from recycle bin."
+        Start-Sleep -Seconds 10
+    }
+
     if ($ValidateOnly) {
         throw "SharePoint site '$siteUrl' does not exist. Re-run without -ValidateOnly to create it."
     }

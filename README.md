@@ -94,6 +94,9 @@ powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
 # Optional: pre-import Operative solution in a separate demo environment only
 powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution
 
+# Reset shared environment for re-testing (deletes ContosoIT site + purges recycle bin)
+pwsh -File .\workshop\automation\Reset-WorkshopEnvironment.ps1 -HardDelete
+
 # Post-workshop: tear down all student environments
 powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete
 ```

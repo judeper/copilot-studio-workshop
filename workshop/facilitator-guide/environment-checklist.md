@@ -42,6 +42,27 @@ If provisioning per-student environments (instead of a shared environment), addi
 - Run: `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1`
 - Post-workshop cleanup: `powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete`
 
+### Cleanup and re-testing
+
+If you need to tear down the shared environment and re-test from scratch:
+
+1. **Reset the shared environment** — deletes the Contoso IT SharePoint site and purges it from the recycle bin:
+   ```powershell
+   pwsh -File .\workshop\automation\Reset-WorkshopEnvironment.ps1 -HardDelete
+   ```
+2. **Wait at least 30 seconds** after the hard-delete completes before re-running setup. SharePoint recycle bin purges are asynchronous.
+3. **Re-run the lab setup** to recreate the site and sample data:
+   ```powershell
+   pwsh -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
+   ```
+
+> **Soft-delete gotcha:** Without `-HardDelete`, deleted sites remain in the SharePoint recycle bin for up to 93 days. Site creation will fail if the URL is still reserved in the recycle bin. Always use `-HardDelete` when re-testing.
+
+Additional reset options:
+- Add `-IncludeEntraApp` to also delete the Entra app registration (the bootstrap wizard will recreate it).
+- Add `-IncludeTokenCache` to clear local MSAL token caches (forces fresh sign-in on next run).
+- For per-student environment cleanup, use `Remove-StudentEnvironments.ps1 -HardDelete` instead.
+
 ## Tenant, identity, and licensing
 
 - [ ] Confirm the workshop tenant is active and not under service restriction.
