@@ -123,7 +123,7 @@ If you are a new facilitator, follow this exact order:
 4. Decide whether students will use the shared baseline only or per-student environments.
 5. Reserve or create a **separate facilitator demo environment** before any demo-only Day 2 import.
 6. If you need Day 2 demo pre-staging, switch `pac` to that facilitator demo environment and run `Import-WorkshopOperativeAssets.ps1 -ImportSolution`.
-7. If you need isolated student environments, run `Invoke-StudentEnvironmentProvisioning.ps1` only after the shared prerequisites are already stable.
+7. If you need isolated student environments, validate with one student first, then run `Invoke-StudentEnvironmentProvisioning.ps1` for the full batch only after the shared prerequisites are already stable.
 8. Validate the facilitator demo base separately from the student path.
 9. Keep the facilitator demo environment private to facilitators; do not use it as the student build environment.
 10. Keep the detailed checklist open for final go/no-go review and fallback planning.

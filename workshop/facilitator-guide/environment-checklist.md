@@ -58,6 +58,7 @@ If provisioning per-student environments (instead of a shared environment), addi
 - [ ] `D365_CDSSampleApp` template is enabled for the target region — verify with `pac admin list-app-templates` (enabled for `unitedstates`, may be disabled in other regions)
 - [ ] If preview app-only credit allocation still returns 403, the facilitator has a manual PPAC credit-allocation fallback ready
 - [ ] `EnvironmentBootstrap.DomainName` is set to a workshop-safe base prefix; student environment domains are auto-shortened as needed so each student alias remains unique within the 24-character limit
+- [ ] Before a full batch run, validate with a temporary one-student `Identity.ParticipantEmails` list. If you need to isolate environment and SharePoint validation from Teams, run `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1 -SkipTeams` first, then re-run the full student batch when you are ready to validate Teams as well
 - Run: `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1`
 - Post-workshop cleanup: `powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete`
 
@@ -179,7 +180,7 @@ Additional reset options:
 
 - [ ] Confirm a dedicated demo account is fully configured and validated end to end.
 - [ ] Confirm the demo account has access to Copilot Studio, Dataverse, SharePoint, Teams, MCP, and Evaluation as applicable.
-- [ ] Confirm the demo account includes a completed baseline build for recovery demonstrations.
+- [ ] Confirm the demo account includes the clean demo base plus any targeted recovery checkpoints, screenshots, or facilitator-owned snapshots needed for the riskiest modules.
 - [ ] Confirm a second backup account is available in case the primary demo account fails.
 - [ ] Confirm screenshots or a completed tenant snapshot exist for the highest-risk steps.
 
