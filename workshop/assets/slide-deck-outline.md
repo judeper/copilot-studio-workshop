@@ -1,5 +1,7 @@
 # Slide Deck Outline
 
+Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-plan.md`, `lab-timing-guide.md`, and `screenshot-capture-checklist.md` when building or presenting the workshop deck.
+
 ## Day 1: Labs 00-12
 
 ### Slide 1: Welcome and goals
@@ -30,7 +32,7 @@
 - Move from workshop framing into environment readiness and UI confidence-building.
 - Remind learners that early access issues are cheaper to solve before any build steps begin.
 - Ask participants to surface blockers immediately instead of silently falling behind.
-**Speaker note:** This transition marks the shift from orientation to hands-on execution.
+**Speaker note:** This transition marks the shift from orientation to hands-on execution. Remind the room that this is the cheapest place to fix account drift, environment mismatch, browser issues, or missing maker access. Makers need build access, IT pros should watch for permissions and policy, and developers can note solution context, but everyone must start from the same baseline before the first build step.
 
 ### Slide 6: Lab Time: Lab 00
 - Confirm everyone is signed in with the correct workshop account and environment.
@@ -152,7 +154,7 @@
 - Align instructions with the actual tools and knowledge the agent can use so behavior stays trustworthy.
 - Prefer smaller maintainable building blocks over giant monolithic topics or prompts.
 - Plan diagnostics, support ownership, and production readiness alongside the first build.
-**Speaker note:** Use the architecture references to reinforce that grounded, supportable agents are designed deliberately.
+**Speaker note:** Use the architecture references to reinforce that grounded, supportable agents are designed deliberately. This is the right place to name the grounding ladder the workshop uses: instructions define scope, public websites add broad trusted guidance, SharePoint adds enterprise content and lists, files add narrow operational references, and Day 2 Dataverse adds structured business records. Each choice changes freshness, permissions, and who owns the source after handoff.
 
 ### Slide 26: Lab Time: Lab 06
 - Set the deliverable: a clearly named custom agent with a crisp purpose statement.
@@ -164,7 +166,7 @@
 - Create or refine the workshop custom agent in the target environment.
 - Add initial instructions and connect the first knowledge source or placeholder.
 - Test whether the agent purpose is immediately understandable in the UI and chat.
-**Speaker note:** Coach participants to make the first version understandable before they make it sophisticated.
+**Speaker note:** Coach participants to make the first version understandable before they make it sophisticated. The win condition here is a named, grounded agent that can cite trusted sources, not a feature-complete solution. Ask Makers to focus on clarity, IT pros to watch SharePoint access and DLP behavior, and developers to notice naming, reuse, and support boundaries. If the room stalls, use starter instructions or preselected knowledge sources and protect the rest of Day 1.
 
 ### Slide 28: Module 5: Topic design
 - Use topic guidance to keep entry points clear, reusable, and low overlap.
@@ -250,7 +252,7 @@
 - Shift from building the prototype to reviewing release readiness and ownership.
 - Bring together naming, access, diagnostics, channels, and governance in one conversation.
 - Set the expectation that publish readiness is broader than a single button.
-**Speaker note:** Use this transition to refocus the room on operational credibility.
+**Speaker note:** Use this transition to refocus the room on operational credibility. Summarize what the room has already proven: grounded answers, structured inputs, flow handoff, and event behavior. Then pivot the language from `can it work?` to `can we own, publish, and support it?` If time slips, shorten channel comparison first and protect the Day 1 licensing and ROI close.
 
 ### Slide 42: Lab Time: Lab 11
 - Set the task: inspect publish readiness, supported channels, and likely admin dependencies.
@@ -274,7 +276,7 @@
 - Map workshop scenarios to Copilot Studio usage, licensing decisions, and operational planning.
 - Explain when advanced actions, external channels, or automation consume Copilot Studio capacity.
 - Introduce ROI analytics as part of post-launch measurement, not an afterthought.
-**Speaker note:** End Day 1 by linking technical progress to commercial credibility and Day 2 readiness.
+**Speaker note:** End Day 1 by linking technical progress to commercial credibility and Day 2 readiness. Tie each example back to a capacity story: simple grounded answers, advanced actions, triggers, external channels, and evaluation all affect the commercial conversation differently. Tell the room that Day 2 quality evidence and evaluation results are what make this licensing discussion credible to sponsors and delivery leaders.
 
 
 ## Day 2: Core Labs 13-24 + Optional Lab 25
@@ -283,7 +285,7 @@
 - Reconnect the room to the Day 1 baseline and carry the strongest practices forward.
 - Explain that Day 2 adds orchestration, safety, enterprise data, evaluation, and an optional developer workflow after the core path.
 - Set the expectation that every module now emphasizes production readiness more explicitly.
-**Speaker note:** Use the restart to create momentum without replaying the entire previous day.
+**Speaker note:** Use the restart to create momentum without replaying the entire previous day. Day 2 is not a reset: reuse the Day 1 habits of scoped instructions, grounded sources, clean diagnostics, and disciplined naming, then show how orchestration, governed data, MCP, and evaluation extend the same operating model. Participants should feel that the scenario is getting deeper, not unrelated.
 
 ### Slide 47: Module 7: Hiring architecture
 - Anchor the day around a Hiring Agent solution that feels closer to real operational complexity.
@@ -295,7 +297,7 @@
 - Use clear boundaries so each agent or capability owns a focused responsibility.
 - Explain how handoffs, escalation, and ownership reduce confusion when workflows expand.
 - Prefer coordinated components over one oversized agent that is hard to test or support.
-**Speaker note:** This framing helps the room understand why structured orchestration improves maintainability.
+**Speaker note:** This framing helps the room understand why structured orchestration improves maintainability. Use the Application Intake and Interview Prep split to explain delegation boundaries, escalation, and ownership. Call out that the Activity map becomes the operating view for debugging handoffs, and that the same boundary-setting later makes flows, MCP tools, and evaluation results easier to reason about.
 
 ### Slide 49: Lab Time: Lab 13
 - Set up the Hiring Agent baseline with the correct environment, naming, and scenario context.
@@ -337,7 +339,7 @@
 - Add automation and model choices without losing operational control.
 - Compare models by task fit, response shape, cost, and consistency rather than trend.
 - Keep the workshop baseline on GA capabilities so the room can reproduce outcomes later.
-**Speaker note:** Frame model choice as an implementation decision that should stay tied to task quality.
+**Speaker note:** Frame model choice as an implementation decision that should stay tied to task quality. Connect Labs 16 and 17 explicitly: automation determines when the agent acts, while model selection influences how reliably it reasons once it acts. Ask the room to compare speed, structure, safety, and cost in business language rather than model hype.
 
 ### Slide 56: Lab Time: Lab 16
 - Automate one useful hiring workflow step with a clear trigger and outcome.
@@ -361,13 +363,13 @@
 - Run the comparison in the UI and judge structure, speed, and usefulness for hiring tasks.
 - Select the model that best balances reliable output with the workshop scenario needs.
 - Save the chosen baseline so later labs evaluate against the same model.
-**Speaker note:** Model selection matters most when the room can explain why a choice was made.
+**Speaker note:** Model selection matters most when the room can explain why a choice was made. Keep the scorecard simple but explicit. If GPT-5 Chat is available, use it as the baseline, then explain any fallback in terms of recruiter trust, latency, and cost. Do not switch models casually after this point because Lab 24 evaluation needs a stable baseline.
 
 ### Slide 60: Safety by layered controls
 - Combine AI disclosure, instructions, moderation, error handling, and testing into one safety model.
 - Use per-prompt content moderation (Low/Moderate/High slider) where a specific prompt or tool needs tighter moderation than the rest of the agent.
 - Treat safety as something to validate with evidence, not something to assume after configuration.
-**Speaker note:** This slide sets up content moderation as a layered operational control rather than a toggle.
+**Speaker note:** This slide sets up content moderation as a layered operational control rather than a toggle. Place it immediately after model selection on purpose: models can change refusal style and consistency, but they never replace explicit guardrails. Connect the layers here to the red-team prompts in Lab 18 and the failing-case review in Lab 24.
 
 <!-- Progress: 60/85 slides complete -->
 
@@ -381,7 +383,7 @@
 - Set the moderation posture and review how refusal or redirect messaging appears to users.
 - Inspect prompt-level or tool-level sensitivity only where targeted tightening is justified.
 - Verify the agent refuses unsafe, irrelevant, or policy-breaking requests while staying helpful in scope.
-**Speaker note:** Emphasize that precise controls beat blanket loosening or blanket blocking.
+**Speaker note:** Emphasize that precise controls beat blanket loosening or blanket blocking. Make the room identify which layer fired in each example: agent moderation, prompt sensitivity, instructions, or error handling. Safe behavior still has to be useful, so compare one blocked prompt with one clean in-scope prompt. This is where Makers, IT pros, and developers see the same control stack from different angles.
 
 ### Slide 63: Module 9: Multimodal and data
 - Add richer inputs only when they improve the hiring workflow and decision quality.
@@ -411,7 +413,7 @@
 - Use Dataverse when the scenario needs governed operational data, structured records, and role-based access.
 - Align table visibility, permissions, and traceability before trusting the experience in front of users.
 - Connect data-grounded behavior to later diagnostics, transcript analysis, and improvement cycles.
-**Speaker note:** Tie Dataverse readiness to both business value and operational accountability.
+**Speaker note:** Tie Dataverse readiness to both business value and operational accountability. Contrast Dataverse with Day 1 grounding choices: public sites give breadth, SharePoint gives enterprise content and lists, files give narrow references, and Dataverse gives structured operational records with stronger filtering and permissions. Stress that schema quality and access control now matter as much as prompt wording.
 
 ### Slide 68: Lab Time: Lab 20
 - Connect the Hiring Agent to Dataverse safely and verify only the needed data is in scope.
@@ -423,7 +425,7 @@
 - Open or configure the Dataverse grounding path and confirm the target data is visible.
 - Test a hiring question that benefits from governed business data instead of general knowledge only.
 - Capture any mismatch between scenario needs, data quality, and available permissions.
-**Speaker note:** Keep the lab focused on governed usefulness rather than deep schema exploration.
+**Speaker note:** Keep the lab focused on governed usefulness rather than deep schema exploration. Treat missing tables, empty results, or permission errors as data-readiness problems first, not model problems. This helps facilitators troubleshoot faster and teaches participants to separate AI behavior from data access.
 
 ### Slide 70: Document outputs with guardrails
 - Generated documents need clear inputs, approved templates, and obvious review points.
@@ -447,7 +449,7 @@
 - Move from internal orchestration into governed extensibility with external tools.
 - Keep access narrow, auditable, and easy to explain to admins and sponsors.
 - Use only the supported GA setup path so the workshop remains reproducible.
-**Speaker note:** This transition sets the expectation that extensibility must stay governed to stay credible.
+**Speaker note:** This transition sets the expectation that extensibility must stay governed to stay credible. Frame MCP as governed extensibility rather than open-ended plugin growth. If the wizard or catalog is unavailable, switch to demo mode quickly, protect the concept, and keep the message on narrow, auditable tool scope.
 
 ### Slide 74: Module 10: MCP and extensibility
 - Treat MCP as a generally available capability in this workshop.
@@ -498,7 +500,7 @@
 - Use evaluation as a repeatable release gate instead of relying on ad hoc chat testing.
 - Pair evaluation evidence with transcript analytics and ROI analytics to tell a fuller value story.
 - Connect quality results to rollout, staffing, and investment decisions after the workshop.
-**Speaker note:** This final module brings quality, insight, and business value into one decision framework.
+**Speaker note:** This final module brings quality, insight, and business value into one decision framework. Bring Lab 12 back into the conversation here: ROI analytics tells the value story, while evaluation tells the quality and release-readiness story. Together they answer whether the agent is worth scaling and safe enough to scale.
 
 ### Slide 82: Lab Time: Lab 24
 - Run a repeatable quality review with scored evidence instead of intuition alone.
@@ -510,7 +512,7 @@
 - Create or run an evaluation test set in the UI using realistic hiring prompts.
 - Inspect pass rate, grader reasoning, and activity-map evidence for at least one failing case.
 - Use the findings to refine the agent before calling it release-ready.
-**Speaker note:** Connect the workflow back to the transcript-analysis architecture so quality improvement feels operational and repeatable.
+**Speaker note:** Connect the workflow back to the transcript-analysis architecture so quality improvement feels operational and repeatable. Show what makes a failing case useful: clear expected behavior, grader reasoning, and an activity map that points to the real fix. Leave the room with the idea that evaluation is a reusable release gate, not a one-time workshop artifact.
 
 ### Slide 84: Lab Time: Lab 25
 - Start the optional developer branch while the main room stays on wrap-up, QA review, and rollout planning.
@@ -522,5 +524,4 @@
 - Optionally clone and sync the agent with the VS Code extension using the supported GA workflow.
 - Validate that local edits flow back into Copilot Studio without changing the workshop baseline or bypassing in-product controls.
 - Use this branch only for developers while the main room closes on evaluation, ROI, and rollout actions.
-**Speaker note:** End by making the developer add-on feel optional, useful, and safely separated from the core path.
-
+**Speaker note:** End by making the developer add-on feel optional, useful, and safely separated from the core path. Reassure nondevelopers that the core delivery story is already complete. For developers, stress that local editing complements, not replaces, the governed in-product flow and later release controls.

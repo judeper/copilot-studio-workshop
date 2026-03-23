@@ -27,6 +27,17 @@ Recommended baseline:
 
 > **Note:** If several attendees skip Day 1, open Day 2 with a stricter prerequisite check and be ready to pair them with stronger table groups.
 
+## Presentation source materials
+
+No finished slide deck is checked into this repository. Use the markdown source set below when you want to build, refresh, or deliver the instructor presentation:
+
+- [`../assets/slide-deck-outline.md`](../assets/slide-deck-outline.md) for the master slide-by-slide narrative and core speaker notes.
+- [`../assets/slide-deck-delivery-notes.md`](../assets/slide-deck-delivery-notes.md) for transition framing, pacing guardrails, audience emphasis, and parallel deck-build tasks.
+- [`../assets/slide-deck-visual-plan.md`](../assets/slide-deck-visual-plan.md) for screenshot reuse, custom visual planning, and failure-state capture recommendations.
+- [`../assets/lab-timing-guide.md`](../assets/lab-timing-guide.md) for pacing, recovery options, and module timing.
+- [`../assets/screenshot-capture-checklist.md`](../assets/screenshot-capture-checklist.md) for the screenshot inventory that supports the deck and the labs.
+- [`../tests/validation-checklist.md`](../tests/validation-checklist.md) and [`../tests/environment-smoke-tests.md`](../tests/environment-smoke-tests.md) for validation cues and demo-mode fallback decisions.
+
 ## Automated setup
 
 On a fresh Windows 11 machine, open PowerShell and run:

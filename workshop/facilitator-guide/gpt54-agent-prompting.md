@@ -219,6 +219,17 @@ Return:
 
 Use this to produce a delivery-ready outline for presentation support.
 
+When you are working in this repository, start from the existing markdown source set before inventing new structure:
+
+- `../assets/slide-deck-outline.md`
+- `../assets/slide-deck-delivery-notes.md`
+- `../assets/slide-deck-visual-plan.md`
+- `../assets/lab-timing-guide.md`
+- `../assets/screenshot-capture-checklist.md`
+- `../tests/validation-checklist.md`
+
+Prefer strengthening those files over creating a separate deck artifact in the repo.
+
 ### Template
 
 ```text
@@ -233,12 +244,17 @@ Requirements:
 - Day 1 foundation to Day 2 enterprise progression
 - Minimal marketing language
 - Strong transitions into labs
+- Use the existing markdown deck source set first and keep lab ordering aligned to the workshop flow
+- Reference visuals, screenshots, or validation cues where they improve delivery
+- Do not produce or require a PPTX/PDF artifact in the repository
 
 Return:
 - Slide title
 - Speaker intent
 - Key takeaway
 - Suggested demo or handoff point
+- Supporting lab or markdown source
+- Visual or validation cue
 ```
 
 ## Prompt template: smoke test narrative
@@ -339,5 +355,4 @@ Weak participant guidance:
 ## Final operator reminder
 
 The model should behave like an experienced workshop builder, not a transcription engine. Favor clarity, delivery readiness, validation, and recoverability in every output.
-
 

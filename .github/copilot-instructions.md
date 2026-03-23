@@ -77,6 +77,7 @@
 
 - `workshop\participant-guide` defines the learner journey, the mixed audience, and the Day 1 to Day 2 progression.
 - `workshop\facilitator-guide` contains delivery flow, environment readiness, fallback paths, and the repo's authoring guardrails.
+- `workshop\assets\slide-deck-outline.md` is the canonical instructor presentation narrative, with `slide-deck-delivery-notes.md` and `slide-deck-visual-plan.md` as companion markdown sources for speaker support and visual planning.
 - `workshop\labs` is the source of truth for hands-on content:
   - Labs `00`-`12` are the Day 1 Recruit track. They establish the environment, build the `Contoso Helpdesk Agent`, and layer SharePoint grounding, topics, Adaptive Cards, flows, triggers, publishing, and licensing.
   - Labs `13`-`24` are the Day 2 Operative track. They import the `Operative` solution, use Dataverse and the `Hiring Hub` app, then extend the `Hiring Agent` with instructions, multi-agent behavior, automation, model selection, moderation, multimodal prompts, document generation, MCP, feedback, and evaluation.
@@ -94,6 +95,7 @@
 
 - Keep the canonical scenario names unchanged: `Contoso IT`, `Contoso Helpdesk Agent`, `Hiring Agent`, `Operative`, `Hiring Hub`, and `AgentCreators`.
 - Preserve the two-day narrative. Day 1 is foundation-building; Day 2 is the governed enterprise extension of that same scenario, not a reset.
+- No finished slide deck artifact lives in the repo. When presentation work is requested, update the markdown deck source set first rather than creating or assuming a checked-in PPTX or PDF.
 - Labs follow a stable structure: time estimate near the top, then `Overview`, `Prerequisites`, detailed steps, `Validation`, `Troubleshooting`, and `Facilitator Notes`, with screenshots stored under each lab's `assets` folder as `lab-NN-*.png`.
 - Use `[Maker]`, `[IT Pro]`, and `[Developer]` only when the guidance truly differs. The default workshop flow is shared across roles; Lab 25 is the main developer-only stretch path.
 - Keep participant-facing docs flat and scannable. The repo's internal authoring guide in `workshop\facilitator-guide\gpt54-agent-prompting.md` explicitly avoids nested bullets in participant docs and uses callouts only when they improve execution. This file is internal-only and must not be linked from participant-facing lab content.
