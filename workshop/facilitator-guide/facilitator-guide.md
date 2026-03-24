@@ -145,6 +145,34 @@ Expected outcome after this runbook:
 - The facilitator has a separate demo base for rescue demos.
 - Student environments are ready for hands-on without being pre-solved past the shared prerequisites.
 
+## Presentation materials
+
+The repository includes a committed slide corpus for live delivery:
+
+- **Location:** `workshop\Copilot-Studio-Workshop-Slides\`
+- **Structure:** 13 PPTX decks, `Module-00` through `Module-12`
+- **Total:** 95 slides across the full workshop
+
+Use the slide assets this way:
+
+- Use the **PPTX decks** for live delivery, screen sharing, and facilitator presentation flow.
+- Use `workshop\assets\slide-deck-outline.md` for speaker notes, teaching intent, and text-first review.
+- Treat the PPTX decks as the authoritative delivery format and the markdown outline as the narrative companion.
+
+Day split:
+
+- **Day 1:** Modules `00` through `06`
+- **Day 2:** Modules `07` through `12`
+
+When updating slide content:
+
+1. Make the delivery change in the relevant PPTX file first.
+2. Update `workshop\assets\slide-deck-outline.md` when the module structure, slide sequencing, transition points, or teaching intent changes.
+3. Review `workshop\assets\lab-timing-guide.md` if the updated content affects pre-lab framing or module pacing.
+4. Preserve the existing slide formatting. New or revised slides should match the current color palette, layout system, and design treatment rather than introducing a new visual style.
+
+For pacing-sensitive delivery, keep the workshop's protected labs in view: Labs `06`, `18`, `22`, and `24` need enough instructor framing before the hands-on transition.
+
 ## Suggested delivery flow
 
 ### Day 1: Recruit foundations

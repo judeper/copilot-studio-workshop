@@ -244,9 +244,11 @@ Requirements:
 - Day 1 foundation to Day 2 enterprise progression
 - Minimal marketing language
 - Strong transitions into labs
-- Use the existing markdown deck source set first and keep lab ordering aligned to the workshop flow
+- Use the existing markdown deck source set and keep lab ordering aligned to the workshop flow
 - Reference visuals, screenshots, or validation cues where they improve delivery
-- Do not produce or require a PPTX/PDF artifact in the repository
+- Prefer updating the existing PPTX/module deck set over inventing a separate parallel slide artifact
+- Treat the PPTX decks in `workshop/Copilot-Studio-Workshop-Slides/` as the delivery artifacts and `workshop/assets/slide-deck-outline.md` as the narrative companion
+- If you are proposing slide changes, keep the existing deck colors, layout patterns, and overall design treatment
 
 Return:
 - Slide title
@@ -255,6 +257,85 @@ Return:
 - Suggested demo or handoff point
 - Supporting lab or markdown source
 - Visual or validation cue
+```
+
+## Prompt template: slide deck review and audit
+
+Use this when reviewing the committed slide decks and their companion materials together.
+
+### Template
+
+```text
+You are reviewing the Copilot Studio workshop slide decks and supporting materials.
+
+phase: validate
+model: gpt-5.4
+reasoning: high
+
+Slide assets:
+- PowerPoint decks in `workshop/Copilot-Studio-Workshop-Slides/` (`Module-00` through `Module-12`, 13 PPTX files, 95 slides total)
+- Markdown outline in `workshop/assets/slide-deck-outline.md` (85 numbered entries with speaker notes)
+
+Related files:
+- `workshop/assets/lab-timing-guide.md`
+- `workshop/assets/session-splitting-guide.md`
+- `workshop/facilitator-guide/facilitator-guide.md`
+- `workshop/assets/screenshot-capture-checklist.md`
+
+Review goals:
+- Verify module names, teaching sequence, and transitions align between PPTX and markdown
+- Check that instructor framing is sufficient before hands-on labs, especially Labs 06, 18, 22, and 24
+- Check that pacing assumptions stay consistent with the timing and session-splitting guides
+- Check that the updated slides preserve the existing deck colors, layout patterns, and design treatment
+- Confirm facilitator-facing documentation accurately describes how the slide assets should be used
+
+Return:
+- Executive summary
+- File-backed findings with specific module or slide references
+- Any discrepancies between PPTX, markdown outline, pacing docs, and facilitator guidance
+- Prioritized recommendations
+```
+
+## Prompt template: slide content update workflow
+
+Use this when changing slide content in the workshop deck set.
+
+### Template
+
+```text
+You are updating slide content for the Copilot Studio workshop.
+
+phase: refine
+model: gpt-5.4
+reasoning: high
+
+Current slide assets:
+- PowerPoint decks in `workshop/Copilot-Studio-Workshop-Slides/`
+- Markdown outline in `workshop/assets/slide-deck-outline.md`
+- Lab timing guide in `workshop/assets/lab-timing-guide.md`
+
+Update scope:
+- [Describe the specific modules, slides, or teaching moments being changed]
+
+Requirements:
+- Make delivery-asset changes in the relevant PPTX files
+- Update `slide-deck-outline.md` when structure, sequencing, speaker intent, or teaching flow changes
+- Review pacing implications when pre-lab framing or module duration changes
+- Preserve the existing slide colors, theme, layout patterns, and overall design treatment
+- Reuse existing slide patterns where possible instead of inventing a new visual style
+- Use extra caution around pacing-sensitive labs: 06, 18, 22, and 24
+
+Validation:
+- Verify module numbers and names remain consistent
+- Verify transitions into labs remain clear
+- Verify markdown and PPTX stay aligned on teaching flow
+- Call out any timing impact
+
+Return:
+- List of PPTX files updated
+- Summary of markdown changes
+- Timing impact, if any
+- Any follow-on documentation updates required
 ```
 
 ## Prompt template: smoke test narrative

@@ -2,6 +2,14 @@
 
 Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-plan.md`, `lab-timing-guide.md`, and `screenshot-capture-checklist.md` when building or presenting the workshop deck.
 
+> **Companion document:** This markdown outline provides the narrative structure, speaker notes, and teaching intent for the workshop presentation decks.
+>
+> **Delivery artifacts:** The live presentation files live in `workshop\Copilot-Studio-Workshop-Slides\` as 13 PPTX module decks with 95 slides total.
+>
+> **Relationship:** The PPTX decks are the delivery-ready presentation artifacts with visual design and presentation flow. This outline is the text-first companion used for speaker notes, narrative structure, and teaching strategy review.
+>
+> **Alignment note:** This outline contains 85 numbered entries while the PPTX corpus contains 95 slides. The counts do not match one-for-one because the decks may split title, transition, or visual teaching moments across multiple slides while the outline combines them into fewer narrative entries.
+
 ## Day 1: Labs 00-12
 
 ### Slide 1: Welcome and goals

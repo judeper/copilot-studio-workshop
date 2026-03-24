@@ -17,6 +17,58 @@ A two-day, hands-on workshop for building, extending, and governing AI agents wi
 2. **Participant guide** — Start with [Welcome and Overview](workshop/participant-guide/welcome-and-overview.md).
 3. **Facilitator guide** — See [Facilitator Guide](workshop/facilitator-guide/facilitator-guide.md) for delivery flow, environment readiness, and automation.
 
+## Workshop Materials
+
+### Presentation Slides
+
+The workshop includes 13 committed PowerPoint presentation decks covering the full two-day curriculum.
+
+- **Location:** `workshop\Copilot-Studio-Workshop-Slides\`
+- **Format:** Delivery-ready PPTX files for instructor-led presentation and screen sharing
+- **Size:** 95 slides total across 13 module decks
+
+| Module | File | Focus area |
+|---|---|---|
+| 00 | `Module-00-Workshop-Framing.pptx` | Workshop introduction and objectives |
+| 01 | `Module-01-Agents-Today.pptx` | Current state of AI agents |
+| 02 | `Module-02-Studio-Foundations.pptx` | Copilot Studio basics |
+| 03 | `Module-03-Reuse-Patterns.pptx` | Template and pattern reuse |
+| 04 | `Module-04-Custom-Agent-Design.pptx` | Custom agent architecture |
+| 05 | `Module-05-Topic-Design.pptx` | Conversational topic patterns |
+| 06 | `Module-06-Actions-and-Events.pptx` | Actions and event-driven design |
+| 07 | `Module-07-Hiring-Architecture.pptx` | Enterprise hiring scenario |
+| 08 | `Module-08-Automation-and-Models.pptx` | Automation and model strategy |
+| 09 | `Module-09-Multimodal-and-Data.pptx` | Multimodal capabilities and data grounding |
+| 10 | `Module-10-MCP-and-Extensibility.pptx` | MCP and extensibility patterns |
+| 11 | `Module-11-Channels-and-Feedback.pptx` | Channel rollout and feedback loops |
+| 12 | `Module-12-Evaluation-and-ROI.pptx` | Evaluation and ROI measurement |
+
+### Companion Materials
+
+- **Markdown outline:** `workshop\assets\slide-deck-outline.md` — 85 numbered entries with speaker notes, narrative structure, and teaching intent
+- **Lab timing guide:** `workshop\assets\lab-timing-guide.md` — detailed pacing and delivery guidance for labs
+- **Session splitting guide:** `workshop\assets\session-splitting-guide.md` — alternative multi-session delivery formats
+- **Facilitator guide:** `workshop\facilitator-guide\facilitator-guide.md` — complete delivery flow, readiness guidance, and recovery notes
+
+The repository maintains slides in two parallel formats:
+
+- **PPTX decks** are the authoritative delivery artifacts with visual design and live presentation flow.
+- **The markdown outline** is the narrative companion used for speaker notes, teaching intent, and text-first review.
+
+When slide structure, sequencing, or teaching intent changes, keep both assets aligned.
+
+### For Facilitators
+
+Before live delivery, review these materials together:
+
+1. The PPTX decks in `workshop\Copilot-Studio-Workshop-Slides\`
+2. The markdown outline in `workshop\assets\slide-deck-outline.md`
+3. The facilitator guide in `workshop\facilitator-guide\facilitator-guide.md`
+4. The lab timing guide in `workshop\assets\lab-timing-guide.md`
+5. The session splitting guide in `workshop\assets\session-splitting-guide.md`
+
+Use the PPTX decks for presentation and screen sharing, then use the markdown outline when you need detailed speaker notes or a text-first review of the teaching flow.
+
 ## Lab Index
 
 ### Day 1 — Recruit Track
