@@ -98,6 +98,7 @@
 
 - Keep the canonical scenario names unchanged: `Contoso IT`, `Contoso Helpdesk Agent`, `Hiring Agent`, `Operative`, `Hiring Hub`, and `AgentCreators`.
 - Preserve the two-day narrative. Day 1 is foundation-building; Day 2 is the governed enterprise extension of that same scenario, not a reset.
+- Keep sample identities fictitious. Use `example.com` for sample email addresses and remove customer-specific names, tenant URLs, Teams routing IDs, and other environment-bound values before checking in exported assets or starter solutions.
 - When slide work is in scope, inspect the committed PPTX decks together with the markdown source set: `workshop\assets\slide-deck-outline.md`, `slide-deck-delivery-notes.md`, and `slide-deck-visual-plan.md`. PPTX is the delivery format; the markdown files are companion authoring and review sources.
 - Preserve the existing slide formatting when updating PPTX assets. New or revised slides should match the current deck colors, layout patterns, and design treatment rather than creating a new visual system.
 - Labs follow a stable structure: time estimate near the top, then `Overview`, `Prerequisites`, detailed steps, `Validation`, `Troubleshooting`, and `Facilitator Notes`, with screenshots stored under each lab's `assets` folder as `lab-NN-*.png`.

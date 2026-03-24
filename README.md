@@ -69,6 +69,13 @@ Before live delivery, review these materials together:
 
 Use the PPTX decks for presentation and screen sharing, then use the markdown outline when you need detailed speaker notes or a text-first review of the teaching flow.
 
+## Sample Data and PII Hygiene
+
+- Keep all sample identities fictitious.
+- Use `example.com` for sample email addresses unless a file explicitly needs a placeholder token such as `<replace-with-org>`.
+- Do not commit customer-specific names, mailboxes, tenant URLs, Teams routing IDs, or other environment-bound values in exported assets or starter solutions.
+- Preserve the canonical workshop fiction: `Contoso`, `Contoso IT`, `Contoso Helpdesk Agent`, `Hiring Agent`, `Hiring Hub`, `Operative`, and `AgentCreators`.
+
 ## Lab Index
 
 ### Day 1 — Recruit Track

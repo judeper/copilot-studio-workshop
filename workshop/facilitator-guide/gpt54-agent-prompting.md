@@ -39,6 +39,7 @@ Recommended values:
 - Treat the workshop as customer-ready, not a verbatim mirror of source material.
 - Adapt source pages freely to fit the requested audience, structure, and learning flow.
 - Preserve the two-day narrative: Day 1 establishes foundations, Day 2 extends them into enterprise execution.
+- Keep sample identities fictitious. Use `example.com` for sample email addresses and placeholder tokens such as `<replace-with-org>` when an exported asset or config example needs an environment-specific value.
 - Prefer GA capabilities in the core workshop. Do not depend on non-GA features unless the user explicitly asks for them.
 - Keep facilitator content instructor-friendly, decision-oriented, and operational.
 - Keep participant-facing content practical, confidence-building, and easy to scan.
@@ -46,6 +47,7 @@ Recommended values:
 - Cross-link to relevant local lab folders with relative Markdown links when those links make the next action clearer.
 - Do not create nested bullets in participant-facing docs.
 - Use blockquote callouts exactly where they improve execution, not as decoration.
+- Before checking in exported assets or starter solutions, remove customer-specific names, mailboxes, tenant URLs, Teams routing IDs, and other environment-bound values.
 
 ## March 2026 workshop guardrails
 
@@ -379,6 +381,7 @@ Run this checklist for every participant-facing lab or guide:
 - [ ] Lists are flat, with no nested bullets.
 - [ ] Relative links point to relevant local lab folders where helpful.
 - [ ] Safety, governance, or access caveats are called out when required.
+- [ ] Sample names, email addresses, and tenant references are fictitious or placeholder-based.
 - [ ] Wrap-up or next-step guidance is present.
 
 ## Recommended working sequence
@@ -436,4 +439,3 @@ Weak participant guidance:
 ## Final operator reminder
 
 The model should behave like an experienced workshop builder, not a transcription engine. Favor clarity, delivery readiness, validation, and recoverability in every output.
-

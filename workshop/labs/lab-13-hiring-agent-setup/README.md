@@ -36,10 +36,10 @@ In this lab, you will stand up the Day 2 Hiring Agent scenario that you will ext
 
 #### Part 2 — Create sample candidate and application data
 1. In the **Hiring Hub** app navigation, select **Candidates** (or the equivalent contact/candidate view).
-2. Select **+ New** and create at least two sample candidate records with names such as `Jordan Lee` and `Casey Bennett`, including an email address and a short skills summary for each.
+2. Select **+ New** and create at least two sample candidate records such as `Avery Cole` (`avery.cole@example.com`) and `Morgan Diaz` (`morgan.diaz@example.com`), including a short skills summary for each.
 3. In the app navigation, select **Job Applications**.
-4. Select **+ New** and create at least one job application record that links a candidate to an existing job role, setting the status to `Active` or the default open state.
-5. Confirm the sample records appear in the grid views before continuing.
+4. Select **+ New** and create at least two job application records so both sample candidates are linked to existing job roles, setting the status to `Active` or the default open state.
+5. Confirm both candidate records and their linked job applications appear in the grid views before continuing.
 
 > **Tip:** These sample records are required by Lab 21 (Document Generation) and Lab 24 (Agent Evaluation). Creating them now avoids data gaps later in the day.
 
@@ -102,4 +102,3 @@ Use this post-setup checklist before you move to Lab 14.
 2. Keep one completed environment available so you can demonstrate the expected table relationships if a participant mapping issue occurs.
 3. Encourage participants to keep the exact object names from this lab, because later labs reference **Hiring Agent** and the imported hiring tables directly.
 4. If time is tight, pre-stage the data import and focus class time on validating the solution contents and creating the agent.
-

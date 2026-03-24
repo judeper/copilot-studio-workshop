@@ -124,7 +124,7 @@ You are assisting a workshop facilitator who is doing a dry-run of a Microsoft C
 | # | Filename | When to Capture | What Should Be Visible |
 |---|----------|----------------|----------------------|
 | 21 | `lab-13-solution-import.png` | After successfully importing the Operative solution | The Solutions page showing the imported Operative solution with a success indicator. The solution name, publisher, and version should be visible. |
-| 22 | `lab-13-sample-data.png` | After creating sample candidates and applications | The Hiring Hub model-driven app showing sample data: candidate records (Jordan Lee, Casey Bennett) and their linked job applications. The data grid should show populated rows. |
+| 22 | `lab-13-sample-data.png` | After creating sample candidates and applications | The Hiring Hub model-driven app showing sample data: candidate records (Avery Cole, Morgan Diaz) and their linked job applications. The data grid should show populated rows. |
 | 23 | `lab-13-agent-details.png` | After creating and configuring the Hiring Agent | The Hiring Agent's Overview page showing: agent name "Hiring Agent", description "Central orchestrator for the Contoso hiring process", and Settings showing Orchestration=Yes, File uploads=On, Web search=Off, Moderation=High. |
 
 ### Lab 14 — Agent Instructions

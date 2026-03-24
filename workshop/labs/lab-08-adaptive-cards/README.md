@@ -59,7 +59,7 @@ In this lab, you will replace a plain-text follow-up with an interactive Adaptiv
       isRequired: true,
       choices: ForAll(Global.VarDevices.value, { title: If(IsBlank(Model), Title, Model), value: Text(ID) })
     },
-    { type: "Input.Text", id: "managerEmailId", label: "Manager email", placeholder: "manager@contoso.com" },
+    { type: "Input.Text", id: "managerEmailId", label: "Manager email", placeholder: "it.manager@example.com" },
     { type: "Input.Text", id: "commentsId", label: "Additional comments", isMultiline: true }
   ],
   actions: [
@@ -103,4 +103,3 @@ In this lab, you will replace a plain-text follow-up with an interactive Adaptiv
 1. Participants often understand cards faster when they see the external designer first and the in-product card editor second.
 2. Reinforce that the card outputs are the bridge to automation in Lab 09.
 3. If formula mode is unavailable in a tenant, use static placeholder choices for the live build and explain how the dynamic pattern works conceptually.
-
