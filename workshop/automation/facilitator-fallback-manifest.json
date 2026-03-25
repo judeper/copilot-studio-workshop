@@ -1,0 +1,410 @@
+{
+  "schemaVersion": 1,
+  "description": "Facilitator fallback build contract for recreating a facilitator-only rescue environment without changing the student hands-on path.",
+  "buildModel": {
+    "strategy": "gold-source-full-copy",
+    "sharedPrerequisitesCommand": "powershell -File .\\workshop\\automation\\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady",
+    "sourceDiscoveryCommand": "powershell -File .\\workshop\\automation\\Set-WorkshopFacilitatorFallbackSource.ps1 -ListCandidates",
+    "sourceQualificationCommand": "powershell -File .\\workshop\\automation\\Set-WorkshopFacilitatorFallbackSource.ps1 -SourceEnvironmentUrl <source-url> -UpdateConfig",
+    "copyCommand": "powershell -File .\\workshop\\automation\\Invoke-WorkshopFacilitatorFallbackBuild.ps1",
+    "validationCommand": "powershell -File .\\workshop\\automation\\Invoke-WorkshopFacilitatorFallbackValidation.ps1"
+  },
+  "automatedChecks": [
+    {
+      "id": "operative-solution",
+      "description": "Operative solution exists in the target facilitator environment.",
+      "alias": "recordcount",
+      "minimumCount": 1,
+      "fetchXml": "<fetch aggregate='true'><entity name='solution'><attribute name='solutionid' alias='recordcount' aggregate='count' /><filter><condition attribute='uniquename' operator='eq' value='Operative' /></filter></entity></fetch>",
+      "successMessage": "Operative solution is present in the facilitator fallback environment.",
+      "failureMessage": "Operative solution was not found. Rebuild from the gold source or re-import the Operative package before relying on this environment."
+    },
+    {
+      "id": "hiring-hub-job-roles",
+      "description": "Hiring Hub job roles were copied into Dataverse.",
+      "alias": "recordcount",
+      "minimumCount": 1,
+      "fetchXml": "<fetch aggregate='true'><entity name='ppa_jobrole'><attribute name='ppa_jobroleid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Hiring Hub job roles are present.",
+      "failureMessage": "No Hiring Hub job roles were found. Lab 13 fallback data is incomplete."
+    },
+    {
+      "id": "hiring-hub-evaluation-criteria",
+      "description": "Hiring Hub evaluation criteria were copied into Dataverse.",
+      "alias": "recordcount",
+      "minimumCount": 1,
+      "fetchXml": "<fetch aggregate='true'><entity name='ppa_evaluationcriteria'><attribute name='ppa_evaluationcriteriaid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Hiring Hub evaluation criteria are present.",
+      "failureMessage": "No Hiring Hub evaluation criteria were found. Lab 13 fallback data is incomplete."
+    },
+    {
+      "id": "sample-candidates",
+      "description": "Sample candidates were copied into Dataverse.",
+      "alias": "recordcount",
+      "minimumCount": 1,
+      "fetchXml": "<fetch aggregate='true'><entity name='ppa_candidate'><attribute name='ppa_candidateid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Sample candidates are present.",
+      "failureMessage": "No candidate records were found. The facilitator fallback environment is missing Day 2 sample data."
+    },
+    {
+      "id": "sample-resumes",
+      "description": "Sample resumes were copied into Dataverse.",
+      "alias": "recordcount",
+      "minimumCount": 1,
+      "fetchXml": "<fetch aggregate='true'><entity name='ppa_resume'><attribute name='ppa_resumeid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Sample resumes are present.",
+      "failureMessage": "No resume records were found. Labs 16, 19, and 21 fallback state will be incomplete."
+    },
+    {
+      "id": "sample-job-applications",
+      "description": "Sample job applications were copied into Dataverse.",
+      "alias": "recordcount",
+      "minimumCount": 1,
+      "fetchXml": "<fetch aggregate='true'><entity name='ppa_jobapplication'><attribute name='ppa_jobapplicationid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Sample job applications are present.",
+      "failureMessage": "No job application records were found. Hiring Hub fallback demos are incomplete."
+    }
+  ],
+  "labs": [
+    {
+      "labNumber": 0,
+      "title": "Environment Setup",
+      "day": 1,
+      "artifactType": "Shared prerequisites",
+      "portability": "reconstructable",
+      "buildPath": "Invoke-WorkshopLabSetup.ps1 -Mode StudentReady",
+      "validationMode": "manual",
+      "validationSummary": "Shared tenant, auth, and environment readiness remain part of the standard StudentReady pass.",
+      "manualChecks": [
+        "Open Copilot Studio and confirm the facilitator can reach the intended workshop environment without extra setup prompts."
+      ]
+    },
+    {
+      "labNumber": 1,
+      "title": "Intro to Agents",
+      "day": 1,
+      "artifactType": "Browser-based orientation",
+      "portability": "manual",
+      "buildPath": "Facilitator walkthrough",
+      "validationMode": "manual",
+      "validationSummary": "This lab is conceptual and depends on the facilitator being able to open the product surfaces.",
+      "manualChecks": [
+        "Open the home page and confirm the facilitator account can create or open agents."
+      ]
+    },
+    {
+      "labNumber": 2,
+      "title": "Copilot Studio Fundamentals",
+      "day": 1,
+      "artifactType": "In-product navigation",
+      "portability": "manual",
+      "buildPath": "Facilitator walkthrough",
+      "validationMode": "manual",
+      "validationSummary": "The completed fallback environment should still let the facilitator navigate the core authoring surfaces.",
+      "manualChecks": [
+        "Confirm the unified activity and transcript view opens in a fresh test session."
+      ]
+    },
+    {
+      "labNumber": 3,
+      "title": "Declarative Agents",
+      "day": 1,
+      "artifactType": "Starter agents and knowledge choices",
+      "portability": "manual",
+      "buildPath": "Facilitator walkthrough",
+      "validationMode": "manual",
+      "validationSummary": "Fallback proof is the ability to demonstrate the authoring surface, not a copied student artifact.",
+      "manualChecks": [
+        "Open a starter or declarative agent flow and confirm the facilitator can demo the authoring choices."
+      ]
+    },
+    {
+      "labNumber": 4,
+      "title": "Solutions",
+      "day": 1,
+      "artifactType": "Solution container",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "manual",
+      "validationSummary": "The copied environment should still expose the intended solution container and components.",
+      "manualChecks": [
+        "Open Solutions and confirm the facilitator can reach the workshop solution and its components."
+      ]
+    },
+    {
+      "labNumber": 5,
+      "title": "Prebuilt Agents",
+      "day": 1,
+      "artifactType": "Demonstration state",
+      "portability": "manual",
+      "buildPath": "Facilitator walkthrough",
+      "validationMode": "manual",
+      "validationSummary": "Prebuilt-agent coverage remains a facilitator walkthrough rather than a copied dataset.",
+      "manualChecks": [
+        "Confirm the facilitator can open the prebuilt-agent gallery or equivalent current GA entry point."
+      ]
+    },
+    {
+      "labNumber": 6,
+      "title": "Custom Agent",
+      "day": 1,
+      "artifactType": "Contoso Helpdesk Agent",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "manual",
+      "validationSummary": "The copied environment should preserve a working facilitator-owned Contoso Helpdesk Agent.",
+      "manualChecks": [
+        "Open Contoso Helpdesk Agent and confirm it loads successfully in Copilot Studio."
+      ]
+    },
+    {
+      "labNumber": 7,
+      "title": "Topics and Triggers",
+      "day": 1,
+      "artifactType": "Topic definitions",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "manual",
+      "validationSummary": "Topics are environment content and should survive the gold-source copy.",
+      "manualChecks": [
+        "Open the facilitator-owned Day 1 agent and confirm at least one custom topic is present."
+      ]
+    },
+    {
+      "labNumber": 8,
+      "title": "Adaptive Cards",
+      "day": 1,
+      "artifactType": "Card authoring artifacts",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "manual",
+      "validationSummary": "Card-based prompts should remain intact in the copied agent.",
+      "manualChecks": [
+        "Open the relevant topic and confirm the adaptive card surface still renders as expected."
+      ]
+    },
+    {
+      "labNumber": 9,
+      "title": "Agent Flows",
+      "day": 1,
+      "artifactType": "Flow-backed actions",
+      "portability": "repairable",
+      "buildPath": "Gold source environment full copy plus connection repair as needed",
+      "validationMode": "manual",
+      "validationSummary": "Agent flows often depend on connection references and should be validated interactively.",
+      "manualChecks": [
+        "Open a facilitator-owned flow-backed action and confirm there are no broken connection prompts."
+      ]
+    },
+    {
+      "labNumber": 10,
+      "title": "Event Triggers",
+      "day": 1,
+      "artifactType": "Trigger configuration",
+      "portability": "repairable",
+      "buildPath": "Gold source environment full copy plus SharePoint trigger verification",
+      "validationMode": "manual",
+      "validationSummary": "Trigger wiring is environment-bound and needs a live facilitator check.",
+      "manualChecks": [
+        "Confirm the trigger opens and still references the intended SharePoint event source."
+      ]
+    },
+    {
+      "labNumber": 11,
+      "title": "Publish Agent",
+      "day": 1,
+      "artifactType": "Publishing surface",
+      "portability": "manual",
+      "buildPath": "Facilitator walkthrough",
+      "validationMode": "manual",
+      "validationSummary": "Publishing readiness depends on current tenant permissions and should remain an explicit facilitator check.",
+      "manualChecks": [
+        "Confirm the publish surface opens for the facilitator-owned agent."
+      ]
+    },
+    {
+      "labNumber": 12,
+      "title": "Licensing",
+      "day": 1,
+      "artifactType": "Environment capacity and credits",
+      "portability": "manual",
+      "buildPath": "Shared readiness plus facilitator verification",
+      "validationMode": "manual",
+      "validationSummary": "Credit allocation remains an operator-controlled readiness gate, not a copied artifact.",
+      "manualChecks": [
+        "Confirm the fallback environment can return a response in the test pane without a capacity error."
+      ]
+    },
+    {
+      "labNumber": 13,
+      "title": "Hiring Agent Setup",
+      "day": 2,
+      "artifactType": "Operative solution and Hiring Hub seed data",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "automated+manual",
+      "validationSummary": "This is the first fully automated fallback proof: Operative plus the base Hiring Hub data must exist in Dataverse.",
+      "automatedChecks": [
+        "operative-solution",
+        "hiring-hub-job-roles",
+        "hiring-hub-evaluation-criteria",
+        "sample-candidates",
+        "sample-resumes",
+        "sample-job-applications"
+      ],
+      "manualChecks": [
+        "Open Hiring Hub and confirm the copied records are visible in the app.",
+        "Open Hiring Agent and confirm it loads without missing-connection prompts."
+      ]
+    },
+    {
+      "labNumber": 14,
+      "title": "Agent Instructions",
+      "day": 2,
+      "artifactType": "Agent instruction set",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "manual",
+      "validationSummary": "Instructions are facilitator-owned agent content and should copy cleanly with the environment.",
+      "manualChecks": [
+        "Open Hiring Agent instructions and confirm the facilitator-owned guidance is present."
+      ]
+    },
+    {
+      "labNumber": 15,
+      "title": "Multi-Agent Hiring Team",
+      "day": 2,
+      "artifactType": "Multi-agent topology",
+      "portability": "repairable",
+      "buildPath": "Gold source environment full copy plus post-copy agent link validation",
+      "validationMode": "manual",
+      "validationSummary": "Agent-to-agent references should be validated after every rebuild because they are environment content with downstream dependencies.",
+      "manualChecks": [
+        "Confirm the Hiring Agent still references the expected supporting agents and routing paths."
+      ]
+    },
+    {
+      "labNumber": 16,
+      "title": "Trigger Automation",
+      "day": 2,
+      "artifactType": "SharePoint-triggered flow and resume handling",
+      "portability": "repairable",
+      "buildPath": "Gold source environment full copy plus SharePoint/flow repair as needed",
+      "validationMode": "manual",
+      "validationSummary": "This lab depends on SharePoint triggers and should always receive a live facilitator smoke test.",
+      "manualChecks": [
+        "Confirm the resume-processing trigger still opens with valid connection references and target library paths."
+      ]
+    },
+    {
+      "labNumber": 17,
+      "title": "Model Selection",
+      "day": 2,
+      "artifactType": "Model configuration",
+      "portability": "environment-bound",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "manual",
+      "validationSummary": "Model availability can drift by region, so this remains a facilitator spot-check after copy.",
+      "manualChecks": [
+        "Open the model picker and confirm the intended default model or GA fallback is still available."
+      ]
+    },
+    {
+      "labNumber": 18,
+      "title": "Content Moderation",
+      "day": 2,
+      "artifactType": "Moderation configuration",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "manual",
+      "validationSummary": "Moderation settings should persist with the copied agent configuration.",
+      "manualChecks": [
+        "Confirm the per-prompt moderation slider still reflects the intended facilitator setting."
+      ]
+    },
+    {
+      "labNumber": 19,
+      "title": "Multimodal Prompts",
+      "day": 2,
+      "artifactType": "Multimodal prompt definitions",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "manual",
+      "validationSummary": "Multimodal prompts should travel with the copied facilitator-owned agent state.",
+      "manualChecks": [
+        "Open the multimodal prompt and confirm its prompt body and attachment expectations are still present."
+      ]
+    },
+    {
+      "labNumber": 20,
+      "title": "Dataverse Grounding",
+      "day": 2,
+      "artifactType": "Grounding tables and records",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "automated+manual",
+      "validationSummary": "Dataverse grounding is validated through the copied Hiring Hub data plus a live facilitator check in the agent.",
+      "automatedChecks": [
+        "hiring-hub-job-roles",
+        "hiring-hub-evaluation-criteria",
+        "sample-candidates",
+        "sample-job-applications"
+      ],
+      "manualChecks": [
+        "Run a grounded Hiring Agent test and confirm it can reference the copied Hiring Hub data."
+      ]
+    },
+    {
+      "labNumber": 21,
+      "title": "Document Generation",
+      "day": 2,
+      "artifactType": "Offer letter flow and template wiring",
+      "portability": "repairable",
+      "buildPath": "Gold source environment full copy plus document-template verification",
+      "validationMode": "manual",
+      "validationSummary": "Template paths and flow connections can drift after copy, so this remains a facilitator smoke test.",
+      "manualChecks": [
+        "Confirm the offer-letter flow and Word template still open without broken references."
+      ]
+    },
+    {
+      "labNumber": 22,
+      "title": "MCP Integration",
+      "day": 2,
+      "artifactType": "MCP server onboarding",
+      "portability": "manual",
+      "buildPath": "Explicit facilitator-only post-copy setup",
+      "validationMode": "manual",
+      "validationSummary": "MCP remains a consent-bound, facilitator-owned validation step even in the fallback environment.",
+      "manualChecks": [
+        "Open the MCP onboarding wizard and confirm the facilitator account can reach the supported Microsoft 365 server flow."
+      ]
+    },
+    {
+      "labNumber": 23,
+      "title": "User Feedback",
+      "day": 2,
+      "artifactType": "Feedback prompts and reactions",
+      "portability": "gold-copy",
+      "buildPath": "Gold source environment full copy",
+      "validationMode": "manual",
+      "validationSummary": "Feedback topics and cards should persist with the copied facilitator-owned agent.",
+      "manualChecks": [
+        "Confirm the custom feedback experience is still present in the facilitator fallback agent."
+      ]
+    },
+    {
+      "labNumber": 24,
+      "title": "Agent Evaluation",
+      "day": 2,
+      "artifactType": "Evaluation-ready agent state and datasets",
+      "portability": "reconstructable",
+      "buildPath": "Gold source environment full copy plus manual evaluation rerun as needed",
+      "validationMode": "manual",
+      "validationSummary": "Evaluation runs are still best validated interactively because results are environment and time bound.",
+      "manualChecks": [
+        "Open Evaluation and confirm the facilitator can create or rerun a test set against the rebuilt environment."
+      ]
+    }
+  ]
+}

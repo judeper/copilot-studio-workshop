@@ -285,6 +285,9 @@ if ($null -ne $resolvedEnvironmentUrl) {
         Save-WorkshopConfig -Path $ConfigPath -Config $config
         Write-StepResult -Level PASS -Message "Updated '$ConfigPath' with EnvironmentUrl '$resolvedEnvironmentUrl'."
     }
+    else {
+        Write-StepResult -Level WARN -Message "The config file was not updated automatically. Re-run with -UpdateConfig, or pass -EnvironmentUrl '$resolvedEnvironmentUrl' to later facilitator-only import and validation scripts."
+    }
 
     if ($CreateEnvironment) {
         Write-StepResult -Level INFO -Message "Skipping pac admin create because the intended environment already exists. This keeps the facilitator pre-stage idempotent."
@@ -359,7 +362,7 @@ if ($UpdateConfig) {
     Write-StepResult -Level PASS -Message "Updated '$ConfigPath' with EnvironmentUrl '$resolvedCreatedEnvironmentUrl'."
 }
 else {
-    Write-StepResult -Level WARN -Message "The config file was not updated automatically. Add '$resolvedCreatedEnvironmentUrl' to EnvironmentUrl in '$ConfigPath' before running the rest of the toolkit."
+    Write-StepResult -Level WARN -Message "The config file was not updated automatically. Re-run with -UpdateConfig, add '$resolvedCreatedEnvironmentUrl' to EnvironmentUrl in '$ConfigPath', or pass -EnvironmentUrl explicitly to later facilitator-only import and validation scripts."
 }
 
 Write-StepResult -Level INFO -Message "Environment bootstrap is a facilitator pre-stage step only. Student-owned labs still require their own walkthrough steps, permissions, and validation."

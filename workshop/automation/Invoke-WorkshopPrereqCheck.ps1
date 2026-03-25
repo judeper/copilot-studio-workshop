@@ -81,7 +81,7 @@ if ($sharePointPnPLoginMode -eq 'CertificateThumbprint') {
     Write-StepResult -Level PASS -Message "Configured SharePoint PnP certificate thumbprint '$sharePointPnPCertificateThumbprint'."
 }
 
-# Validate Identity.ClientSecret availability (needed for per-student provisioning)
+# Validate Identity.ClientSecret availability (used by facilitator Dataverse app-only tasks and per-student provisioning support)
 $resolvedClientSecret = Resolve-ConfiguredClientSecret -Config $config
 if ($resolvedClientSecret.Value) {
     $secretSource = if ($resolvedClientSecret.Source -eq 'EnvironmentVariable') {
@@ -90,16 +90,24 @@ if ($resolvedClientSecret.Value) {
     else {
         'workshop-config.json'
     }
-    Write-StepResult -Level PASS -Message "Identity.ClientSecret is available via $secretSource (supports app-only PowerApps admin auth such as DLP checks after one-time delegated Power Platform app registration)."
+    Write-StepResult -Level PASS -Message "Identity.ClientSecret is available via $secretSource (supports facilitator Dataverse app-only steps such as Import-WorkshopOperativeAssets.ps1 -ImportBaseData and advanced fallback automation after one-time delegated Power Platform app registration)."
 } elseif (-not [string]::IsNullOrWhiteSpace($resolvedClientSecret.EnvironmentVariableName)) {
-    Write-StepResult -Level WARN -Message "Identity.ClientSecretEnvVar is set to '$($resolvedClientSecret.EnvironmentVariableName)' but the environment variable is not defined. App-only PowerApps admin auth will be skipped, and Copilot credit allocation may require manual PPAC allocation."
+    Write-StepResult -Level WARN -Message "Identity.ClientSecretEnvVar is set to '$($resolvedClientSecret.EnvironmentVariableName)' but the environment variable is not defined. Facilitator Dataverse base-data import, advanced fallback automation, and app-only PowerApps admin auth will not be ready until a client secret is supplied."
 } else {
-    Write-StepResult -Level WARN -Message "Neither Identity.ClientSecret nor Identity.ClientSecretEnvVar is configured. App-only PowerApps admin auth will be skipped, and Copilot credit allocation will be manual."
+    Write-StepResult -Level WARN -Message "Neither Identity.ClientSecret nor Identity.ClientSecretEnvVar is configured. Facilitator Dataverse base-data import, advanced fallback automation, and app-only PowerApps admin auth will not be ready until a client secret is supplied."
 }
-Write-StepResult -Level INFO -Message "This check can't verify Power Platform management-app registration. Before relying on app-only Power Platform admin calls, make sure the workshop app has the Power Apps Service delegated permission with admin consent and that a delegated Power Platform admin has run New-PowerAppManagementApp or pac admin application register once."
+if ($null -ne (Get-Module -ListAvailable -Name 'Microsoft.PowerApps.Administration.PowerShell')) {
+    Write-StepResult -Level PASS -Message 'Microsoft.PowerApps.Administration.PowerShell is installed for facilitator Dataverse admin and fallback automation support.'
+}
+else {
+    Write-StepResult -Level WARN -Message 'Microsoft.PowerApps.Administration.PowerShell is not installed. Install workshop prerequisites before relying on facilitator Dataverse admin or fallback automation steps.'
+}
+Write-StepResult -Level INFO -Message "This check can't verify Power Platform management-app registration. Before relying on Import-WorkshopOperativeAssets.ps1 -ImportBaseData, advanced fallback automation, or other app-only Power Platform admin calls, make sure the workshop app has the Power Apps Service delegated permission with admin consent and that a delegated Power Platform admin has run New-PowerAppManagementApp or pac admin application register once."
 
 Write-Section "Checking local tooling"
-Require-Module -Name 'PnP.PowerShell'
+if ($null -eq (Get-Module -ListAvailable -Name 'PnP.PowerShell')) {
+    throw "PnP.PowerShell is not installed. Install workshop prerequisites before continuing."
+}
 Write-StepResult -Level PASS -Message "PnP.PowerShell is installed."
 
 if ($Mode -eq 'FacilitatorDemo' -or [bool]$config.Day2.ImportOperativeSolution) {
@@ -127,7 +135,8 @@ else {
     }
     else {
         Require-Module -Name 'Microsoft.Graph.Authentication'
-        $studentProvisioningReadiness = Test-AppOnlyCertificateReadiness -TenantId $tenantId -ClientId $sharePointPnPClientId -Thumbprint $sharePointPnPCertificateThumbprint -SharePointAdminUrl ([string]$config.SharePoint.AdminUrl)
+        $graphProbeUserPrincipalName = [string]($participantEmails | Select-Object -First 1)
+        $studentProvisioningReadiness = Test-AppOnlyCertificateReadiness -TenantId $tenantId -ClientId $sharePointPnPClientId -Thumbprint $sharePointPnPCertificateThumbprint -GraphProbeUserPrincipalName $graphProbeUserPrincipalName -SharePointAdminUrl ([string]$config.SharePoint.AdminUrl)
         if ($studentProvisioningReadiness.CertificateFound) {
             Write-StepResult -Level PASS -Message "Found the student-provisioning certificate '$($studentProvisioningReadiness.Certificate.Thumbprint)' in Cert:\CurrentUser\My."
         }
@@ -144,6 +153,13 @@ else {
         }
         elseif ($studentProvisioningReadiness.CertificateFound -and -not $studentProvisioningReadiness.CertificateExpired) {
             Write-StepResult -Level WARN -Message 'Certificate-based Microsoft Graph app-only auth is not ready for student provisioning.'
+        }
+
+        if ($studentProvisioningReadiness.GraphProbeSucceeded) {
+            Write-StepResult -Level PASS -Message "Certificate-based Microsoft Graph user lookup succeeded for '$graphProbeUserPrincipalName'."
+        }
+        elseif ($studentProvisioningReadiness.GraphConnected -and -not [string]::IsNullOrWhiteSpace($graphProbeUserPrincipalName)) {
+            Write-StepResult -Level WARN -Message "Certificate-based Microsoft Graph user lookup failed for '$graphProbeUserPrincipalName'. Re-grant admin consent for the workshop app's Graph application permissions before relying on Teams or other Graph user operations."
         }
 
         if ($studentProvisioningReadiness.SharePointConnected) {
@@ -191,3 +207,4 @@ Write-StepResult -Level INFO -Message "StudentReady mode preserves lab-owned bui
 if ($Mode -eq 'FacilitatorDemo') {
     Write-StepResult -Level INFO -Message "FacilitatorDemo mode can be paired with Import-WorkshopOperativeAssets.ps1 when you want a separate demo environment pre-staged."
 }
+Write-StepResult -Level INFO -Message "This script validates shared facilitator prerequisites and selected app-only signals. It does not prove the facilitator demo import path, fallback path, or optional student-provisioning path end to end."

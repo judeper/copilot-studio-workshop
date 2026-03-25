@@ -1,6 +1,12 @@
 # Workshop configuration with real credentials
 workshop/automation/workshop-config.json
 workshop/automation/pnp-auth-test.log
+workshop/automation/facilitator-fallback-artifacts.json
+workshop/automation/facilitator-fallback-repair-report.json
+
+# Runtime artifacts (generated during script execution)
+workshop/automation/logs/
+workshop/automation/student-environment-map.json
 
 # Node.js dependencies (installed via npm install in workshop/automation)
 workshop/automation/node_modules/

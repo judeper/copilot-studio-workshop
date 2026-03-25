@@ -133,7 +133,7 @@ This downloads and runs the interactive bootstrap wizard, which:
 - Walks through config setup interactively (tenant name → auto-derives all URLs)
 - Sets up pac CLI authentication
 - Downloads all workshop assets
-- Validates every prerequisite and shows a readiness dashboard
+- Runs the scripted prerequisite checks and shows a readiness dashboard for shared facilitator setup signals
 
 If you already have the repo cloned, run the wizard directly:
 
@@ -148,28 +148,46 @@ After the wizard completes:
 powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
 
 # 2. Optional: create or reserve a separate facilitator demo environment
-powershell -File .\workshop\automation\Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment
+# Use -UpdateConfig to write the discovered or created URL back to workshop-config.json
+powershell -File .\workshop\automation\Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment -UpdateConfig
 
-# 3. Optional: pre-import Operative solution in the facilitator demo environment only
-powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution
+# 3. Optional: pre-import the Day 2 base state in the facilitator demo environment only
+# Import target comes from -EnvironmentUrl or config.EnvironmentUrl; pac auth only supplies tenant/account context
+powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
+# -ImportBaseData also requires a Dataverse-capable client secret plus one-time Power Platform app registration
+powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportBaseData -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
 
-# 4. Optional: batch-provision per-student environments for hands-on
+# 4. Optional advanced path: qualify a completed facilitator gold source, then rebuild the fallback environment
+powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -ListCandidates
+powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -SourceEnvironmentUrl https://<completed-source>.crm.dynamics.com -UpdateConfig
+powershell -File .\workshop\automation\Invoke-WorkshopFacilitatorFallbackBuild.ps1
+
+# 5. Optional: validate one student first, then batch-provision per-student environments for hands-on
 powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
 
-# 5. Reset the shared environment for re-testing (deletes ContosoIT site + purges recycle bin)
+# 6. Reset the shared environment for re-testing (deletes ContosoIT site + purges recycle bin)
 pwsh -File .\workshop\automation\Reset-WorkshopEnvironment.ps1 -HardDelete
 
-# 6. Post-workshop: tear down all student environments
+# 7. Post-workshop: tear down all student environments
 powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete
+
+# 8. Optional: tear down a disposable facilitator demo or fallback target
+powershell -File .\workshop\automation\Remove-WorkshopFacilitatorEnvironment.ps1 -EnvironmentUrl https://<demo-or-fallback>.crm.dynamics.com
 ```
+
+After any new Power Platform environment is created for the workshop, open **Power Platform admin center** and configure Copilot usage billing before agent testing. Use either **Billing > Link Azure subscription** for pay-as-you-go or allocate Copilot Studio capacity/credits to the environment. Treat this as a manual facilitator step: the repo can attempt preview student credit allocation, but that path is not reliable enough to replace PPAC billing setup and can still return `403` in some tenants. When that happens, `Invoke-StudentEnvironmentProvisioning.ps1` records `FollowUpRequired` so the remaining billing step is explicit.
 
 Treat setup as three separate readiness tracks:
 
 - **Shared prerequisites** — bootstrap, the shared Day 1 SharePoint site, and Day 2 assets.
-- **Facilitator demo base** — a separate demo environment used only for facilitator fallback demos and optional Day 2 solution imports.
+- **Facilitator demo base** — a separate demo environment used only for facilitator fallback demos and optional Day 2 solution/base-data imports.
 - **Student hands-on environments** — either the shared `StudentReady` path or the optional per-student provisioning path.
 
-The current automation is optimized for a **clean validated facilitator demo base**, not a fully prebuilt “all labs completed” demo environment. If you need completed end-state artifacts for rescue demos, keep separate checkpoints, screenshots, or demo snapshots in addition to the automated setup above.
+Bootstrap and prerequisite checks help confirm shared facilitator setup signals. They do not prove the facilitator demo import path, fallback path, or optional student-provisioning path end to end; validate those separately before delivery.
+
+If SharePoint setup or student provisioning falls back to `DeviceLogin`, open `https://microsoft.com/devicelogin` and then enter the current code shown by the script. On a first-time run, separate delegated prompts for the SharePoint admin center, tenant root, and target site are expected.
+
+By default the automation is optimized for a **clean validated facilitator demo base**. If you intentionally maintain a completed facilitator-owned gold source environment, use `Set-WorkshopFacilitatorFallbackSource.ps1` to list candidate environments, qualify the chosen source against the fallback manifest, and persist `FacilitatorFallback.SourceEnvironmentUrl` before you run `Invoke-WorkshopFacilitatorFallbackBuild.ps1`. The advanced build now refreshes a git-ignored source snapshot at `workshop\automation\facilitator-fallback-artifacts.json` before copy and writes a git-ignored post-copy repair report at `workshop\automation\facilitator-fallback-repair-report.json` so connection-reference and environment-variable drift can be reviewed after each rebuild. Keep that gold source and any copied fallback environments facilitator-only; do not use them as the student build path. You can validate either the copied target or the gold source itself with `Invoke-WorkshopFacilitatorFallbackValidation.ps1`, and override the environment under test with `-EnvironmentUrl` when needed.
 
 See the [Facilitator Guide](workshop/facilitator-guide/facilitator-guide.md) for the quick facilitator runbook and the full delivery checklist.
 

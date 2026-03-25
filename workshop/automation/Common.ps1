@@ -147,6 +147,21 @@ function Get-RequiredString {
     return $Value
 }
 
+function Get-OptionalConfigString {
+    param(
+        [Parameter()]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [object]$Value
+    )
+
+    if ($null -eq $Value) {
+        return ''
+    }
+
+    return ([string]$Value).Trim()
+}
+
 function Save-WorkshopConfig {
     param(
         [Parameter(Mandatory = $true)]
@@ -325,18 +340,25 @@ function Test-AppOnlyCertificateReadiness {
         [AllowEmptyString()]
         [string]$Thumbprint,
 
+        [Parameter()]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$GraphProbeUserPrincipalName,
+
         [Parameter(Mandatory = $true)]
         [string]$SharePointAdminUrl
     )
 
     $result = [ordered]@{
-        Thumbprint         = $Thumbprint
-        CertificateFound   = $false
-        CertificateExpired = $false
-        Certificate        = $null
-        GraphConnected     = $false
+        Thumbprint          = $Thumbprint
+        CertificateFound    = $false
+        CertificateExpired  = $false
+        Certificate         = $null
+        GraphConnected      = $false
+        GraphProbeSucceeded = $false
+        GraphProbeUser      = $GraphProbeUserPrincipalName
         SharePointConnected = $false
-        Errors             = [System.Collections.ArrayList]@()
+        Errors              = [System.Collections.ArrayList]@()
     }
 
     if (Test-PlaceholderValue -Value $Thumbprint) {
@@ -361,11 +383,11 @@ function Test-AppOnlyCertificateReadiness {
 
     try {
         try {
-            Disconnect-MgGraph -ErrorAction Stop
+            Disconnect-MgGraph -ErrorAction Stop | Out-Null
         }
         catch {
         }
-        Connect-MgGraph -ClientId $ClientId -TenantId $TenantId -CertificateThumbprint $certificate.Thumbprint -ContextScope Process -NoWelcome
+        Connect-MgGraph -ClientId $ClientId -TenantId $TenantId -CertificateThumbprint $certificate.Thumbprint -ContextScope Process -NoWelcome | Out-Null
         $result.GraphConnected = $true
     }
     catch {
@@ -373,9 +395,27 @@ function Test-AppOnlyCertificateReadiness {
     }
     finally {
         try {
-            Disconnect-MgGraph -ErrorAction Stop
+            Disconnect-MgGraph -ErrorAction Stop | Out-Null
         }
         catch {
+        }
+    }
+
+    if ($result.GraphConnected -and -not [string]::IsNullOrWhiteSpace($GraphProbeUserPrincipalName)) {
+        try {
+            Connect-MgGraph -ClientId $ClientId -TenantId $TenantId -CertificateThumbprint $certificate.Thumbprint -ContextScope Process -NoWelcome | Out-Null
+            Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/users/${GraphProbeUserPrincipalName}?`$select=id,userPrincipalName" -ErrorAction Stop | Out-Null
+            $result.GraphProbeSucceeded = $true
+        }
+        catch {
+            [void]$result.Errors.Add("Graph user lookup failed for '$GraphProbeUserPrincipalName': $($_.Exception.Message)")
+        }
+        finally {
+            try {
+                Disconnect-MgGraph -ErrorAction Stop | Out-Null
+            }
+            catch {
+            }
         }
     }
 
@@ -437,6 +477,33 @@ function Invoke-NativeCommand {
     if ($LASTEXITCODE -ne 0) {
         throw "$FailureMessage (exit code $LASTEXITCODE)."
     }
+}
+
+function Invoke-NativeCommandWithOutput {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FailureMessage
+    )
+
+    $output = & $FilePath @Arguments 2>&1
+    $exitCode = $LASTEXITCODE
+    $text = ($output | ForEach-Object { $_.ToString() }) -join [System.Environment]::NewLine
+
+    if ($exitCode -ne 0) {
+        if (-not [string]::IsNullOrWhiteSpace($text)) {
+            throw "$FailureMessage`n$text"
+        }
+
+        throw $FailureMessage
+    }
+
+    return $text
 }
 
 function Get-StudentAlias {
@@ -607,6 +674,24 @@ function Get-PowerPlatformAccessToken {
         [string]$ClientSecret
     )
 
+    return Get-OAuthAccessToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret -Scope 'https://api.powerplatform.com/.default'
+}
+
+function Get-OAuthAccessToken {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ClientSecret,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Scope
+    )
+
     $tokenResponse = Invoke-RestMethod -Method POST `
         -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" `
         -ContentType 'application/x-www-form-urlencoded' `
@@ -614,10 +699,175 @@ function Get-PowerPlatformAccessToken {
             grant_type    = 'client_credentials'
             client_id     = $ClientId
             client_secret = $ClientSecret
-            scope         = 'https://api.powerplatform.com/.default'
+            scope         = $Scope
         }
 
     return $tokenResponse.access_token
+}
+
+function Get-DataverseAccessToken {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ClientSecret,
+
+        [Parameter(Mandatory = $true)]
+        [string]$EnvironmentUrl
+    )
+
+    $normalizedEnvironmentUrl = $EnvironmentUrl.TrimEnd('/')
+    return Get-OAuthAccessToken -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret -Scope "$normalizedEnvironmentUrl/.default"
+}
+
+function Ensure-DataverseApplicationUser {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$EnvironmentUrl,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ApplicationId,
+
+        [Parameter()]
+        [string]$Role = 'System Administrator'
+    )
+
+    Require-Command -Name 'pac'
+    Invoke-NativeCommand -FilePath 'pac' -Arguments @(
+        'admin',
+        'assign-user',
+        '--environment',
+        $EnvironmentUrl,
+        '--user',
+        $ApplicationId,
+        '--role',
+        $Role,
+        '--application-user'
+    ) -FailureMessage "Unable to register application '$ApplicationId' as a Dataverse application user in '$EnvironmentUrl'." | Out-Null
+}
+
+function Get-WorkshopAppClientContext {
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Config
+    )
+
+    $tenantId = Get-RequiredString -Value ([string]$Config.TenantId) -Name 'TenantId'
+    $clientId = Get-RequiredString -Value ([string]$Config.SharePoint.PnPClientId) -Name 'SharePoint.PnPClientId'
+    $secretInfo = Resolve-ConfiguredClientSecret -Config $Config
+    if ([string]::IsNullOrWhiteSpace($secretInfo.Value)) {
+        throw "A client secret is required for Dataverse automation. Populate Identity.ClientSecret or the environment variable named by Identity.ClientSecretEnvVar."
+    }
+
+    return [pscustomobject]@{
+        TenantId     = $tenantId
+        ClientId     = $clientId
+        ClientSecret = $secretInfo.Value
+        SecretSource = $secretInfo.Source
+    }
+}
+
+function New-DataverseWebApiHeaders {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AccessToken
+    )
+
+    return @{
+        Authorization      = "Bearer $AccessToken"
+        Accept             = 'application/json'
+        'OData-Version'    = '4.0'
+        'OData-MaxVersion' = '4.0'
+    }
+}
+
+function New-DataverseClientContext {
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Config,
+
+        [Parameter(Mandatory = $true)]
+        [string]$EnvironmentUrl,
+
+        [Parameter()]
+        [switch]$EnsureApplicationUserPresent
+    )
+
+    $normalizedEnvironmentUrl = $EnvironmentUrl.Trim().TrimEnd('/')
+    $appContext = Get-WorkshopAppClientContext -Config $Config
+
+    if ($EnsureApplicationUserPresent) {
+        [void](Ensure-DataverseApplicationUser -EnvironmentUrl $normalizedEnvironmentUrl -ApplicationId $appContext.ClientId)
+    }
+
+    $accessToken = Get-DataverseAccessToken `
+        -TenantId $appContext.TenantId `
+        -ClientId $appContext.ClientId `
+        -ClientSecret $appContext.ClientSecret `
+        -EnvironmentUrl $normalizedEnvironmentUrl
+
+    return [pscustomobject]@{
+        EnvironmentUrl = $normalizedEnvironmentUrl
+        AccessToken    = $accessToken
+        Headers        = (New-DataverseWebApiHeaders -AccessToken $accessToken)
+        ClientId       = $appContext.ClientId
+    }
+}
+
+function Invoke-DataverseWebApiRequest {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$EnvironmentUrl,
+
+        [Parameter(Mandatory = $true)]
+        [string]$AccessToken,
+
+        [Parameter(Mandatory = $true)]
+        [string]$RelativeUri,
+
+        [Parameter()]
+        [ValidateSet('GET', 'POST', 'PATCH', 'DELETE')]
+        [string]$Method = 'GET',
+
+        [Parameter()]
+        [AllowNull()]
+        [object]$Body
+    )
+
+    $normalizedEnvironmentUrl = $EnvironmentUrl.Trim().TrimEnd('/')
+    $normalizedRelativeUri = $RelativeUri.Trim()
+
+    $uri = if ($normalizedRelativeUri -match '^https?://') {
+        $normalizedRelativeUri
+    }
+    elseif ($normalizedRelativeUri.StartsWith('api/data/v9.2/', [System.StringComparison]::OrdinalIgnoreCase)) {
+        "$normalizedEnvironmentUrl/$normalizedRelativeUri"
+    }
+    else {
+        "$normalizedEnvironmentUrl/api/data/v9.2/$($normalizedRelativeUri.TrimStart('/'))"
+    }
+
+    $requestParameters = @{
+        Method  = $Method
+        Uri     = $uri
+        Headers = (New-DataverseWebApiHeaders -AccessToken $AccessToken)
+    }
+
+    if ($PSBoundParameters.ContainsKey('Body')) {
+        $requestParameters.ContentType = 'application/json'
+        $requestParameters.Body = if ($Body -is [string]) {
+            $Body
+        }
+        else {
+            $Body | ConvertTo-Json -Depth 20
+        }
+    }
+
+    return Invoke-RestMethod @requestParameters
 }
 
 function Set-EnvironmentCopilotCredits {

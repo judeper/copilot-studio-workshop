@@ -63,34 +63,59 @@ The wizard handles these steps automatically:
 5. **Entra app registration** — Auto-creates an Entra app with the required API permissions (Group.ReadWrite.All, User.Read.All, Team.Create, Sites.FullControl.All) via Microsoft Graph, creates the service principal, provides a direct Azure portal link for admin consent, and programmatically verifies that the SharePoint `oauth2PermissionGrant` (`AllSites.FullControl`) exists — this grant is critical for PnP tenant admin operations and the portal consent button sometimes silently fails to create it.
 6. **pac CLI auth** — Checks for an active Power Platform CLI profile and launches interactive sign-in if needed.
 7. **Day 2 assets** — Downloads all workshop assets from the public GitHub repository.
-8. **Prerequisites check** — Runs the full validation suite and reports pass/fail for every component.
-9. **Readiness dashboard** — Shows green/yellow status for each component and the exact next-step commands to run.
+8. **Prerequisites check** — Runs the scripted validation suite and reports what the automation can verify for shared facilitator setup.
+9. **Readiness dashboard** — Shows green/yellow status for shared setup signals plus the exact next-step commands to run.
 
 After the wizard completes:
 
 ```powershell
-# Pre-stage shared Day 1 site (creates Contoso IT site, lists, schema, and sample data)
+# 1. Pre-stage shared Day 1 site (creates Contoso IT site, lists, schema, and sample data)
 powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
 
-# Optional: batch-provision per-student environments (requires Entra app with certificate)
+# 2. Optional: create or reserve a separate facilitator demo environment
+# Use -UpdateConfig to write the discovered or created URL back to workshop-config.json
+powershell -File .\workshop\automation\Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment -UpdateConfig
+
+# 3. Optional: pre-import the Day 2 base state in a separate demo environment only
+# Import target comes from -EnvironmentUrl or config.EnvironmentUrl; pac auth only supplies tenant/account context
+powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
+# -ImportBaseData also needs a Dataverse-capable client secret plus one-time Power Platform app registration
+powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportBaseData -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
+
+# 4. Optional advanced path: qualify a completed facilitator gold source, then rebuild the fallback environment
+powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -ListCandidates
+powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -SourceEnvironmentUrl https://<completed-source>.crm.dynamics.com -UpdateConfig
+powershell -File .\workshop\automation\Invoke-WorkshopFacilitatorFallbackBuild.ps1
+
+# 5. Optional: validate one student first, then batch-provision per-student environments
 powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
 
-# Optional: pre-import Operative solution in a separate demo environment only
-powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution
+# 6. Reset the shared environment for re-testing (deletes ContosoIT site + purges recycle bin)
+pwsh -File .\workshop\automation\Reset-WorkshopEnvironment.ps1 -HardDelete
 
-# Post-workshop: tear down all student environments
+# 7. Post-workshop: tear down all student environments
 powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete
+
+# 8. Optional: tear down a disposable facilitator demo or fallback target
+powershell -File .\workshop\automation\Remove-WorkshopFacilitatorEnvironment.ps1 -EnvironmentUrl https://<demo-or-fallback>.crm.dynamics.com
 ```
 
+> **Cleanup safety:** `Remove-WorkshopFacilitatorEnvironment.ps1` refuses to delete the configured facilitator gold source unless you intentionally re-run it with `-AllowGoldSourceDeletion`.
+
 > **Per-student provisioning path:** If you answer **Yes** to student provisioning during the bootstrap wizard, the wizard now saves participant emails, reuses or imports an existing app-only certificate when available, creates a new self-signed certificate when needed, registers that certificate on the workshop Entra app, and can optionally generate a client secret into the configured user environment variable (`COPILOT_WORKSHOP_APP_SECRET` by default). `Invoke-WorkshopPrereqCheck.ps1` now reports shared facilitator readiness separately from student-provisioning readiness so you can see whether app-only SharePoint auth is actually ready before you run `Invoke-StudentEnvironmentProvisioning.ps1`. If the tenant still rejects app-only SharePoint site creation or site-content initialization, the provisioning script falls back to the configured delegated PnP login flow (`OSLogin`, `Interactive`, or `DeviceLogin`), grants the facilitator delegated account site-collection-admin access alongside the student, and retries from the saved student map instead of rebuilding the whole student environment from scratch.
+
+> **Billing expectation:** After any facilitator demo or student Power Platform environment is created, open **Power Platform admin center** and either link an Azure subscription under **Billing** for pay-as-you-go or allocate Copilot Studio capacity/credits to that environment. Treat this as a manual facilitator step. The repo can attempt preview student credit allocation when a client secret is available, but that API may still return `403`, so automation is not a reliable substitute for PPAC billing configuration.
 
 Decision point:
 
 - Use `-Mode StudentReady` for participant environments.
-- Use `-ImportSolution` only for a separate facilitator demo environment.
-- Expected result for optional import: Operative solution import succeeds only in the selected demo environment.
+- Use `-ImportSolution` and `-ImportBaseData` only for a separate facilitator demo environment.
+- Expected result for optional import: the selected facilitator environment can be pre-staged with the Operative solution plus the base Hiring Hub job roles, evaluation criteria, candidates, resumes, and job applications.
+- `Import-WorkshopOperativeAssets.ps1` targets the URL supplied by `-EnvironmentUrl`, or `config.EnvironmentUrl` when `-EnvironmentUrl` is omitted. Changing the active `pac` environment alone does not retarget the import.
+- `Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment` only writes the resolved URL back to `workshop-config.json` when you also pass `-UpdateConfig`.
+- `-ImportBaseData` and the advanced facilitator fallback automation require a client secret (`Identity.ClientSecret` or `Identity.ClientSecretEnvVar`), the Power Apps Service delegated permission with admin consent, and a one-time Power Platform app registration by a delegated admin (`New-PowerAppManagementApp` or `pac admin application register`).
 
-> **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID. The default login mode is `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. You can override this by setting `SharePoint.PnPLoginMode` to `DeviceLogin`, `Interactive`, or `CertificateThumbprint` in `workshop-config.json`. If setup runs under `DeviceLogin`, the first provisioning pass can prompt separately for the SharePoint admin center, tenant root, and target site; that is expected. Any solution import uses the currently authenticated `pac` profile. Verify both point to the intended tenant and demo environment before running the scripts.
+> **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID. The default login mode is `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. You can override this by setting `SharePoint.PnPLoginMode` to `DeviceLogin`, `Interactive`, or `CertificateThumbprint` in `workshop-config.json`. If setup runs under `DeviceLogin`, the first provisioning pass can prompt separately for the SharePoint admin center, tenant root, and target site; that is expected. Open `https://microsoft.com/devicelogin` and then enter the current code shown by the script rather than relying on the auto-opened browser tab. For Power Platform work, keep the active `pac` profile in the correct tenant and admin account context, but remember that `Import-WorkshopOperativeAssets.ps1` still targets `-EnvironmentUrl` or `config.EnvironmentUrl`.
 
 > **Student domain naming:** Per-student Power Platform domains are derived from `EnvironmentBootstrap.DomainName`, but the automation now shortens the prefix when needed so the student alias still survives inside the 24-character platform limit. This keeps domains unique across students instead of truncating them all to the same shared prefix.
 
@@ -106,7 +131,7 @@ Treat the workshop as three separate readiness tracks, not one blended setup job
 
 2. **Facilitator-only demo base**
    - A separate Power Platform environment reserved for facilitator demos and rescue moments
-   - Optional Day 2 Operative import only in that demo environment
+   - Optional Day 2 Operative solution and Hiring Hub base-data import only in that demo environment
    - A validated fallback path for the riskiest modules
 
 3. **Student hands-on environments**
@@ -115,34 +140,38 @@ Treat the workshop as three separate readiness tracks, not one blended setup job
 
 Recommended setup order:
 
-1. Run the bootstrap wizard and make sure the readiness dashboard is green enough to continue.
+1. Run the bootstrap wizard and make sure the shared-readiness dashboard is green enough to continue.
 2. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to establish the shared Day 1 baseline.
-3. Reserve or create a **separate facilitator demo environment** and switch the active `pac` profile to it before any optional demo-only imports.
-4. If Day 2 demo pre-staging is needed, run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` only in that facilitator demo environment.
-5. If you want isolated student environments, run `Invoke-StudentEnvironmentProvisioning.ps1` after the shared prerequisites are already stable.
-6. Validate the facilitator demo path and the student path separately. A green student setup does not prove the facilitator rescue path is ready, and a green facilitator demo does not prove hands-on students can build forward unaided.
+3. Reserve or create a **separate facilitator demo environment**, persist its URL with `-UpdateConfig` or plan to pass `-EnvironmentUrl`, and keep `pac` in the correct tenant/admin account context before any optional demo-only imports.
+4. If Day 2 demo pre-staging is needed, run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` and, when you want the Lab 13 base data present too, `Import-WorkshopOperativeAssets.ps1 -ImportBaseData` only against that facilitator demo URL.
+5. If you maintain a completed gold source environment, first run `Set-WorkshopFacilitatorFallbackSource.ps1` to qualify it and save `FacilitatorFallback.SourceEnvironmentUrl`, then run `Invoke-WorkshopFacilitatorFallbackBuild.ps1` only against a separate facilitator-owned fallback target.
+6. If you want isolated student environments, validate with one student first, then run `Invoke-StudentEnvironmentProvisioning.ps1` after the shared prerequisites are already stable.
+7. Validate the facilitator demo path or copied facilitator fallback path separately from the student path. A green student setup does not prove the facilitator rescue path is ready, and a green facilitator demo does not prove hands-on students can build forward unaided.
 
-> **Scope decision:** The repo currently optimizes for a **clean validated demo base** for facilitators, not a fully prebuilt “all labs completed” fallback environment. If you need completed end-state artifacts for later-lab rescue demos, maintain separate checkpoints, screenshots, or facilitator-owned snapshots in addition to the automated setup.
+> **Scope decision:** The default path still optimizes for a **clean validated demo base** for facilitators. If you choose to maintain a completed facilitator-owned gold source environment, `Set-WorkshopFacilitatorFallbackSource.ps1` now qualifies and designates that source, and `Invoke-WorkshopFacilitatorFallbackBuild.ps1` rebuilds a separate facilitator fallback environment with a supported full-copy flow. Treat that as an advanced facilitator-only path, not as the student environment model.
+
+> **Artifact packaging and repair:** The advanced fallback build now refreshes a git-ignored source snapshot at `workshop\automation\facilitator-fallback-artifacts.json` before copy and writes a git-ignored post-copy repair report at `workshop\automation\facilitator-fallback-repair-report.json` after copy. Review that repair report before you rely on the rebuilt fallback environment live.
 
 ## Quick facilitator runbook
 
 If you are a new facilitator, follow this exact order:
 
 1. Run the bootstrap wizard on a clean Windows machine.
-2. Confirm the readiness dashboard is good enough to continue.
+2. Confirm the shared-readiness dashboard is good enough to continue.
 3. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to create the shared Day 1 baseline.
 4. Decide whether students will use the shared baseline only or per-student environments.
-5. Reserve or create a **separate facilitator demo environment** before any demo-only Day 2 import.
-6. If you need Day 2 demo pre-staging, switch `pac` to that facilitator demo environment and run `Import-WorkshopOperativeAssets.ps1 -ImportSolution`.
-7. If you need isolated student environments, validate with one student first, then run `Invoke-StudentEnvironmentProvisioning.ps1` for the full batch only after the shared prerequisites are already stable.
-8. Validate the facilitator demo base separately from the student path.
-9. Keep the facilitator demo environment private to facilitators; do not use it as the student build environment.
-10. Keep the detailed checklist open for final go/no-go review and fallback planning.
+5. Reserve or create a **separate facilitator demo environment** before any demo-only Day 2 import, and either persist its URL with `-UpdateConfig` or plan to pass `-EnvironmentUrl`. After the environment exists, configure Copilot billing in PPAC by linking pay-as-you-go or assigning Copilot Studio capacity before you test agents in it.
+6. If you need Day 2 demo pre-staging, keep `pac` in the correct tenant/admin context and run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` against that facilitator demo URL. If you also want the Lab 13 base records present, follow with `Import-WorkshopOperativeAssets.ps1 -ImportBaseData` after confirming the Dataverse client-secret prerequisites are in place.
+7. If you use a completed facilitator fallback environment, run `Set-WorkshopFacilitatorFallbackSource.ps1` to qualify the gold source and persist `FacilitatorFallback.SourceEnvironmentUrl`, then run `Invoke-WorkshopFacilitatorFallbackBuild.ps1` only against a separate facilitator-owned target environment and review `facilitator-fallback-repair-report.json` after the copy.
+8. If you need isolated student environments, validate with one student first, then run `Invoke-StudentEnvironmentProvisioning.ps1` for the full batch only after the shared prerequisites are already stable. If the saved result ends as `FollowUpRequired` because credit allocation did not complete, finish the billing step in PPAC before you hand that environment to a student.
+9. Validate the facilitator demo base or copied facilitator fallback environment separately from the student path.
+10. Keep the facilitator demo environment private to facilitators; do not use it as the student build environment.
+11. Keep the detailed checklist open for final go/no-go review and fallback planning.
 
 Expected outcome after this runbook:
 
 - The shared Day 1 prerequisites are ready.
-- The facilitator has a separate demo base for rescue demos.
+- The facilitator has a separate demo base or rebuilt fallback environment for rescue demos.
 - Student environments are ready for hands-on without being pre-solved past the shared prerequisites.
 
 ## Presentation materials

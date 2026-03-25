@@ -29,6 +29,7 @@ $sharePointConfig = $config.SharePoint
 $adminUrl = Get-RequiredString -Value ([string]$sharePointConfig.AdminUrl) -Name 'SharePoint.AdminUrl'
 $pnpClientId = Get-RequiredString -Value ([string]$sharePointConfig.PnPClientId) -Name 'SharePoint.PnPClientId'
 $pnpCertThumbprint = [string]$sharePointConfig.PnPCertificateThumbprint
+$pnpLoginMode = [string]$sharePointConfig.PnPLoginMode
 
 $studentMap = @(Read-StudentEnvironmentMap -Path $MapFilePath)
 if ($studentMap.Count -eq 0) {
@@ -48,6 +49,128 @@ Write-Log -Level PASS -Message 'Connected to SharePoint admin center.'
 
 $environmentDeletePollIntervalSeconds = 15
 $environmentDeleteTimeoutMinutes = 10
+
+function Test-IsAlreadyAbsentError {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Management.Automation.ErrorRecord]$ErrorRecord
+    )
+
+    $message = [string]$ErrorRecord.Exception.Message
+    return $message -match '(?i)\bnot found\b|does not exist|cannot find|already deleted|already removed|404|resource.*not exist|object.*not exist'
+}
+
+function Connect-SharePointDelegatedWithFallback {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Url,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LoginMode,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Label
+    )
+
+    $effectiveLoginMode = switch ($LoginMode) {
+        'OSLogin' { 'OSLogin' }
+        'Interactive' { 'Interactive' }
+        'DeviceLogin' { 'DeviceLogin' }
+        default { 'DeviceLogin' }
+    }
+
+    if ($effectiveLoginMode -ne $LoginMode) {
+        Write-Log -Level INFO -Message "SharePoint login mode '$LoginMode' can't be used for delegated fallback. Using '$effectiveLoginMode' instead." -Component 'SP'
+    }
+
+    $methods = switch ($effectiveLoginMode) {
+        'OSLogin' { @('OSLogin', 'DeviceLogin') }
+        'Interactive' { @('Interactive', 'DeviceLogin') }
+        default { @('DeviceLogin') }
+    }
+
+    $lastError = $null
+    foreach ($method in $methods) {
+        try {
+            Write-Log -Level INFO -Message "Connecting to $Label using delegated PnP login mode '$method'." -Component 'SP'
+            switch ($method) {
+                'OSLogin' {
+                    Connect-PnPOnline -Url $Url -ClientId $ClientId -OSLogin -ErrorAction Stop
+                }
+                'Interactive' {
+                    Connect-PnPOnline -Url $Url -ClientId $ClientId -Interactive -ErrorAction Stop
+                }
+                'DeviceLogin' {
+                    Connect-PnPOnline -Url $Url -ClientId $ClientId -Tenant $TenantId -DeviceLogin -ErrorAction Stop
+                }
+            }
+
+            return
+        }
+        catch {
+            $lastError = $_
+            if ($methods.Count -gt 1 -and $method -ne $methods[-1]) {
+                Write-Log -Level WARN -Message "$method failed for ${Label}: $($_.Exception.Message). Trying fallback..." -Component 'SP'
+            }
+        }
+    }
+
+    throw "Unable to connect to $Label after trying $($methods -join ', '). Last error: $lastError"
+}
+
+function Invoke-SharePointAdminCleanupOperation {
+    param(
+        [Parameter(Mandatory = $true)]
+        [scriptblock]$Operation,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FailureContext
+    )
+
+    try {
+        & $Operation
+        return
+    }
+    catch {
+        if (Test-IsAlreadyAbsentError -ErrorRecord $_) {
+            Write-Log -Level PASS -Message "$FailureContext is already complete." -Component 'SP'
+            return
+        }
+
+        $message = [string]$_.Exception.Message
+        if ($message -match '(?i)unauthorized|access denied|401|403') {
+            Write-Log -Level WARN -Message "$FailureContext failed under app-only auth: $message. Falling back to delegated SharePoint admin sign-in." -Component 'SP'
+            Disconnect-PnPOnline -ErrorAction SilentlyContinue
+            Connect-SharePointDelegatedWithFallback `
+                -Url $adminUrl `
+                -TenantId $tenantId `
+                -ClientId $pnpClientId `
+                -LoginMode $pnpLoginMode `
+                -Label 'the SharePoint admin center'
+
+            try {
+                & $Operation
+                return
+            }
+            catch {
+                if (Test-IsAlreadyAbsentError -ErrorRecord $_) {
+                    Write-Log -Level PASS -Message "$FailureContext is already complete." -Component 'SP'
+                    return
+                }
+
+                throw
+            }
+        }
+
+        throw
+    }
+}
 
 function Normalize-EnvironmentUrl {
     param(
@@ -168,7 +291,7 @@ function Remove-PacAdminEnvironment {
 
 Write-Section 'Cleaning up student environments'
 
-$completedStudentsWithoutRemainingArtifacts = New-Object System.Collections.Generic.List[string]
+$completedCleanupStudents = New-Object System.Collections.Generic.List[string]
 
 foreach ($student in $studentMap) {
     $email = $student.Email
@@ -179,6 +302,8 @@ foreach ($student in $studentMap) {
         continue
     }
 
+    $artifactCleanupComplete = $true
+
     # Step 1: Soft-delete M365 Group (cascades to Teams + SharePoint)
     if ($student.GroupId) {
         try {
@@ -187,16 +312,25 @@ foreach ($student in $studentMap) {
             Write-Log -Level PASS -Message 'M365 Group soft-deleted.' -Component 'GROUP'
         }
         catch {
-            Write-Log -Level WARN -Message "M365 Group delete failed: $_" -Component 'GROUP'
+            if (Test-IsAlreadyAbsentError -ErrorRecord $_) {
+                Write-Log -Level PASS -Message 'M365 Group is already absent.' -Component 'GROUP'
+            }
+            else {
+                $artifactCleanupComplete = $false
+                Write-Log -Level WARN -Message "M365 Group delete failed: $_" -Component 'GROUP'
+            }
         }
     } elseif ($student.SharePointUrl) {
         # Try to find group by site URL
         Write-Log -Level INFO -Message "No GroupId recorded — attempting to delete SharePoint site directly." -Component 'SP'
         try {
-            Remove-PnPTenantSite -Url $student.SharePointUrl -Force -ErrorAction Stop
+            Invoke-SharePointAdminCleanupOperation `
+                -FailureContext "SharePoint site delete for $($student.SharePointUrl)" `
+                -Operation { Remove-PnPTenantSite -Url $student.SharePointUrl -Force -ErrorAction Stop }
             Write-Log -Level PASS -Message "SharePoint site deleted: $($student.SharePointUrl)" -Component 'SP'
         }
         catch {
+            $artifactCleanupComplete = $false
             Write-Log -Level WARN -Message "SharePoint site delete failed: $_" -Component 'SP'
         }
     }
@@ -212,17 +346,26 @@ foreach ($student in $studentMap) {
                 Write-Log -Level PASS -Message 'M365 Group permanently deleted from Entra recycle bin.' -Component 'GROUP'
             }
             catch {
-                Write-Log -Level WARN -Message "Hard-delete of M365 Group failed: $_" -Component 'GROUP'
+                if (Test-IsAlreadyAbsentError -ErrorRecord $_) {
+                    Write-Log -Level PASS -Message 'M365 Group is already absent from the Entra recycle bin.' -Component 'GROUP'
+                }
+                else {
+                    $artifactCleanupComplete = $false
+                    Write-Log -Level WARN -Message "Hard-delete of M365 Group failed: $_" -Component 'GROUP'
+                }
             }
         }
 
         # Step 3: Hard-delete SharePoint site from site collection recycle bin
         if ($student.SharePointUrl) {
             try {
-                Remove-PnPTenantDeletedSite -Identity $student.SharePointUrl -Force
+                Invoke-SharePointAdminCleanupOperation `
+                    -FailureContext "SharePoint recycle-bin purge for $($student.SharePointUrl)" `
+                    -Operation { Remove-PnPTenantDeletedSite -Identity $student.SharePointUrl -Force -ErrorAction Stop }
                 Write-Log -Level PASS -Message "SharePoint site permanently purged: $($student.SharePointUrl)" -Component 'SP'
             }
             catch {
+                $artifactCleanupComplete = $false
                 Write-Log -Level WARN -Message "SharePoint site purge failed: $_" -Component 'SP'
             }
         }
@@ -250,26 +393,48 @@ foreach ($student in $studentMap) {
     }
 
     $hasRecordedSharePointOrGroupArtifacts = (-not [string]::IsNullOrWhiteSpace([string]$student.GroupId)) -or (-not [string]::IsNullOrWhiteSpace([string]$student.SharePointUrl))
-    if (-not $hasRecordedSharePointOrGroupArtifacts -and $environmentCleanupComplete) {
-        $completedStudentsWithoutRemainingArtifacts.Add($email)
-        Write-Log -Level INFO -Message 'No SharePoint site or M365 group is recorded for this student; the cleanup entry will be removed from the map.' -Component 'CLEANUP'
+    $cleanupVerified = if ($HardDelete) {
+        $artifactCleanupComplete -and $environmentCleanupComplete
+    } else {
+        (-not $hasRecordedSharePointOrGroupArtifacts) -and $environmentCleanupComplete
+    }
+
+    if ($cleanupVerified) {
+        $completedCleanupStudents.Add($email)
+        Write-Log -Level INFO -Message 'Cleanup is verified for this student; the map entry will be removed.' -Component 'CLEANUP'
     }
 }
 
 Disconnect-PnPOnline -ErrorAction SilentlyContinue
 
-# Clear the map file after successful cleanup
-if ($HardDelete) {
-    Write-Log -Level INFO -Message 'Clearing student environment map after hard delete.'
-    Save-StudentEnvironmentMap -Path $MapFilePath -StudentMap @()
-} elseif ($completedStudentsWithoutRemainingArtifacts.Count -gt 0) {
+$shouldUpdateMap = -not [bool]$WhatIfPreference
+
+if (-not $shouldUpdateMap) {
+    Write-Log -Level INFO -Message 'Skipping student map updates because -WhatIf is active.'
+} elseif ($HardDelete) {
+    if ($completedCleanupStudents.Count -eq $studentMap.Count) {
+        Write-Log -Level INFO -Message 'Clearing student environment map after verified hard delete.'
+        Save-StudentEnvironmentMap -Path $MapFilePath -StudentMap @()
+    } elseif ($completedCleanupStudents.Count -gt 0) {
+        $remainingStudents = @(
+            $studentMap | Where-Object {
+                $completedCleanupStudents -notcontains $_.Email
+            }
+        )
+        $entryLabel = if ($completedCleanupStudents.Count -eq 1) { 'entry' } else { 'entries' }
+        Write-Log -Level WARN -Message "Cleanup is verified for $($completedCleanupStudents.Count) $entryLabel, but some student resources still need follow-up. Keeping the remaining map entries."
+        Save-StudentEnvironmentMap -Path $MapFilePath -StudentMap $remainingStudents
+    } else {
+        Write-Log -Level WARN -Message 'Hard delete was requested, but no student cleanup entries were verified as complete. Leaving the map unchanged.'
+    }
+} elseif ($completedCleanupStudents.Count -gt 0) {
     $remainingStudents = @(
         $studentMap | Where-Object {
-            $completedStudentsWithoutRemainingArtifacts -notcontains $_.Email
+            $completedCleanupStudents -notcontains $_.Email
         }
     )
-    $entryLabel = if ($completedStudentsWithoutRemainingArtifacts.Count -eq 1) { 'entry' } else { 'entries' }
-    Write-Log -Level INFO -Message "Removing $($completedStudentsWithoutRemainingArtifacts.Count) completed cleanup $entryLabel from the map."
+    $entryLabel = if ($completedCleanupStudents.Count -eq 1) { 'entry' } else { 'entries' }
+    Write-Log -Level INFO -Message "Removing $($completedCleanupStudents.Count) completed cleanup $entryLabel from the map."
     Save-StudentEnvironmentMap -Path $MapFilePath -StudentMap $remainingStudents
 }
 

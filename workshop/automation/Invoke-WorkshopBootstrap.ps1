@@ -4,7 +4,7 @@
 .DESCRIPTION
     Run this once on a vanilla Windows 11 machine. It detects and installs every
     missing dependency, creates and populates the config file interactively,
-    downloads assets, validates prerequisites, and reports readiness.
+    downloads assets, runs prerequisite checks, and reports shared setup readiness signals.
 
     Two ways to run:
     1. From a cloned repo:  powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
@@ -202,6 +202,7 @@ Write-Host "Working directory: $repoRoot" -ForegroundColor Gray
 
 $script:WorkshopGraphAdminScopes = @(
     'Application.ReadWrite.All'
+    'AppRoleAssignment.ReadWrite.All'
     'DelegatedPermissionGrant.ReadWrite.All'
     'Application.Read.All'
 )
@@ -502,6 +503,25 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
         $graphAppId = '00000003-0000-0000-c000-000000000000'     # Microsoft Graph
 
         $resourceServicePrincipals = @{}
+        function Get-ResourceServicePrincipal {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$ResourceAppId
+            )
+
+            if (-not $resourceServicePrincipals.ContainsKey($ResourceAppId)) {
+                $response = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '$ResourceAppId'&`$select=id,displayName,appRoles,oauth2PermissionScopes"
+                $servicePrincipal = $response.value | Select-Object -First 1
+                if ($null -eq $servicePrincipal) {
+                    throw "Could not load service principal metadata for resource app '$ResourceAppId'."
+                }
+
+                $resourceServicePrincipals[$ResourceAppId] = $servicePrincipal
+            }
+
+            return $resourceServicePrincipals[$ResourceAppId]
+        }
+
         function Resolve-ResourcePermissionId {
             param(
                 [Parameter(Mandatory = $true)]
@@ -515,17 +535,7 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
                 [string]$PermissionValue
             )
 
-            if (-not $resourceServicePrincipals.ContainsKey($ResourceAppId)) {
-                $response = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '$ResourceAppId'&`$select=id,displayName,appRoles,oauth2PermissionScopes"
-                $servicePrincipal = $response.value | Select-Object -First 1
-                if ($null -eq $servicePrincipal) {
-                    throw "Could not load service principal metadata for resource app '$ResourceAppId'."
-                }
-
-                $resourceServicePrincipals[$ResourceAppId] = $servicePrincipal
-            }
-
-            $resourceServicePrincipal = $resourceServicePrincipals[$ResourceAppId]
+            $resourceServicePrincipal = Get-ResourceServicePrincipal -ResourceAppId $ResourceAppId
             $permissionCollection = if ($PermissionType -eq 'Role') { $resourceServicePrincipal.appRoles } else { $resourceServicePrincipal.oauth2PermissionScopes }
             $permission = $permissionCollection | Where-Object { $_.value -eq $PermissionValue -and ($null -eq $_.isEnabled -or $_.isEnabled) } | Select-Object -First 1
             if ($null -eq $permission) {
@@ -534,6 +544,76 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
 
             return [string]$permission.id
         }
+
+        function Ensure-ServicePrincipalAppRoleAssignments {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$ClientServicePrincipalId,
+
+                [Parameter(Mandatory = $true)]
+                [string]$ResourceAppId,
+
+                [Parameter(Mandatory = $true)]
+                [string[]]$RoleValues
+            )
+
+            $resourceServicePrincipal = Get-ResourceServicePrincipal -ResourceAppId $ResourceAppId
+            $resourceServicePrincipalId = [string]$resourceServicePrincipal.id
+            $existingAssignments = @((Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$ClientServicePrincipalId/appRoleAssignments?`$select=id,appRoleId,resourceId" -ErrorAction Stop).value)
+            $messages = [System.Collections.ArrayList]@()
+
+            foreach ($roleValue in $RoleValues) {
+                $role = $resourceServicePrincipal.appRoles |
+                    Where-Object {
+                        $_.value -eq $roleValue -and
+                        ($null -eq $_.isEnabled -or $_.isEnabled) -and
+                        ($_.allowedMemberTypes -contains 'Application')
+                    } |
+                    Select-Object -First 1
+
+                if ($null -eq $role) {
+                    throw "Could not resolve application role '$roleValue' on resource '$($resourceServicePrincipal.displayName)' ($ResourceAppId)."
+                }
+
+                $existingAssignment = $existingAssignments |
+                    Where-Object {
+                        [string]$_.resourceId -eq $resourceServicePrincipalId -and
+                        [string]$_.appRoleId -eq [string]$role.id
+                    } |
+                    Select-Object -First 1
+
+                if ($null -ne $existingAssignment) {
+                    [void]$messages.Add("$roleValue verified")
+                    continue
+                }
+
+                $body = @{
+                    principalId = $ClientServicePrincipalId
+                    resourceId  = $resourceServicePrincipalId
+                    appRoleId   = [string]$role.id
+                } | ConvertTo-Json
+
+                Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$ClientServicePrincipalId/appRoleAssignments" -Body $body -ContentType 'application/json' -ErrorAction Stop | Out-Null
+                [void]$messages.Add("$roleValue granted")
+
+                $existingAssignments += [pscustomobject]@{
+                    resourceId = $resourceServicePrincipalId
+                    appRoleId  = [string]$role.id
+                }
+            }
+
+            return [pscustomobject]@{
+                ResourceDisplayName = [string]$resourceServicePrincipal.displayName
+                StatusMessage       = [string]::Join('; ', @($messages))
+            }
+        }
+
+        $requiredGraphAppRoleValues = @(
+            'Group.ReadWrite.All'
+            'Directory.Read.All'
+            'User.Read.All'
+            'Team.Create'
+        )
 
         $requiredResourceAccess = @(
             @{
@@ -589,9 +669,32 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
                 Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/v1.0/applications/$appObjectId" -Body $patchBody -ContentType 'application/json'
                 Write-Status -Label 'Entra App' -Status 'Verified redirect URIs and public client flow' -Color 'Green'
 
-                # Ensure SharePoint oauth2PermissionGrant exists for existing app too
+                $appSpId = $null
                 try {
                     $appSpId = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '$existingClientId'&`$select=id").value[0].id
+                    if ([string]::IsNullOrWhiteSpace([string]$appSpId)) {
+                        throw "Could not resolve service principal for app '$existingClientId'."
+                    }
+                }
+                catch {
+                    Write-Status -Label 'Service Principal' -Status "Could not resolve app service principal: $($_.Exception.Message)" -Color 'Yellow'
+                }
+
+                if (-not [string]::IsNullOrWhiteSpace([string]$appSpId)) {
+                    try {
+                        $graphRoleResult = Ensure-ServicePrincipalAppRoleAssignments -ClientServicePrincipalId $appSpId -ResourceAppId $graphAppId -RoleValues $requiredGraphAppRoleValues
+                        Write-Status -Label 'Graph App Roles' -Status $graphRoleResult.StatusMessage -Color 'Green'
+                    }
+                    catch {
+                        Write-Status -Label 'Graph App Roles' -Status "Could not verify Graph app roles: $($_.Exception.Message)" -Color 'Yellow'
+                    }
+                }
+
+                # Ensure SharePoint oauth2PermissionGrant exists for existing app too
+                try {
+                    if ([string]::IsNullOrWhiteSpace([string]$appSpId)) {
+                        throw "Could not resolve service principal for app '$existingClientId'."
+                    }
                     $spResourceId = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '00000003-0000-0ff1-ce00-000000000000'&`$select=id").value[0].id
                     $existingGrants = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/oauth2PermissionGrants?`$filter=clientId eq '$appSpId' and resourceId eq '$spResourceId'").value
                     if (-not $existingGrants -or $existingGrants.Count -eq 0) {
@@ -652,9 +755,9 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
 
             # Create service principal for the app
             $spBody = @{ appId = $existingClientId } | ConvertTo-Json
-            Invoke-MgGraphRequest -Method POST `
+            $createdServicePrincipal = Invoke-MgGraphRequest -Method POST `
                 -Uri 'https://graph.microsoft.com/v1.0/servicePrincipals' `
-                -Body $spBody -ContentType 'application/json' | Out-Null
+                -Body $spBody -ContentType 'application/json'
             Write-Status -Label 'Service Principal' -Status 'Created' -Color 'Green'
 
             Write-Host "`n  IMPORTANT: You must grant admin consent for the API permissions." -ForegroundColor Red
@@ -668,7 +771,16 @@ if ([string]::IsNullOrWhiteSpace($existingClientId) -or $existingClientId -match
             # SharePoint resource consent record, which causes PnP tenant admin operations
             # (Get-PnPTenant, New-PnPSite) to fail with "unauthorized operation".
             try {
-                $appSpId = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '$existingClientId'&`$select=id").value[0].id
+                $appSpId = if ($null -ne $createdServicePrincipal -and -not [string]::IsNullOrWhiteSpace([string]$createdServicePrincipal.id)) {
+                    [string]$createdServicePrincipal.id
+                }
+                else {
+                    [string](Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '$existingClientId'&`$select=id").value[0].id
+                }
+
+                $graphRoleResult = Ensure-ServicePrincipalAppRoleAssignments -ClientServicePrincipalId $appSpId -ResourceAppId $graphAppId -RoleValues $requiredGraphAppRoleValues
+                Write-Status -Label 'Graph App Roles' -Status $graphRoleResult.StatusMessage -Color 'Green'
+
                 $spResourceId = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '00000003-0000-0ff1-ce00-000000000000'&`$select=id").value[0].id
                 $existingGrants = (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/oauth2PermissionGrants?`$filter=clientId eq '$appSpId' and resourceId eq '$spResourceId'").value
                 if (-not $existingGrants -or $existingGrants.Count -eq 0) {
@@ -990,12 +1102,12 @@ $prereqScript = Join-Path -Path $automationDir -ChildPath 'Invoke-WorkshopPrereq
 if (Test-Path -LiteralPath $prereqScript) {
     try {
         & $prereqScript -ConfigPath $ConfigPath
-        Write-Status -Label 'Prerequisites' -Status 'All checks passed' -Color 'Green'
+        Write-Status -Label 'Prerequisites' -Status 'Shared prerequisite checks passed' -Color 'Green'
     }
     catch {
         $errMsg = $_.Exception.Message
         if ($errMsg -match 'EnvironmentUrl' -or $errMsg -match 'placeholder') {
-            Write-Status -Label 'Prerequisites' -Status 'Passed (EnvironmentUrl will be set after running lab setup)' -Color 'Yellow'
+            Write-Status -Label 'Prerequisites' -Status 'Shared checks passed; facilitator EnvironmentUrl still needs capture or explicit override' -Color 'Yellow'
         } else {
             Write-Status -Label 'Prerequisites' -Status "Validation failed: $errMsg" -Color 'Red'
         }
@@ -1056,10 +1168,10 @@ foreach ($item in $dashboard) {
 
 Write-Host ''
 if ($allGreen) {
-    Write-Host '  All checks passed! You are ready to proceed.' -ForegroundColor Green
+    Write-Host '  Shared facilitator setup checks passed. Continue with manual environment, demo-path, and student-path validation as needed.' -ForegroundColor Green
 } else {
     Write-Host "  $($failedChecks.Count) item(s) need attention: $($failedChecks -join ', ')" -ForegroundColor Yellow
-    Write-Host '  Fix them and re-run the wizard, or proceed if you know they are expected.' -ForegroundColor Yellow
+    Write-Host '  Fix them and re-run the wizard, or proceed only when you have separately validated any manual facilitator or student gates.' -ForegroundColor Yellow
 }
 
 Write-Host "`n--- Next Steps ---" -ForegroundColor Cyan

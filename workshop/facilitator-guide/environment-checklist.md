@@ -23,8 +23,8 @@ After the wizard, run `pwsh -File .\workshop\automation\Invoke-WorkshopLabSetup.
 
 Manual setup steps (if not using the bootstrap wizard): copy `workshop-config.example.json` to `workshop-config.json`, edit placeholders, run `Install-WorkshopPrerequisites.ps1`, run `Get-WorkshopDay2Assets.ps1`, run `Invoke-WorkshopPrereqCheck.ps1`, then run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady`.
 
-- If the dry run still needs a fresh facilitator environment, populate the optional `EnvironmentBootstrap` block in `../automation/workshop-config.json` and run `../automation/Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment` directly, or `../automation/Invoke-WorkshopLabSetup.ps1 -CreateEnvironment -Mode StudentReady` if you want the rest of the provisioning flow to continue. This wraps the officially documented `pac admin create` flow, still requires an already-authenticated admin-capable `pac` profile plus available capacity/licensing, and updates `EnvironmentUrl` when the created URL can be resolved.
-- `SharePoint.PnPLoginMode` defaults to `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. If setup runs under `DeviceLogin`, expect separate browser/device-code prompts for the SharePoint admin center, tenant root, and target site during first-time site provisioning. The bootstrap wizard ensures the Entra app's SharePoint `oauth2PermissionGrant` (`AllSites.FullControl`) is created — without this, PnP tenant admin operations fail even for Global Admins.
+- If the dry run still needs a fresh facilitator environment, populate the optional `EnvironmentBootstrap` block in `../automation/workshop-config.json` and run `../automation/Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment -UpdateConfig` directly, or `../automation/Invoke-WorkshopLabSetup.ps1 -CreateEnvironment -Mode StudentReady` if you want the rest of the provisioning flow to continue. This wraps the officially documented `pac admin create` flow, still requires an already-authenticated admin-capable `pac` profile plus available capacity/licensing, and only persists `EnvironmentUrl` when `-UpdateConfig` is used.
+- `SharePoint.PnPLoginMode` defaults to `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. If setup runs under `DeviceLogin`, expect separate browser/device-code prompts for the SharePoint admin center, tenant root, and target site during first-time site provisioning. When that happens, use `https://microsoft.com/devicelogin` and then enter the code shown by the script instead of relying on an auto-opened browser tab. The bootstrap wizard ensures the Entra app's SharePoint `oauth2PermissionGrant` (`AllSites.FullControl`) is created — without this, PnP tenant admin operations fail even for Global Admins.
 
 Review the workshop in this order so a new facilitator does not mix the setup tracks together:
 
@@ -35,10 +35,20 @@ Review the workshop in this order so a new facilitator does not mix the setup tr
 ### Facilitator-only demo base
 
 - [ ] A separate facilitator demo environment exists and is reserved for facilitator-only demos and recovery use
-- [ ] Before any optional Day 2 import, `pac auth list` / `pac auth who` confirm the active profile points to that facilitator demo environment
-- [ ] If Day 2 demo pre-staging is needed, `Import-WorkshopOperativeAssets.ps1 -ImportSolution` has been validated only in that facilitator demo environment
+- [ ] The facilitator demo environment URL is either saved in `EnvironmentUrl` or recorded for explicit `-EnvironmentUrl` use during imports
+- [ ] For any newly created facilitator demo environment, PPAC billing is configured before agent testing: either **Billing > Link Azure subscription** for PAYGO or allocate Copilot Studio capacity/credits to the environment
+- [ ] Before any optional Day 2 import, `pac auth list` / `pac auth who` confirm the active profile is the intended tenant/admin account context; import targeting still comes from `-EnvironmentUrl` or `config.EnvironmentUrl`
+- [ ] If Day 2 demo pre-staging is needed, `Import-WorkshopOperativeAssets.ps1 -ImportSolution` and, when required, `Import-WorkshopOperativeAssets.ps1 -ImportBaseData` have been validated only against that facilitator demo URL
+- [ ] For `-ImportBaseData` and advanced facilitator fallback automation, a client secret is available either in `Identity.ClientSecret` or via `Identity.ClientSecretEnvVar`
+- [ ] For `-ImportBaseData` and advanced facilitator fallback automation, the Entra app has the Power Apps Service delegated permission with admin consent and a delegated Power Platform admin has completed the one-time registration step (`New-PowerAppManagementApp` or `pac admin application register`)
 - [ ] The facilitator can demonstrate the highest-risk modules from this demo environment without depending on student environments
-- [ ] If the delivery plan needs completed end-state artifacts beyond the clean demo base, separate checkpoints, screenshots, or facilitator-owned snapshots are prepared because the repo does not currently auto-build every later-lab outcome
+- [ ] If using the advanced completed fallback path, `Set-WorkshopFacilitatorFallbackSource.ps1 -ListCandidates` has been reviewed and the chosen source environment is facilitator-owned
+- [ ] If using the advanced completed fallback path, `Set-WorkshopFacilitatorFallbackSource.ps1 -SourceEnvironmentUrl <gold-source-url> -UpdateConfig` passes and persists `FacilitatorFallback.SourceEnvironmentUrl`
+- [ ] If using the advanced completed fallback path, `Invoke-WorkshopFacilitatorFallbackBuild.ps1 -ValidateOnly` passes
+- [ ] If using the advanced completed fallback path, `workshop\automation\facilitator-fallback-artifacts.json` has been refreshed from the current gold source before the rebuild
+- [ ] If using the advanced completed fallback path, `Invoke-WorkshopFacilitatorFallbackValidation.ps1` passes after the copy and the manual facilitator spot-checks have been completed
+- [ ] If using the advanced completed fallback path, `workshop\automation\facilitator-fallback-repair-report.json` has been reviewed after the copy and any flagged binding drift has been resolved
+- [ ] If you stay on the clean demo-base model instead, separate checkpoints, screenshots, or facilitator-owned snapshots are prepared for the riskiest later labs
 
 ### Optional: batch student environment provisioning
 
@@ -55,12 +65,14 @@ If provisioning per-student environments (instead of a shared environment), addi
 - [ ] `Identity.ParticipantEmails` is populated in `workshop-config.json`
 - [ ] A client secret is available either in `Identity.ClientSecret` or, preferably, via `Identity.ClientSecretEnvVar` (the bootstrap wizard can generate and store one in `COPILOT_WORKSHOP_APP_SECRET`; this supports app-only PowerApps admin auth after the one-time registration above)
 - [ ] Tenant has sufficient Copilot Studio credit capacity for all students (default: 25,000 per student)
+- [ ] Decide the post-create billing path for student environments in advance: either link PAYGO in PPAC or be ready to allocate Copilot Studio credits manually after provisioning
 - [ ] `D365_CDSSampleApp` template is enabled for the target region — verify with `pac admin list-app-templates` (enabled for `unitedstates`, may be disabled in other regions)
-- [ ] If preview app-only credit allocation still returns 403, the facilitator has a manual PPAC credit-allocation fallback ready
+- [ ] If preview app-only credit allocation still returns 403, the facilitator has a manual PPAC fallback ready to allocate credits or finish PAYGO billing for each created student environment
 - [ ] `EnvironmentBootstrap.DomainName` is set to a workshop-safe base prefix; student environment domains are auto-shortened as needed so each student alias remains unique within the 24-character limit
 - [ ] Before a full batch run, validate with a temporary one-student `Identity.ParticipantEmails` list. If you need to isolate environment and SharePoint validation from Teams, run `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1 -SkipTeams` first, then re-run the full student batch when you are ready to validate Teams as well
 - Run: `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1`
 - Post-workshop cleanup: `powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete`
+- For a disposable facilitator demo or fallback target, use `powershell -File .\workshop\automation\Remove-WorkshopFacilitatorEnvironment.ps1 -EnvironmentUrl https://<demo-or-fallback>.crm.dynamics.com`
 
 ### Cleanup and re-testing
 
@@ -82,6 +94,7 @@ Additional reset options:
 - Add `-IncludeEntraApp` to also delete the Entra app registration (the bootstrap wizard will recreate it).
 - Add `-IncludeTokenCache` to clear local MSAL token caches (forces fresh sign-in on next run).
 - For per-student environment cleanup, use `Remove-StudentEnvironments.ps1 -HardDelete` instead.
+- For facilitator demo or fallback target cleanup, use `Remove-WorkshopFacilitatorEnvironment.ps1`. It refuses to delete the configured gold source unless `-AllowGoldSourceDeletion` is supplied.
 
 ## Tenant, identity, and licensing
 
@@ -94,7 +107,7 @@ Additional reset options:
 - [ ] Confirm participant licensing or trial guidance is ready and tested.
 - [ ] Confirm Microsoft 365 Copilot requirements are understood for publishing scenarios.
 - [ ] Confirm Copilot Studio Authors or equivalent publishing permissions are configured.
-- [ ] Confirm the workshop environment has **Copilot Studio credits** available. Use one of these options:
+- [ ] Confirm the workshop environment has **Copilot Studio credits** available. Treat this as a manual facilitator action after the environment is created; do not assume automation has already finished the billing step. Use one of these options:
   - **Pay-as-you-go:** Link an Azure subscription to the environment via **Power Platform admin center** > **Environments** > select your environment > **Billing** > **Link Azure subscription**. This is the fastest option for workshop scenarios.
   - **Capacity pack:** Confirm a Copilot Studio capacity pack is assigned to the tenant and allocated to the workshop environment.
   - **Trial:** Confirm a Copilot Studio trial is active and has not expired. Note that trials are time-limited and may block publishing or advanced actions.
@@ -111,7 +124,8 @@ Additional reset options:
 - [ ] Confirm facilitators can create or open agents, connections, and tables inside that solution.
 - [ ] Confirm environment maker permissions are assigned to expected users.
 - [ ] Confirm the localized Day 2 Hiring Agent files (`Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv`) are present locally before you begin the Lab 13 walkthrough in that environment.
-- [ ] Confirm `pac auth list` shows the intended facilitator demo environment as the active profile before any optional solution import.
+- [ ] Confirm the facilitator demo environment URL is the one saved in `EnvironmentUrl` or the one you will pass with `-EnvironmentUrl` before any optional solution import.
+- [ ] Confirm `pac auth list` shows the intended tenant/admin account context before any optional solution import. Do not rely on active `pac` environment selection alone to retarget `Import-WorkshopOperativeAssets.ps1`.
 - [ ] Confirm at least one clean demo environment is reserved for live walkthroughs and any optional solution-package pre-staging.
 
 **If unresolved:** Treat the environment as not ready for hands-on. Both workshop days depend on stable environment and solution access.
@@ -214,15 +228,15 @@ Complete these items when delivering the workshop virtually with a single facili
 - [ ] Pre-grant MCP admin consent at the tenant level so participants do not hit a "needs admin approval" screen during the MCP onboarding wizard.
 - [ ] Pre-enable custom app sideloading and app setup policies in the Teams Admin Center for the participant group.
 - [ ] Run a full end-to-end dry run of both days using a participant-equivalent account, not a global admin account. Time each lab and document actual durations.
-- [ ] Pre-import the Day 2 solution ZIP into a clean sandbox environment identical to participant environments and verify the agent appears with all topics.
+- [ ] Pre-import the Day 2 solution ZIP into the facilitator demo environment, or another facilitator-owned rehearsal sandbox, and verify the agent appears with all topics.
 - [ ] Build a Lab State Recovery document listing: (a) the direct environment URL with `environmentid` parameter for each lab, (b) a screenshot of each lab end state, and (c) a skip-ahead path for any lab that can be bypassed without breaking downstream labs.
 
 ### 48 hours before
 
 - [ ] Run the automation scripts to pre-stage the Lab 00 SharePoint site, core lists, and sample data.
-- [ ] Pre-create a temporary warm-up agent in each participant environment to pre-provision the backend. Delete the warm-up agent after backend provisioning completes. This eliminates the 1–10 minute first-agent provisioning delay that has no progress indicator.
+- [ ] Pre-create a temporary warm-up agent in the facilitator demo environment and, if you are using isolated student environments, optionally in one representative student environment. Delete the warm-up agent after backend provisioning completes. This helps measure the 1–10 minute first-agent provisioning delay without implying that every participant environment must be pre-staged.
 - [ ] Pre-attach the lab SharePoint knowledge source to a facilitator template agent and allow it to index overnight. SharePoint indexing can take 15–60 minutes and blocks Lab 06 validation if not pre-seeded.
-- [ ] Pre-import the Day 2 solution ZIP into at least two participant environments to validate import success and create a recovery fallback.
+- [ ] If you need a Day 2 recovery fallback, validate the solution import in the facilitator demo environment and, if you maintain the advanced completed-fallback path, in the facilitator-owned fallback target you plan to use live. Do not use participant environments as the Day 2 recovery fallback.
 - [ ] Pre-create SharePoint, Office 365 Outlook, and Dataverse connector connections in the facilitator account to enable demo fallback for flow-based labs.
 - [ ] Stage all self-paced support materials (Adaptive Card JSON scaffolds, flow templates, sample documents, Word templates) and verify download links work.
 
@@ -236,7 +250,7 @@ Complete these items when delivering the workshop virtually with a single facili
 
 ### Morning of Day 2
 
-- [ ] Confirm the MCP onboarding wizard is visible in a representative participant environment. If absent, pre-stage the manual Custom MCP Server workaround as a fallback handout.
+- [ ] Confirm the MCP onboarding wizard is visible in a representative participant environment. If absent, prepare a facilitator-demo fallback plus screenshots of the supported wizard flow rather than sending participants through an unsupported manual MCP server path.
 - [ ] Confirm Dataverse tables are accessible in participant environments by testing record creation and deletion with a non-admin account.
 - [ ] Confirm the Evaluation experience opens and the "New evaluation" flow starts without errors.
 - [ ] Pre-download Day 2 CSV files (`job-roles.csv`, `evaluation-criteria.csv`) and share a direct download link in the meeting chat.

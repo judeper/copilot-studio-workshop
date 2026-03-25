@@ -78,6 +78,45 @@ $teamsConfig = $config.Teams
 $teamPrefix = if ($null -eq $teamsConfig -or [string]::IsNullOrWhiteSpace([string]$teamsConfig.StudentTeamPrefix)) { 'Contoso Recruiting' } else { [string]$teamsConfig.StudentTeamPrefix }
 
 $mapFilePath = Join-Path -Path $PSScriptRoot -ChildPath 'student-environment-map.json'
+$canAttemptCreditAllocation = (-not [string]::IsNullOrWhiteSpace($clientSecret)) -and (-not (Test-PlaceholderValue -Value $clientSecret))
+
+function Add-StudentManualFollowUp {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Collections.IDictionary]$StudentRecord,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Action
+    )
+
+    if (-not $StudentRecord.Contains('ManualFollowUp')) {
+        $StudentRecord.ManualFollowUp = [System.Collections.Generic.List[string]]::new()
+    }
+
+    if (-not $StudentRecord.ManualFollowUp.Contains($Action)) {
+        $StudentRecord.ManualFollowUp.Add($Action)
+    }
+}
+
+function Complete-StudentProvisioningRecord {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Collections.IDictionary]$StudentRecord
+    )
+
+    if ($StudentRecord.Status -ne 'InProgress') {
+        return
+    }
+
+    $manualFollowUpCount = @($StudentRecord.ManualFollowUp).Count
+    if ($manualFollowUpCount -gt 0) {
+        $StudentRecord.Status = 'FollowUpRequired'
+        Write-Log -Level WARN -Message "Provisioning finished for $($StudentRecord.Alias), but manual follow-up is still required: $((@($StudentRecord.ManualFollowUp)) -join '; ')" -Component 'SUMMARY'
+        return
+    }
+
+    $StudentRecord.Status = 'Completed'
+}
 
 function Connect-SharePointDelegatedWithFallback {
     param(
@@ -158,6 +197,171 @@ function Get-ConnectedPnPCurrentUserEmail {
     return $currentUserEmail
 }
 
+function Invoke-StudentTeamsProvisioningInIsolatedProcess {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Thumbprint,
+
+        [Parameter(Mandatory = $true)]
+        [string]$StudentEmail,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TeamDisplayName
+    )
+
+    $pwshCommand = Get-Command -Name 'pwsh' -ErrorAction Stop
+    $childScriptTemplate = @'
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+
+Import-Module Microsoft.Graph.Authentication -Force
+
+$tenantId = '__TENANT_ID__'
+$clientId = '__CLIENT_ID__'
+$thumbprint = '__THUMBPRINT__'
+$studentEmail = '__STUDENT_EMAIL__'
+$teamDisplayName = '__TEAM_DISPLAY_NAME__'
+
+Connect-MgGraph -ClientId $clientId -TenantId $tenantId -CertificateThumbprint $thumbprint -ContextScope Process -NoWelcome | Out-Null
+
+try {
+    $filterDisplayName = $teamDisplayName.Replace("'", "''")
+    $existingGroupResponse = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups?`$filter=displayName eq '$filterDisplayName'&`$select=id,displayName,resourceProvisioningOptions" -ErrorAction Stop
+    $existingTeam = @($existingGroupResponse.value | Where-Object { @($_.resourceProvisioningOptions) -contains 'Team' }) | Select-Object -First 1
+    if ($null -ne $existingTeam -and -not [string]::IsNullOrWhiteSpace([string]$existingTeam.id)) {
+        Write-Output ('RESULT_JSON:' + (@{
+            TeamId = [string]$existingTeam.id
+            GroupId = [string]$existingTeam.id
+            Reused = $true
+        } | ConvertTo-Json -Compress))
+        return
+    }
+
+    $escapedStudentEmail = [uri]::EscapeDataString($studentEmail)
+    $userResult = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/users/${escapedStudentEmail}?`$select=id,userPrincipalName" -ErrorAction Stop
+    $studentObjectId = [string]$userResult.id
+    if ([string]::IsNullOrWhiteSpace($studentObjectId)) {
+        throw "Microsoft Graph did not return an id for '$studentEmail'."
+    }
+
+    $teamBody = @{
+        'template@odata.bind' = 'https://graph.microsoft.com/v1.0/teamsTemplates(''standard'')'
+        displayName           = $teamDisplayName
+        members               = @(
+            @{
+                '@odata.type'     = '#microsoft.graph.aadUserConversationMember'
+                roles             = @('owner')
+                'user@odata.bind' = "https://graph.microsoft.com/v1.0/users('$studentObjectId')"
+            }
+        )
+    } | ConvertTo-Json -Depth 10
+
+    Invoke-MgGraphRequest -Method POST -Uri 'https://graph.microsoft.com/v1.0/teams' -Body $teamBody -ContentType 'application/json' -ResponseHeadersVariable 'teamHeaders' -ErrorAction Stop | Out-Null
+
+    $operationUrl = $null
+    if ($teamHeaders.ContainsKey('Location') -and $teamHeaders['Location'].Count -gt 0) {
+        $operationUrl = [string]$teamHeaders['Location'][0]
+    }
+    if ([string]::IsNullOrWhiteSpace($operationUrl)) {
+        throw 'Microsoft Graph did not return a Location header for team creation.'
+    }
+    if ($operationUrl -notmatch '^https://') {
+        $operationUrl = 'https://graph.microsoft.com/v1.0/' + $operationUrl.TrimStart('/')
+    }
+    elseif ($operationUrl -match '^https://graph\.microsoft\.com/(?!(v1\.0|beta)/)') {
+        $operationUrl = $operationUrl -replace '^https://graph\.microsoft\.com/?', 'https://graph.microsoft.com/v1.0/'
+    }
+
+    $teamId = $null
+    if ($teamHeaders.ContainsKey('Content-Location') -and $teamHeaders['Content-Location'].Count -gt 0) {
+        $contentLocation = [string]$teamHeaders['Content-Location'][0]
+        if ($contentLocation -match "teams\('([^']+)'\)") {
+            $teamId = $Matches[1]
+        }
+    }
+
+    $operationResult = $null
+    for ($attempt = 1; $attempt -le 30; $attempt++) {
+        Start-Sleep -Seconds 10
+        $operationResult = Invoke-MgGraphRequest -Method GET -Uri $operationUrl -ErrorAction Stop
+        if ([string]$operationResult.status -eq 'failed') {
+            throw "Team creation failed: $($operationResult | ConvertTo-Json -Depth 10 -Compress)"
+        }
+        if ([string]$operationResult.status -eq 'succeeded') {
+            break
+        }
+    }
+
+    if ($null -eq $operationResult -or [string]$operationResult.status -ne 'succeeded') {
+        throw 'Team creation did not reach succeeded state within the retry window.'
+    }
+
+    if ([string]::IsNullOrWhiteSpace($teamId)) {
+        foreach ($locationProperty in @('targetResourceLocation', 'resourceLocation')) {
+            if ($operationResult.PSObject.Properties.Name -contains $locationProperty) {
+                $candidateLocation = [string]$operationResult.$locationProperty
+                if ($candidateLocation -match "teams\('([^']+)'\)") {
+                    $teamId = $Matches[1]
+                    break
+                }
+            }
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($teamId)) {
+        $groupResponse = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/groups?`$filter=displayName eq '$filterDisplayName'&`$select=id,displayName,resourceProvisioningOptions" -ErrorAction Stop
+        $matchingTeam = @($groupResponse.value | Where-Object { @($_.resourceProvisioningOptions) -contains 'Team' }) | Select-Object -First 1
+        if ($null -ne $matchingTeam -and -not [string]::IsNullOrWhiteSpace([string]$matchingTeam.id)) {
+            $teamId = [string]$matchingTeam.id
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($teamId)) {
+        throw 'Team creation succeeded but no team id could be resolved.'
+    }
+
+    Write-Output ('RESULT_JSON:' + (@{
+        TeamId = $teamId
+        GroupId = $teamId
+        Reused = $false
+    } | ConvertTo-Json -Compress))
+}
+finally {
+    Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null
+}
+'@
+
+    $childScript = $childScriptTemplate.
+        Replace('__TENANT_ID__', $TenantId.Replace("'", "''")).
+        Replace('__CLIENT_ID__', $ClientId.Replace("'", "''")).
+        Replace('__THUMBPRINT__', $Thumbprint.Replace("'", "''")).
+        Replace('__STUDENT_EMAIL__', $StudentEmail.Replace("'", "''")).
+        Replace('__TEAM_DISPLAY_NAME__', $TeamDisplayName.Replace("'", "''"))
+
+    $encodedChildScript = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($childScript))
+    $commandOutput = & $pwshCommand.Source -NoProfile -EncodedCommand $encodedChildScript 2>&1
+    $outputLines = @($commandOutput | ForEach-Object { $_.ToString() })
+    $outputText = ($outputLines -join [System.Environment]::NewLine).Trim()
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Isolated Teams provisioning failed: $outputText"
+    }
+
+    $resultLine = $outputLines | Where-Object { $_ -like 'RESULT_JSON:*' } | Select-Object -Last 1
+    if ([string]::IsNullOrWhiteSpace([string]$resultLine)) {
+        throw "Isolated Teams provisioning returned no structured result. Output: $outputText"
+    }
+
+    $resultJson = $resultLine.Substring('RESULT_JSON:'.Length)
+    return ($resultJson | ConvertFrom-Json -Depth 10)
+}
+
 Write-Log -Level PASS -Message "Loaded config: $($participantEmails.Count) students, region=$region, credits=$creditsPerEnv, batch=$batchSize"
 if ($requiresAppOnlyCertificate) {
     Write-Log -Level PASS -Message "Using app-only certificate '$($provisioningCertificate.Thumbprint)' (expires $($provisioningCertificate.NotAfter.ToUniversalTime().ToString('u')))."
@@ -211,21 +415,26 @@ if (-not $SkipDlpCheck) {
     }
 }
 
-if (-not $SkipSharePoint) {
-    Require-Module -Name 'PnP.PowerShell'
-    Write-Log -Level PASS -Message 'PnP.PowerShell module available.'
-}
-
 if (-not $SkipTeams) {
     Require-Module -Name 'Microsoft.Graph.Authentication'
     Write-Log -Level INFO -Message 'Connecting to Microsoft Graph (app-only, certificate)...'
     try {
-        Connect-MgGraph -ClientId $pnpClientId -TenantId $tenantId -CertificateThumbprint $pnpCertThumbprint -ContextScope Process -NoWelcome
+        Connect-MgGraph -ClientId $pnpClientId -TenantId $tenantId -CertificateThumbprint $pnpCertThumbprint -ContextScope Process -NoWelcome | Out-Null
         Write-Log -Level PASS -Message 'Microsoft Graph session established.'
     }
     catch {
         throw "Microsoft Graph app-only auth failed with certificate '$pnpCertThumbprint'. Confirm the certificate is still in Cert:\CurrentUser\My and is registered on the workshop app. Details: $($_.Exception.Message)"
     }
+    finally {
+        Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null
+    }
+}
+
+if (-not $SkipSharePoint) {
+    # Connect to Graph before importing PnP.PowerShell to avoid the local MSAL assembly conflict
+    # that breaks certificate-based Graph auth after PnP is loaded into the current process.
+    Require-Module -Name 'PnP.PowerShell'
+    Write-Log -Level PASS -Message 'PnP.PowerShell module available.'
 }
 
 # ============================================================================
@@ -235,9 +444,30 @@ Write-Section 'Phase 3: Pre-flight validation'
 
 $existingMap = @(Read-StudentEnvironmentMap -Path $mapFilePath)
 $completedExistingEntries = @($existingMap | Where-Object { [string]$_.Status -eq 'Completed' })
-$retainedMapEntries = @($existingMap | Where-Object { [string]$_.Status -eq 'Completed' -or [string]$_.Status -eq 'Skipped' })
+$retainedMapEntries = @(
+    $existingMap | Where-Object {
+        $entryStatus = [string]$_.Status
+        if ($entryStatus -eq 'Skipped') {
+            return $true
+        }
+
+        if ($entryStatus -ne 'Completed') {
+            return $false
+        }
+
+        if (-not $SkipSharePoint -and [string]::IsNullOrWhiteSpace([string]$_.SharePointUrl)) {
+            return $false
+        }
+
+        if (-not $SkipTeams -and [string]::IsNullOrWhiteSpace([string]$_.TeamsId)) {
+            return $false
+        }
+
+        return $true
+    }
+)
 if ($existingMap.Count -gt 0) {
-    Write-Log -Level WARN -Message "Found existing student map with $($existingMap.Count) entries. Completed entries will be skipped; failed entries can be retried."
+    Write-Log -Level WARN -Message "Found existing student map with $($existingMap.Count) entries. Completed entries with all required artifacts will be skipped; failed or follow-up-required entries can be retried."
 }
 
 $alreadyProvisioned = @{}
@@ -268,7 +498,7 @@ Write-Log -Level INFO -Message "$($studentsToProvision.Count) students to provis
 # ============================================================================
 Write-Section 'Phase 4: Registering Power Platform Management App'
 
-if (-not [string]::IsNullOrWhiteSpace($clientSecret) -and -not (Test-PlaceholderValue -Value $clientSecret)) {
+if ($canAttemptCreditAllocation) {
     Write-Log -Level WARN -Message "Skipping New-PowerAppManagementApp in this app-only flow. Microsoft documents that a service principal can't register itself; a delegated Power Platform admin must register app '$pnpClientId' once with New-PowerAppManagementApp or pac admin application register."
 } else {
     Write-Log -Level WARN -Message 'No client secret is available — skipping app-only PowerApps admin checks and preview credit allocation.'
@@ -335,15 +565,18 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
         }
 
         $studentRecord = [ordered]@{
-            Email           = $studentEmail
-            Alias           = $studentAlias
-            DomainName      = $domainName
-            EnvironmentUrl  = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.EnvironmentUrl } else { $null }
-            EnvironmentGuid = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.EnvironmentGuid } else { $null }
-            SharePointUrl   = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.SharePointUrl } else { $null }
-            GroupId         = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.GroupId } else { $null }
-            TeamsId         = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.TeamsId } else { $null }
-            Status          = 'InProgress'
+            Email                  = $studentEmail
+            Alias                  = $studentAlias
+            DomainName             = $domainName
+            EnvironmentUrl         = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.EnvironmentUrl } else { $null }
+            EnvironmentGuid        = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.EnvironmentGuid } else { $null }
+            SharePointUrl          = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.SharePointUrl } else { $null }
+            GroupId                = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.GroupId } else { $null }
+            TeamsId                = if ($null -ne $existingStudentRecord) { [string]$existingStudentRecord.TeamsId } else { $null }
+            CreditAllocationStatus = 'Pending'
+            RoleAssignmentStatus   = 'Pending'
+            ManualFollowUp         = [System.Collections.Generic.List[string]]::new()
+            Status                 = 'InProgress'
         }
 
         # ---- Phase 6: Create Power Platform environment ----
@@ -447,7 +680,7 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
             $studentRecord.EnvironmentGuid = $envGuid
 
             # Allocate credits
-            if (-not [string]::IsNullOrWhiteSpace($clientSecret) -and -not (Test-PlaceholderValue -Value $clientSecret) -and $envGuid) {
+            if ($canAttemptCreditAllocation -and $envGuid) {
                 Write-Log -Level INFO -Message "Attempting preview app-only allocation of $creditsPerEnv MCSSessions credits..." -Component 'CREDITS'
                 try {
                     Invoke-WithRetry -ScriptBlock {
@@ -457,10 +690,24 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
 
                     $verifyToken = Get-PowerPlatformAccessToken -TenantId $tenantId -ClientId $pnpClientId -ClientSecret $clientSecret
                     Confirm-EnvironmentCopilotCredits -EnvironmentGuid $envGuid -AccessToken $verifyToken -ExpectedCredits $creditsPerEnv
+                    $studentRecord.CreditAllocationStatus = 'Allocated'
                     Write-Log -Level PASS -Message "Credits allocated and verified." -Component 'CREDITS'
                 }
                 catch {
+                    $studentRecord.CreditAllocationStatus = 'ManualRequired'
+                    Add-StudentManualFollowUp -StudentRecord $studentRecord -Action 'Allocate Copilot Studio credits manually in the Power Platform admin center.'
                     Write-Log -Level WARN -Message "Credit allocation failed: $_. Microsoft currently documents Copilot credit allocation in Power Platform admin center, so the facilitator must allocate capacity manually." -Component 'CREDITS'
+                }
+            }
+            else {
+                $studentRecord.CreditAllocationStatus = 'ManualRequired'
+                if (-not $canAttemptCreditAllocation) {
+                    Add-StudentManualFollowUp -StudentRecord $studentRecord -Action 'Allocate Copilot Studio credits manually in the Power Platform admin center because app-only credit allocation is not configured.'
+                    Write-Log -Level WARN -Message 'Credit allocation was not attempted because no client secret is configured for app-only licensing calls. Manual allocation is still required.' -Component 'CREDITS'
+                }
+                elseif (-not $envGuid) {
+                    Add-StudentManualFollowUp -StudentRecord $studentRecord -Action 'Allocate Copilot Studio credits manually, or rerun after the environment GUID resolves.'
+                    Write-Log -Level WARN -Message "Credit allocation was not attempted because the environment GUID could not be resolved for $studentAlias. Manual allocation or a later rerun is required." -Component 'CREDITS'
                 }
             }
 
@@ -471,9 +718,12 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
                     & pac admin assign-user --environment $envUrl --user $studentEmail --role 'Environment Maker' 2>&1 | Out-Null
                     if ($LASTEXITCODE -ne 0) { throw "pac admin assign-user exited with code $LASTEXITCODE" }
                 } -MaxAttempts 5 -DelaySeconds 60 -OperationName "Assign role for $studentAlias"
+                $studentRecord.RoleAssignmentStatus = 'Assigned'
                 Write-Log -Level PASS -Message "Environment Maker role assigned." -Component 'ROLE'
             }
             catch {
+                $studentRecord.RoleAssignmentStatus = 'ManualRequired'
+                Add-StudentManualFollowUp -StudentRecord $studentRecord -Action 'Assign the student to the Environment Maker role manually.'
                 Write-Log -Level WARN -Message "Role assignment failed: $_. Facilitator must assign manually." -Component 'ROLE'
             }
         }
@@ -695,47 +945,20 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
         if (-not $SkipTeams) {
             try {
                 Write-Log -Level INFO -Message "Creating Teams team for $studentAlias" -Component 'TEAMS'
+                $teamResult = Invoke-StudentTeamsProvisioningInIsolatedProcess `
+                    -TenantId $tenantId `
+                    -ClientId $pnpClientId `
+                    -Thumbprint $pnpCertThumbprint `
+                    -StudentEmail $studentEmail `
+                    -TeamDisplayName "$teamPrefix - $studentAlias"
 
-                # Resolve student object ID from email
-                $userResult = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/users/$studentEmail" -ErrorAction Stop
-                $studentObjectId = $userResult.id
-
-                $teamBody = @{
-                    'template@odata.bind' = 'https://graph.microsoft.com/v1.0/teamsTemplates(''standard'')'
-                    displayName           = "$teamPrefix - $studentAlias"
-                    members               = @(
-                        @{
-                            '@odata.type'    = '#microsoft.graph.aadUserConversationMember'
-                            roles            = @('owner')
-                            'user@odata.bind' = "https://graph.microsoft.com/v1.0/users('$studentObjectId')"
-                        }
-                    )
-                } | ConvertTo-Json -Depth 10
-
-                $teamResponse = Invoke-MgGraphRequest -Method POST `
-                    -Uri 'https://graph.microsoft.com/v1.0/teams' `
-                    -Body $teamBody `
-                    -ContentType 'application/json' `
-                    -ResponseHeadersVariable 'teamHeaders'
-
-                $operationUrl = $teamHeaders.Location[0]
-
-                Invoke-WithRetry -ScriptBlock {
-                    $op = Invoke-MgGraphRequest -Method GET -Uri $operationUrl
-                    if ($op.status -eq 'failed') { throw "Team creation failed: $($op.error)" }
-                    if ($op.status -ne 'succeeded') { throw "Still in progress: $($op.status)" }
-                    return $op
-                } -MaxAttempts 30 -DelaySeconds 10 -OperationName "Create team for $studentAlias"
-
-                # Extract team ID from Content-Location header or operation result
-                if ($teamHeaders.ContainsKey('Content-Location') -and $teamHeaders['Content-Location'].Count -gt 0) {
-                    $contentLocation = $teamHeaders['Content-Location'][0]
-                    if ($contentLocation -match "teams\('([^']+)'\)") {
-                        $studentRecord.TeamsId = $Matches[1]
-                    }
+                $studentRecord.TeamsId = [string]$teamResult.TeamId
+                if (-not [string]::IsNullOrWhiteSpace([string]$teamResult.GroupId)) {
+                    $studentRecord.GroupId = [string]$teamResult.GroupId
                 }
 
-                Write-Log -Level PASS -Message "Teams team created for $studentAlias" -Component 'TEAMS'
+                $teamVerb = if ([bool]$teamResult.Reused) { 'reused' } else { 'created' }
+                Write-Log -Level PASS -Message "Teams team $teamVerb for $studentAlias (id=$($studentRecord.TeamsId))" -Component 'TEAMS'
             }
             catch {
                 Write-Log -Level ERROR -Message "Teams creation failed for $studentAlias : $_" -Component 'TEAMS'
@@ -746,9 +969,7 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
         }
 
         # ---- Record result ----
-        if ($studentRecord.Status -eq 'InProgress') {
-            $studentRecord.Status = 'Completed'
-        }
+        Complete-StudentProvisioningRecord -StudentRecord $studentRecord
         [void]$studentMap.Add([pscustomobject]$studentRecord)
 
         # Save after each student for crash recovery
@@ -762,20 +983,33 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
 Write-Section 'Phase 9: Final verification'
 
 $completed = @($studentMap | Where-Object { $_.Status -eq 'Completed' })
+$followUpRequired = @($studentMap | Where-Object { $_.Status -eq 'FollowUpRequired' })
 $failed = @($studentMap | Where-Object { $_.Status -like 'Failed*' })
 $skipped = @($studentMap | Where-Object { $_.Status -eq 'Skipped' })
 
-Write-Log -Level INFO -Message "Results: $($completed.Count) completed, $($failed.Count) failed, $($skipped.Count) skipped"
+Write-Log -Level INFO -Message "Results: $($completed.Count) completed, $($followUpRequired.Count) need follow-up, $($failed.Count) failed, $($skipped.Count) skipped"
 
 if ($failed.Count -gt 0) {
     Write-Log -Level WARN -Message "Failed students: $(($failed | ForEach-Object { $_.Email }) -join ', ')"
+}
+
+if ($followUpRequired.Count -gt 0) {
+    foreach ($entry in $followUpRequired) {
+        $manualActions = @($entry.ManualFollowUp)
+        $manualActionsText = if ($manualActions.Count -gt 0) { $manualActions -join '; ' } else { 'Review the student record for manual follow-up.' }
+        Write-Log -Level WARN -Message "Manual follow-up required for $($entry.Email): $manualActionsText"
+    }
 }
 
 Save-StudentEnvironmentMap -Path $mapFilePath -StudentMap $studentMap
 Write-Log -Level PASS -Message "Student environment map saved to $mapFilePath"
 
 if (-not $SkipTeams) {
-    Disconnect-MgGraph -ErrorAction SilentlyContinue
+    Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null
 }
 
-Write-Log -Level PASS -Message 'Student environment provisioning complete.'
+if ($followUpRequired.Count -gt 0) {
+    Write-Log -Level WARN -Message 'Student environment provisioning completed with manual follow-up still required for one or more students.'
+} else {
+    Write-Log -Level PASS -Message 'Student environment provisioning complete.'
+}

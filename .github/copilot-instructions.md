@@ -28,7 +28,16 @@
   - `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1`
 - Import the Operative solution into the active demo environment:
   - `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution`
-- Keep facilitator demo preparation and student hands-on preparation separate. The repo currently optimizes for a clean validated facilitator demo base, not a fully prebuilt “all labs completed” fallback environment.
+- Import the Lab 13 Hiring Hub base data into the active demo or fallback source environment:
+  - `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportBaseData`
+- Rebuild a facilitator-only completed fallback environment from a gold source (advanced, optional path):
+  - `powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -ListCandidates`
+  - `powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -SourceEnvironmentUrl https://<completed-source>.crm.dynamics.com -UpdateConfig`
+  - `powershell -File .\workshop\automation\Export-WorkshopFacilitatorArtifactLayers.ps1`
+  - `powershell -File .\workshop\automation\Invoke-WorkshopFacilitatorBindingRepair.ps1`
+  - `powershell -File .\workshop\automation\Invoke-WorkshopFacilitatorFallbackBuild.ps1`
+  - `powershell -File .\workshop\automation\Invoke-WorkshopFacilitatorFallbackValidation.ps1`
+- Keep facilitator demo preparation and student hands-on preparation separate. The default repo path still optimizes for a clean validated facilitator demo base; the new full-copy fallback flow is facilitator-only and must not become the student build path.
 - Generate branded PDF files for students and facilitators (requires Node.js and npm):
   - `cd workshop\automation && npm install && node Generate-WorkshopPDFs.js`
   - Output: `workshop\pdf-output\` (10 numbered PDFs: 4 student, 6 facilitator)
@@ -39,6 +48,8 @@
   - Validate-only: `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1 -ValidateOnly`
 - Tear down student environments after the workshop:
   - `powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete`
+- Tear down a facilitator demo or fallback target environment (refuses to delete the gold source unless `-AllowGoldSourceDeletion` is supplied):
+  - `powershell -File .\workshop\automation\Remove-WorkshopFacilitatorEnvironment.ps1 -EnvironmentUrl https://<demo-or-fallback>.crm.dynamics.com`
 - No package-based build or lint command exists under `workshop`.
 - No automated test runner exists. The closest single-test equivalents are:
   - a targeted dry run with `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1`
@@ -48,13 +59,14 @@
 ## Automation architecture
 
 ### Common.ps1 shared utilities
-- `Common.ps1` is dot-sourced by all automation scripts and provides: config I/O (`Get-WorkshopConfig`, `Save-WorkshopConfig`), validation helpers (`Get-RequiredString`, `Test-PlaceholderValue`), module/command guards (`Require-Module`, `Require-Command`), console output (`Write-Section`, `Write-StepResult`), logging (`Initialize-WorkshopLog`, `Write-Log`), native-process wrappers (`Invoke-NativeCommand`), student-provisioning auth helpers (`Get-CurrentUserCertificate`, `New-WorkshopSelfSignedCertificate`, `Resolve-ConfiguredClientSecret`, `Set-UserEnvironmentVariable`, `Test-AppOnlyCertificateReadiness`), student-provisioning building blocks (`Get-StudentAlias`, `Get-SafeGroupAlias`, `Get-SafeSiteAlias`, `Get-SafeDomainName`, `Get-PacEnvironmentListJson`, `Find-PacEnvironmentByDomainName`, `Resolve-EnvironmentGuid`, `Get-PowerPlatformAccessToken`, `Set-EnvironmentCopilotCredits`, `Confirm-EnvironmentCopilotCredits`, `Invoke-WithRetry`, `Save-StudentEnvironmentMap`, `Read-StudentEnvironmentMap`), and Entra security group management (`Ensure-SecurityGroup`).
+- `Common.ps1` is dot-sourced by all automation scripts and provides: config I/O (`Get-WorkshopConfig`, `Save-WorkshopConfig`), validation helpers (`Get-RequiredString`, `Test-PlaceholderValue`), module/command guards (`Require-Module`, `Require-Command`), console output (`Write-Section`, `Write-StepResult`), logging (`Initialize-WorkshopLog`, `Write-Log`), native-process wrappers (`Invoke-NativeCommand`), student-provisioning auth helpers (`Get-CurrentUserCertificate`, `New-WorkshopSelfSignedCertificate`, `Resolve-ConfiguredClientSecret`, `Set-UserEnvironmentVariable`, `Test-AppOnlyCertificateReadiness`), API token helpers (`Get-OAuthAccessToken`, `Get-PowerPlatformAccessToken`, `Get-DataverseAccessToken`), Dataverse helpers (`Ensure-DataverseApplicationUser`, `Get-WorkshopAppClientContext`, `New-DataverseClientContext`, `Invoke-DataverseWebApiRequest`), student-provisioning building blocks (`Get-StudentAlias`, `Get-SafeGroupAlias`, `Get-SafeSiteAlias`, `Get-SafeDomainName`, `Get-PacEnvironmentListJson`, `Find-PacEnvironmentByDomainName`, `Resolve-EnvironmentGuid`, `Set-EnvironmentCopilotCredits`, `Confirm-EnvironmentCopilotCredits`, `Invoke-WithRetry`, `Save-StudentEnvironmentMap`, `Read-StudentEnvironmentMap`), and Entra security group management (`Ensure-SecurityGroup`).
 - `Initialize-WorkshopSiteContent.ps1` is a reusable function library (dot-sourced, not run standalone) that creates all workshop SharePoint lists, field schemas, and sample data on the currently connected site. It is called by both `Initialize-WorkshopSharePoint.ps1` (shared facilitator site) and `Invoke-StudentEnvironmentProvisioning.ps1` (per-student sites) to ensure identical schema and sample data everywhere. The main entry point is `Initialize-WorkshopSiteContent -Config $config`.
 - When adding new shared functions, follow the existing patterns in `Common.ps1`: mandatory parameter attributes, `[CmdletBinding()]` on scripts, `$ErrorActionPreference = 'Stop'`, and `Set-StrictMode -Version Latest` at the top of each script.
 
 ### Config schema (workshop-config.example.json)
-- Top-level keys: `TenantId`, `EnvironmentUrl`, `EnvironmentBootstrap`, `SharePoint`, `Teams`, `Identity`, `Workshop`, `Day1`, `Day2`.
+- Top-level keys: `TenantId`, `EnvironmentUrl`, `EnvironmentBootstrap`, `FacilitatorFallback`, `SharePoint`, `Teams`, `Identity`, `Workshop`, `Day1`, `Day2`.
 - `EnvironmentBootstrap` contains: `DisplayName`, `Type`, `DomainName`, `Region`, `Currency`, `Language`, `AdminUser`, `SecurityGroupId`, `CopilotStudioCreditsPerEnvironment`, `BatchSize`, `PreProvisionDayBefore`.
+- `FacilitatorFallback` contains the advanced facilitator-only full-copy settings: `SourceEnvironmentUrl`, `CopyType`, `MaxAsyncWaitTimeMinutes`, `SkipAuditData`.
 - `SharePoint` contains: `AdminUrl`, `SiteUrl`, `SiteTitle`, `SiteAlias`, `SitePrefix`, `SiteDescription`, `PnPClientId`, `PnPLoginMode`, `PnPCertificateThumbprint`.
 - `Teams` contains: `WorkshopTeamName`, `StudentTeamPrefix`.
 - `Identity` contains: `AgentCreatorsGroupName`, `ParticipantEmails` (array of student email addresses for batch provisioning), `ClientSecret`, and `ClientSecretEnvVar`.
@@ -85,7 +97,15 @@
   - Labs `00`-`12` are the Day 1 Recruit track. They establish the environment, build the `Contoso Helpdesk Agent`, and layer SharePoint grounding, topics, Adaptive Cards, flows, triggers, publishing, and licensing.
   - Labs `13`-`24` are the Day 2 Operative track. They import the `Operative` solution, use Dataverse and the `Hiring Hub` app, then extend the `Hiring Agent` with instructions, multi-agent behavior, automation, model selection, moderation, multimodal prompts, document generation, MCP, feedback, and evaluation.
   - Lab `25` is an optional VS Code workflow that edits the cloud agent definition locally and syncs it back to Copilot Studio.
-- `workshop\automation` is for facilitator or demo preparation, not for skipping the student journey. `StudentReady` intentionally leaves later student-owned work unfinished, while `FacilitatorDemo` can pre-stage Day 2 assets in a separate demo environment. `Generate-WorkshopPDFs.js` produces 10 branded PDFs (4 student workbooks + 6 facilitator references) from the Markdown sources into `workshop\pdf-output\`.
+- `workshop\automation` is for facilitator or demo preparation, not for skipping the student journey. `StudentReady` intentionally leaves later student-owned work unfinished, while `FacilitatorDemo` can pre-stage Day 2 assets in a separate demo environment. `Import-WorkshopOperativeAssets.ps1 -ImportBaseData` now seeds the Lab 13 Hiring Hub baseline (job roles, evaluation criteria, sample candidates, resumes, and job applications) into a facilitator-owned demo or fallback source environment. `Generate-WorkshopPDFs.js` produces 10 branded PDFs (4 student workbooks + 6 facilitator references) from the Markdown sources into `workshop\pdf-output\`.
+- The advanced facilitator fallback path now produces two git-ignored machine artifacts in `workshop\automation`: `facilitator-fallback-artifacts.json` (source snapshot of repairable artifacts) and `facilitator-fallback-repair-report.json` (post-copy repair report for connection references and environment variables).
+- `Set-WorkshopFacilitatorFallbackSource.ps1` is the safe designation step for the advanced fallback model: it lists candidate environments, validates a completed gold source against the fallback manifest, and can persist `FacilitatorFallback.SourceEnvironmentUrl`.
+- `Export-WorkshopFacilitatorArtifactLayers.ps1` packages a JSON snapshot of connection references and environment variable values from the gold source into `workshop\automation\facilitator-fallback-artifacts.json`; this snapshot drives binding repair in the copied target.
+- `Invoke-WorkshopFacilitatorBindingRepair.ps1` compares the artifact snapshot against the target environment, identifies connection-reference and environment-variable drift, applies safe replacement rules, and writes `workshop\automation\facilitator-fallback-repair-report.json` for facilitator review.
+- `Invoke-WorkshopFacilitatorFallbackBuild.ps1` is an advanced facilitator-only helper that can refresh a separate rescue environment from a completed gold source with `pac admin copy`. Keep that gold source and copied fallback environment separate from the student hands-on path.
+- `Invoke-WorkshopFacilitatorFallbackValidation.ps1` runs Dataverse FetchXML checks (Operative solution, Hiring Hub records, sample candidates, resumes, job applications) and presents a lab-by-lab manual spot-check list; accepts `-EnvironmentUrl` to test any facilitator-owned environment.
+- `Remove-WorkshopFacilitatorEnvironment.ps1` safely deletes a facilitator demo or fallback target; it refuses to remove the configured gold source unless `-AllowGoldSourceDeletion` is supplied.
+- `workshop\automation\facilitator-fallback-manifest.json` is the build contract for the advanced fallback path, mapping all 25 labs to a fallback strategy and embedding the FetchXML queries used by `Invoke-WorkshopFacilitatorFallbackValidation.ps1`.
 - Future edits should preserve the three-track rollout model: shared prerequisites, facilitator-only demo base, and student hands-on environments. Do not blur facilitator demo imports or fallback artifacts into the student hands-on path.
 - The facilitator guide now includes a quick runbook for new facilitators. Keep that section sequence-first, concise, and aligned with the more detailed environment checklist.
 - `workshop\automation\Common.ps1` is the shared utility module dot-sourced by all PowerShell scripts. It contains config I/O, validation helpers, console and file logging, and building blocks for batch student provisioning (alias derivation, environment GUID resolution, Power Platform Licensing API wrappers, retry logic, and student-environment map persistence).
