@@ -27,9 +27,9 @@ Recommended baseline:
 
 > **Note:** If several attendees skip Day 1, open Day 2 with a stricter prerequisite check and be ready to pair them with stronger table groups.
 
-## Presentation source materials
+## Presentation companion sources
 
-No finished slide deck is checked into this repository. Use the markdown source set below when you want to build, refresh, or deliver the instructor presentation:
+The 13 PPTX decks in [`../Copilot-Studio-Workshop-Slides/`](../Copilot-Studio-Workshop-Slides/) are the primary delivery artifacts for live instruction. The markdown files below are the companion authoring and speaker-note sources used for narrative review, content updates, and AI-assisted editing:
 
 - [`../assets/slide-deck-outline.md`](../assets/slide-deck-outline.md) for the master slide-by-slide narrative and core speaker notes.
 - [`../assets/slide-deck-delivery-notes.md`](../assets/slide-deck-delivery-notes.md) for transition framing, pacing guardrails, audience emphasis, and parallel deck-build tasks.

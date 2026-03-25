@@ -15,6 +15,7 @@ workshop/automation/node_modules/
 workshop/pdf-output/
 
 # Certificate private keys
+*.cer
 *.pfx
 
 # Common editor artifacts

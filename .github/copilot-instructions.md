@@ -4,7 +4,7 @@
 
 - The repository root contains a `README.md` with the workshop overview, lab index, and quick start, plus signing artifacts and the `workshop\` package.
 - Most editable content lives under `workshop\`; treat this as a documentation-first workshop repository, not a conventional application repo. Most changes are Markdown; the executable code is the facilitator PowerShell in `workshop\automation`.
-- The workshop also includes a committed PowerPoint slide corpus in `workshop\Copilot-Studio-Workshop-Slides\` with 13 module decks. Treat those PPTX files as first-class repo assets when slide work is in scope.
+- The workshop also includes a committed PowerPoint slide corpus in `workshop\Copilot-Studio-Workshop-Slides\` with 13 module decks. Treat those PPTX files as first-class repo assets when slide work is in scope. The folder's `README.md` provides a module-to-lab mapping table and companion source index.
 
 ## Commands
 
@@ -91,7 +91,7 @@
 - `workshop\participant-guide` defines the learner journey, the mixed audience, and the Day 1 to Day 2 progression.
 - `workshop\facilitator-guide` contains delivery flow, environment readiness, fallback paths, and the repo's authoring guardrails.
 - `workshop\Copilot-Studio-Workshop-Slides` contains the committed PPTX slide corpus for live delivery: 13 module decks (`Module-00` through `Module-12`) and 95 slides total.
-- `workshop\assets\slide-deck-outline.md` is the canonical instructor presentation narrative and the text-first companion to the PPTX decks. Use it for speaker notes, teaching intent, and structural review, and keep it aligned with the PPTX decks when slide sequencing, module boundaries, or teaching intent changes.
+- `workshop\assets\slide-deck-outline.md` is the canonical instructor presentation narrative and the text-first companion to the PPTX decks. It includes a per-module slide count table for quick reference of the 95 total slides across the 13 modules. Use it for speaker notes, teaching intent, and structural review, and keep it aligned with the PPTX decks when slide sequencing, module boundaries, or teaching intent changes.
 - `workshop\assets\slide-deck-delivery-notes.md` and `workshop\assets\slide-deck-visual-plan.md` are companion markdown sources for speaker support, transition planning, and visual planning.
 - `workshop\labs` is the source of truth for hands-on content:
   - Labs `00`-`12` are the Day 1 Recruit track. They establish the environment, build the `Contoso Helpdesk Agent`, and layer SharePoint grounding, topics, Adaptive Cards, flows, triggers, publishing, and licensing.

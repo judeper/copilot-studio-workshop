@@ -46,6 +46,8 @@ The workshop includes 13 committed PowerPoint presentation decks covering the fu
 ### Companion Materials
 
 - **Markdown outline:** `workshop\assets\slide-deck-outline.md` — 85 numbered entries with speaker notes, narrative structure, and teaching intent
+- **Delivery notes:** `workshop\assets\slide-deck-delivery-notes.md` — speaker support, transition planning, and facilitation cues
+- **Visual plan:** `workshop\assets\slide-deck-visual-plan.md` — visual planning companion for slide layout and design review
 - **Lab timing guide:** `workshop\assets\lab-timing-guide.md` — detailed pacing and delivery guidance for labs
 - **Session splitting guide:** `workshop\assets\session-splitting-guide.md` — alternative multi-session delivery formats
 - **Facilitator guide:** `workshop\facilitator-guide\facilitator-guide.md` — complete delivery flow, readiness guidance, and recovery notes
@@ -209,7 +211,7 @@ Output lands in `workshop/pdf-output/`:
 | 02 | Day 1 Workbook (Labs 00–12) | Environment Readiness Pack |
 | 03 | Day 2 Workbook (Labs 13–24) | Session Splitting Guide |
 | 04 | Optional Developer Lab (Lab 25) | Lab Timing Guide |
-| 05 | | Slide Deck Outline |
+| 05 | | Slide Deck Outline (from `slide-deck-outline.md`, not the PPTX decks) |
 | 06 | | Lab Validation Reference |
 
 Generate a subset with `--only`: `node Generate-WorkshopPDFs.js --only S2,F1`

@@ -9,6 +9,25 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 > **Relationship:** The PPTX decks are the delivery-ready presentation artifacts with visual design and presentation flow. This outline is the text-first companion used for speaker notes, narrative structure, and teaching strategy review.
 >
 > **Alignment note:** This outline contains 85 numbered entries while the PPTX corpus contains 95 slides. The counts do not match one-for-one because the decks may split title, transition, or visual teaching moments across multiple slides while the outline combines them into fewer narrative entries.
+>
+> **Per-module slide counts (PPTX):**
+>
+> | Module | Deck | PPTX Slides |
+> |--------|------|-------------|
+> | 00 | Workshop Framing | 8 |
+> | 01 | Agents Today | 6 |
+> | 02 | Studio Foundations | 11 |
+> | 03 | Reuse Patterns | 5 |
+> | 04 | Custom Agent Design | 5 |
+> | 05 | Topic Design | 8 |
+> | 06 | Actions and Events | 11 |
+> | 07 | Hiring Architecture | 9 |
+> | 08 | Automation and Models | 8 |
+> | 09 | Multimodal and Data | 10 |
+> | 10 | MCP and Extensibility | 4 |
+> | 11 | Channels and Feedback | 4 |
+> | 12 | Evaluation and ROI | 6 |
+> | | **Total** | **95** |
 
 ## Day 1: Labs 00-12
 
