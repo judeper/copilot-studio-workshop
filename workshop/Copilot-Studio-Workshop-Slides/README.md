@@ -33,6 +33,10 @@ Lab 25 is an optional developer stretch lab with no dedicated module deck.
 
 The PPTX decks are the delivery-ready artifacts. For speaker notes, narrative structure, and text-first review, see:
 
-- [`../assets/slide-deck-outline.md`](../assets/slide-deck-outline.md) — 85 numbered entries with speaker notes and teaching intent
+- [`../assets/slide-deck-outline.md`](../assets/slide-deck-outline.md) — 92 numbered entries with speaker notes and teaching intent
 - [`../assets/slide-deck-delivery-notes.md`](../assets/slide-deck-delivery-notes.md) — transition cues and pacing guardrails
 - [`../assets/slide-deck-visual-plan.md`](../assets/slide-deck-visual-plan.md) — visual planning for slide layout and design
+
+## Outline Expansion Note
+
+The markdown outline (`slide-deck-outline.md`) contains **92 entries** — 7 more than the original 85 baseline. The 7 new entries (marked `<!-- NEW -->` in the outline) are proposed concept slides for Modules 04 (+3), 10 (+2), and 11 (+2) that need corresponding PPTX slides created. The PPTX corpus remains at 95 slides until those new decks are built.

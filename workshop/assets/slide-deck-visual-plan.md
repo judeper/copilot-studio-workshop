@@ -32,12 +32,156 @@ These filenames come from `screenshot-capture-checklist.md`. If the screenshots 
 | Visual | Why it matters | Build from |
 | --- | --- | --- |
 | Two-day journey and role map | The opening deck needs one clean view of Day 1 foundation to Day 2 enterprise progression for makers, IT pros, and developers | `../participant-guide/welcome-and-overview.md`, `../participant-guide/day1-recruit-guide.md`, `../participant-guide/day2-operative-guide.md` |
-| Grounding strategy comparison | The deck needs one visual that contrasts public websites, SharePoint, files, and Dataverse across freshness, structure, and ownership | `../labs/lab-06-custom-agent/README.md`, `../labs/lab-20-dataverse-grounding/README.md`, `../tests/validation-checklist.md` |
-| Multi-agent responsibility view | The room needs a clearer mental model for orchestrator, child agent, connected agent, tools, and data | `../labs/lab-15-multi-agent/README.md` |
+| [Grounding strategy comparison](#grounding-strategy-comparison-module-04--lab-06) | The deck needs one visual that contrasts public websites, SharePoint, files, and Dataverse across freshness, structure, and ownership | `../labs/lab-06-custom-agent/README.md`, `../labs/lab-20-dataverse-grounding/README.md`, `../tests/validation-checklist.md` |
+| [Multi-agent responsibility view](#multi-agent-responsibility-view-module-07--lab-15) | The room needs a clearer mental model for orchestrator, child agent, connected agent, tools, and data | `../labs/lab-15-multi-agent/README.md` |
 | Model trade-off comparison | Lab 17 is stronger with a simple side-by-side view for quality, latency, relative cost, and workshop fit | `../labs/lab-17-model-selection/README.md` |
 | Licensing and ROI decision flow | Day 1 close and Day 2 evaluation are easier to connect if one visual shows credits, capacity, ROI analytics, and release readiness together | `../labs/lab-12-licensing/README.md`, `../labs/lab-24-agent-evaluation/README.md` |
 | Channel readiness comparison | The publish section benefits from a single view that compares Teams, Microsoft 365 Copilot, web, and WhatsApp by ownership and governance | `lab-timing-guide.md`, `../facilitator-guide/facilitator-guide.md` |
-| Evaluation improvement loop | Lab 24 should show a repeatable loop: test set, result, activity map, fix, rerun | `../labs/lab-24-agent-evaluation/README.md` |
+| [Evaluation improvement loop](#evaluation-improvement-loop-module-12--lab-24) | Lab 24 should show a repeatable loop: test set, result, activity map, fix, rerun | `../labs/lab-24-agent-evaluation/README.md` |
+
+### Grounding strategy comparison (Module 04 / Lab 06)
+
+**Layout:** 4-column comparison table or matrix diagram.
+
+| Dimension | Public Websites | SharePoint (with metadata filters) | Uploaded Files | Dataverse |
+| --- | --- | --- | --- | --- |
+| **Freshness** — how current is the data? | Live web; uncontrolled change cadence | Near-real-time; governed update cycle | Static at upload time | Transactional; always current |
+| **Structure** — schema vs. unstructured | Unstructured HTML; variable quality | Semi-structured; rich metadata when columns/content types are used | Flat files; no queryable schema | Fully structured; typed columns, relationships, views |
+| **Ownership** — who controls the source? | External / unknown | Internal team or department | Author who uploaded | IT / app owner with row-level security |
+| **Retrieval Quality** — precision with/without filtering | Low; noisy, broad matches | High when metadata filters narrow scope; moderate without | Moderate; limited to file content | High; precise FetchXML or natural-language-to-query |
+| **Enterprise Readiness** — governance, DLP, access control | ⚠ No enterprise governance; DLP cannot inspect external content | ✅ Recommended enterprise default — Entra auth, sensitivity labels, DLP-aware | Limited; no live access control sync | ✅ Full Dataverse security model, audit trail, environment-level DLP |
+
+**Key visual cues:**
+
+- Highlight the **SharePoint (with metadata filters)** column with a green accent or bold border as the recommended enterprise default grounding source.
+- Place a red **⚠** warning icon on the **Public Websites** column header to flag the governance gap for enterprise use.
+- Use a subtle upward "grounding ladder" arrow along the bottom of the table (left → right) to show increasing enterprise readiness.
+
+**Teaching purpose:** Participants need to see WHY they are building a grounding stack in Lab 06, not just HOW. This visual makes the grounding ladder intuitive before they configure knowledge sources, so the SharePoint-first recommendation feels earned rather than arbitrary.
+
+---
+
+### Multi-agent responsibility view (Module 07 / Lab 15)
+
+**Layout:** Hub-and-spoke architecture diagram with 3 agents.
+
+```
+                    ┌─────────────────────────┐
+                    │     Hiring Agent         │
+                    │     (Orchestrator)       │
+                    │  Receives all user       │
+                    │  requests, delegates,    │
+                    │  synthesizes responses   │
+                    └────┬───────────────┬─────┘
+          Delegate       │               │       Delegate
+       resume intake     │               │    interview prep
+             ▼           │               │           ▼
+  ┌──────────────────┐   │               │   ┌──────────────────────┐
+  │ Application      │   │               │   │ Interview Prep       │
+  │ Intake Agent     │   │               │   │ Agent                │
+  │ (Child Agent)    │   │               │   │ (Connected Agent)    │
+  │                  │   │               │   │                      │
+  │ Resume intake,   │   │               │   │ Interview scheduling,│
+  │ data extraction, │   │               │   │ prep material        │
+  │ application      │   │               │   │ generation           │
+  │ creation         │   │               │   │                      │
+  └───────┬──────────┘   │               │   └──────────┬───────────┘
+          │   ▲ Results  │               │   Results +  │
+          │   + context  │               │   context ▲  │
+          ▼              │               │              ▼
+  ┌──────────────────┐                       ┌──────────────────────┐
+  │  Dataverse       │                       │  Outlook Calendar    │
+  │  ─ Job           │                       │  (via MCP)           │
+  │    Requisitions  │                       └──────────────────────┘
+  │  ─ Candidates    │
+  │  ─ Job           │
+  │    Applications  │
+  └──────────────────┘
+```
+
+**Delegation arrows (labeled):**
+
+- Hiring Agent → Application Intake Agent: **"Delegate resume intake"**
+- Hiring Agent → Interview Prep Agent: **"Delegate interview prep"**
+- Application Intake Agent → Hiring Agent: **"Results + context"** (return)
+- Interview Prep Agent → Hiring Agent: **"Results + context"** (return)
+
+**Data source connections:**
+
+- Application Intake Agent ↔ Dataverse tables: Job Requisitions, Candidates, Job Applications.
+- Interview Prep Agent ↔ Outlook Calendar via MCP connector.
+
+**Key visual cues:**
+
+- **Color-code** child vs. connected agent to show the architectural distinction:
+  - **Child Agent** (Application Intake) — solid border, same-color family as orchestrator. Same environment; tightly coupled.
+  - **Connected Agent** (Interview Prep) — dashed border, different color family. Cross-environment capable; loosely coupled.
+- Add a callout box near the connected agent showing the Copilot Studio toggle: *"Let other agents connect to and use this one"* — this is the setting participants must enable in Lab 15.
+- Use thicker arrows for delegation (outbound) and thinner arrows for result returns (inbound).
+
+**Teaching purpose:** Lab 15 asks participants to wire this topology. Without a visual, the five relationship arrows in the lab's Mermaid flowchart are hard to internalize from text alone. This diagram gives the room a shared mental model before they start connecting agents.
+
+---
+
+### Evaluation improvement loop (Module 12 / Lab 24)
+
+**Layout:** Circular flow diagram (loop) with 6 numbered steps. The loop arrow from step 6 returns to step 3 to show the iterative nature of evaluation-driven improvement.
+
+**Steps:**
+
+1. **Create / Import Test Set** — CSV with 3 columns: `Input`, `ExpectedOutput`, `Context`. Participants use `evaluation-test-cases.csv` from `workshop/assets/`.
+2. **Select Graders** — Choose from 4 built-in graders (show all four with brief descriptions):
+   - *General quality* — overall response relevance and helpfulness.
+   - *Compare meaning* — semantic similarity between actual and expected output.
+   - *Tool use* — did the agent invoke the correct tool or action?
+   - *Keyword match* — are required keywords or phrases present?
+3. **Run Evaluation** — Execute the test set against the agent. The platform runs every input row and scores each case against the selected graders.
+4. **Interpret Results** — Read the pass rate percentage and per-case pass/fail breakdown.
+5. **Diagnose Failures** — Open a failed case → read the grader reasoning → open the **Activity Map** → trace the decision chain from user input through knowledge retrieval, topic matching, and response generation.
+6. **Fix and Rerun** — Edit agent instructions or knowledge configuration → rerun the evaluation → compare the new run with the baseline to confirm improvement.
+
+**Loop arrow:** Draw a prominent return arrow from **Step 6 → Step 3** to emphasize the iterative cycle. Steps 1–2 are setup (done once or infrequently); steps 3–6 repeat until the agent meets the quality bar.
+
+```
+    ┌───────────────────────────────────────────────────┐
+    │                                                   │
+    ▼                                                   │
+ ┌──────────┐   ┌──────────┐   ┌──────────┐            │
+ │ 1. Create│──▶│ 2. Select│──▶│ 3. Run   │            │
+ │ Test Set │   │ Graders  │   │ Eval     │◀───────┐   │
+ └──────────┘   └──────────┘   └────┬─────┘        │   │
+                                    │               │   │
+                                    ▼               │   │
+                               ┌──────────┐        │   │
+                               │ 4. Read  │        │   │
+                               │ Results  │        │   │
+                               └────┬─────┘        │   │
+                                    │               │   │
+                                    ▼               │   │
+                               ┌──────────┐        │   │
+                               │ 5. Diag- │  🔍    │   │
+                               │ nose     │ Activity│   │
+                               │ Failures │  Map    │   │
+                               └────┬─────┘        │   │
+                                    │               │   │
+                                    ▼               │   │
+                               ┌──────────┐        │   │
+                               │ 6. Fix & │────────┘   │
+                               │ Rerun    │            │
+                               └──────────┘            │
+                                                       │
+                  (First-time setup path) ─────────────┘
+```
+
+**Key visual cues:**
+
+- Highlight the **Activity Map** diagnostic at Step 5 with a magnifying-glass icon (🔍) or a "deep dive" callout box. This is the critical insight tool that most participants will encounter for the first time during Lab 24.
+- Visually separate the **setup phase** (Steps 1–2, lighter background) from the **iteration phase** (Steps 3–6, stronger background) to signal that the loop starts at Step 3.
+- Use a bold or colored arrow for the Step 6 → Step 3 return to make the iterative nature unmistakable.
+
+**Teaching purpose:** Lab 24 is procedurally the most detailed lab in the workshop. Participants need to see the full cycle before starting so they understand where each step fits in the improvement process. Showing the loop visually prevents the common mistake of treating evaluation as a one-shot pass/fail rather than an iterative quality practice.
+
+---
 
 ## Failure-state visuals worth capturing during a dry run
 
