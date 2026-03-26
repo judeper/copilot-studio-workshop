@@ -45,7 +45,7 @@ The workshop includes 13 committed PowerPoint presentation decks covering the fu
 
 ### Companion Materials
 
-- **Markdown outline:** `workshop\assets\slide-deck-outline.md` — 85 numbered entries with speaker notes, narrative structure, and teaching intent
+- **Markdown outline:** `workshop\assets\slide-deck-outline.md` — 95 numbered entries with speaker notes, narrative structure, and teaching intent
 - **Delivery notes:** `workshop\assets\slide-deck-delivery-notes.md` — speaker support, transition planning, and facilitation cues
 - **Visual plan:** `workshop\assets\slide-deck-visual-plan.md` — visual planning companion for slide layout and design review
 - **Lab timing guide:** `workshop\assets\lab-timing-guide.md` — detailed pacing and delivery guidance for labs
