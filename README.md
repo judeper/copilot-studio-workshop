@@ -25,7 +25,7 @@ The workshop includes 13 committed PowerPoint presentation decks covering the fu
 
 - **Location:** `workshop\Copilot-Studio-Workshop-Slides\`
 - **Format:** Delivery-ready PPTX files for instructor-led presentation and screen sharing
-- **Size:** 95 slides total across 13 module decks
+- **Size:** 98 slides total across 13 module decks
 
 | Module | File | Focus area |
 |---|---|---|

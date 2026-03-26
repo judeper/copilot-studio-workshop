@@ -4,11 +4,11 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 
 > **Companion document:** This markdown outline provides the narrative structure, speaker notes, and teaching intent for the workshop presentation decks.
 >
-> **Delivery artifacts:** The live presentation files live in `workshop\Copilot-Studio-Workshop-Slides\` as 13 PPTX module decks with 95 slides total.
+> **Delivery artifacts:** The live presentation files live in `workshop\Copilot-Studio-Workshop-Slides\` as 13 PPTX module decks with 98 slides total.
 >
 > **Relationship:** The PPTX decks are the delivery-ready presentation artifacts with visual design and presentation flow. This outline is the text-first companion used for speaker notes, narrative structure, and teaching strategy review.
 >
-> **Alignment note:** This outline contains 95 numbered entries while the PPTX corpus contains 95 slides. The counts do not match one-for-one because the decks may split title, transition, or visual teaching moments across multiple slides while the outline combines them into fewer narrative entries.
+> **Alignment note:** This outline contains 95 numbered entries while the PPTX corpus contains 98 slides. The counts do not match one-for-one because the decks may split title, transition, or visual teaching moments across multiple slides while the outline combines them into fewer narrative entries.
 >
 > **Per-module slide counts (PPTX):**
 >
@@ -21,13 +21,13 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 > | 04 | Custom Agent Design | 5 | 7 (+3 new) |
 > | 05 | Topic Design | 8 | 7 |
 > | 06 | Actions and Events | 11 | 11 |
-> | 07 | Hiring Architecture | 9 | 10 |
+> | 07 | Hiring Architecture | 10 | 10 |
 > | 08 | Automation and Models | 8 | 8 |
-> | 09 | Multimodal and Data | 10 | 11 |
+> | 09 | Multimodal and Data | 11 | 11 |
 > | 10 | MCP and Extensibility | 4 | 6 (+2 new) |
 > | 11 | Channels and Feedback | 4 | 6 (+2 new) |
-> | 12 | Evaluation and ROI | 6 | 6 |
-> | | **Total** | **95** | **0** (85 + 10 new) |
+> | 12 | Evaluation and ROI | 7 | 6 |
+> | | **Total** | **98** | **95** (85 + 10 new) |
 
 ## Day 1: Labs 00-12
 

@@ -180,7 +180,7 @@ The repository includes a committed slide corpus for live delivery:
 
 - **Location:** `workshop\Copilot-Studio-Workshop-Slides\`
 - **Structure:** 13 PPTX decks, `Module-00` through `Module-12`
-- **Total:** 95 slides across the full workshop
+- **Total:** 98 slides across the full workshop
 
 Use the slide assets this way:
 

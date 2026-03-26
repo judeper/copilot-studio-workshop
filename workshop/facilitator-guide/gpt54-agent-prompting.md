@@ -275,7 +275,7 @@ model: gpt-5.4
 reasoning: high
 
 Slide assets:
-- PowerPoint decks in `workshop/Copilot-Studio-Workshop-Slides/` (`Module-00` through `Module-12`, 13 PPTX files, 95 slides total)
+- PowerPoint decks in `workshop/Copilot-Studio-Workshop-Slides/` (`Module-00` through `Module-12`, 13 PPTX files, 98 slides total)
 - Markdown outline in `workshop/assets/slide-deck-outline.md` (95 numbered entries with speaker notes)
 
 Related files:

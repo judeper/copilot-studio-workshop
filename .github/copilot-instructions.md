@@ -90,7 +90,7 @@
 
 - `workshop\participant-guide` defines the learner journey, the mixed audience, and the Day 1 to Day 2 progression.
 - `workshop\facilitator-guide` contains delivery flow, environment readiness, fallback paths, and the repo's authoring guardrails.
-- `workshop\Copilot-Studio-Workshop-Slides` contains the committed PPTX slide corpus for live delivery: 13 module decks (`Module-00` through `Module-12`) and 95 slides total.
+- `workshop\Copilot-Studio-Workshop-Slides` contains the committed PPTX slide corpus for live delivery: 13 module decks (`Module-00` through `Module-12`) and 98 slides total.
 - `workshop\assets\slide-deck-outline.md` is the canonical instructor presentation narrative and the text-first companion to the PPTX decks. It contains 95 numbered entries (85 baseline + 10 concept slides marked `<!-- NEW -->` for Modules 04, 07, 09, 10, 11, and 12) with a per-module slide count table showing both PPTX and outline counts. Use it for speaker notes, teaching intent, and structural review, and keep it aligned with the PPTX decks when slide sequencing, module boundaries, or teaching intent changes.
 - `workshop\assets\slide-deck-delivery-notes.md` and `workshop\assets\slide-deck-visual-plan.md` are companion markdown sources for speaker support, transition planning, and visual planning. The delivery notes include per-module pre-lab facilitator guidance for modules with thin concept coverage (04, 05, 07, 09, 10, 11, 12). The visual plan includes detailed specifications for three load-bearing custom visuals: grounding strategy comparison (Module 04), multi-agent responsibility view (Module 07), and evaluation improvement loop (Module 12).
 - `workshop\labs` is the source of truth for hands-on content:

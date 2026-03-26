@@ -1,6 +1,6 @@
 # Copilot Studio Workshop — Slide Decks
 
-This folder contains the 13 PPTX module decks used for live workshop delivery (95 slides total).
+This folder contains the 13 PPTX module decks used for live workshop delivery (98 slides total).
 
 ## Module-to-Lab Mapping
 
@@ -20,12 +20,12 @@ This folder contains the 13 PPTX module decks used for live workshop delivery (9
 
 | Module | Deck | Labs | Slides |
 |--------|------|------|--------|
-| 07 | `Module-07-Hiring-Architecture.pptx` | Labs 13–15 | 9 |
+| 07 | `Module-07-Hiring-Architecture.pptx` | Labs 13–15 | 10 |
 | 08 | `Module-08-Automation-and-Models.pptx` | Labs 16–17 | 8 |
-| 09 | `Module-09-Multimodal-and-Data.pptx` | Labs 18–19 | 10 |
+| 09 | `Module-09-Multimodal-and-Data.pptx` | Labs 18–19 | 11 |
 | 10 | `Module-10-MCP-and-Extensibility.pptx` | Labs 20–21 | 4 |
 | 11 | `Module-11-Channels-and-Feedback.pptx` | Labs 22–23 | 4 |
-| 12 | `Module-12-Evaluation-and-ROI.pptx` | Lab 24 | 6 |
+| 12 | `Module-12-Evaluation-and-ROI.pptx` | Lab 24 | 7 |
 
 Lab 25 is an optional developer stretch lab with no dedicated module deck.
 
@@ -39,4 +39,4 @@ The PPTX decks are the delivery-ready artifacts. For speaker notes, narrative st
 
 ## Outline Expansion Note
 
-The markdown outline (`slide-deck-outline.md`) contains **95 entries** — 10 more than the original 85 baseline. The 10 new entries (marked `<!-- NEW -->` in the outline) are concept slides for Modules 04 (+3), 07 (+1), 09 (+1), 10 (+2), 11 (+2), and 12 (+1) that extend conceptual coverage before key labs. The PPTX corpus contains 95 slides; new outline entries that do not yet have corresponding PPTX slides should be built before the next delivery.
+The markdown outline (`slide-deck-outline.md`) contains **95 entries** — 10 more than the original 85 baseline. The 10 new entries (marked `<!-- NEW -->` in the outline) are concept slides for Modules 04 (+3), 07 (+1), 09 (+1), 10 (+2), 11 (+2), and 12 (+1) that extend conceptual coverage before key labs. The PPTX corpus contains 98 slides, with the 3 newest outline entries (Day 1 carryover checklist, Dataverse readiness checkpoint, and evaluation grader types) now having corresponding PPTX slides in their respective module decks.
