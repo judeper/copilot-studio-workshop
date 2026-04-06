@@ -36,7 +36,7 @@ Use this guide when delivering the workshop as multiple 2–3 hour sessions inst
 | 10 | Event Triggers | 25 | 29 |
 | 11 | Publish Agent | 30 | 35 |
 | 12 | Licensing | 20 | 23 |
-| 13 | Hiring Agent Setup | 45 | 52 |
+| 13 | Loan Processing Agent Setup | 45 | 52 |
 | 14 | Agent Instructions | 25 | 29 |
 | 15 | Multi-Agent | 40 | 46 |
 | 16 | Trigger Automation | 40 | 46 |
@@ -91,7 +91,7 @@ Each session includes 10 min for session intro/recap + 5 min wrap-up. Sessions o
 | — | Session overhead | 15 min |
 | — | **Total** | **160 min (~2.5 hrs)** |
 
-**Theme:** Create the Contoso Helpdesk Agent with grounding, then add structured topic routing.
+**Theme:** Create the Woodgrove Customer Service Agent with grounding, then add structured topic routing.
 
 ### Session 4 — Interaction and Automation (2.5 hrs)
 
@@ -106,17 +106,17 @@ Each session includes 10 min for session intro/recap + 5 min wrap-up. Sessions o
 
 **Theme:** Connect conversation to action — cards capture input, flows write back to SharePoint, triggers run autonomously.
 
-### Session 5 — Publish, Plan, and Hiring Agent Setup (2 hrs)
+### Session 5 — Publish, Plan, and Loan Processing Agent Setup (2 hrs)
 
 | Lab | Title | Time |
 |-----|-------|------|
 | 11 | Publish Agent | 30 min |
 | 12 | Licensing | 20 min |
-| 13 | Hiring Agent Setup | 45 min |
+| 13 | Loan Processing Agent Setup | 45 min |
 | — | Session overhead | 15 min |
 | — | **Total** | **110 min (~2 hrs)** |
 
-**Theme:** Close Day 1 content (publish, licensing) and bridge into Day 2 by importing the Hiring Agent solution. This session can run shorter or be padded with Q&A.
+**Theme:** Close Day 1 content (publish, licensing) and bridge into Day 2 by importing the Loan Processing Agent solution. This session can run shorter or be padded with Q&A.
 
 ### Session 6 — Instructions, Multi-Agent, and Safety (3 hrs)
 
@@ -169,7 +169,7 @@ Each session includes 10 min for session intro/recap + 5 min wrap-up. Sessions o
 | 2 | Agent Patterns and Reuse | 03–05 | ~2.5 hrs |
 | 3 | Build Your Agent | 06–07 | ~2.5 hrs |
 | 4 | Interaction and Automation | 08–10 | ~2.5 hrs |
-| 5 | Publish and Hiring Setup | 11–13 | ~2 hrs |
+| 5 | Publish and Lending Setup | 11–13 | ~2 hrs |
 | 6 | Instructions, Multi-Agent, and Safety | 14–18 | ~3 hrs |
 | 7 | Enterprise AI | 19–22 | ~3 hrs |
 | 8 | Quality and Wrap-up | 23–25 | ~2 hrs |
@@ -183,7 +183,7 @@ Each session includes 10 min for session intro/recap + 5 min wrap-up. Sessions o
 |---------|------|----------|-------|
 | 1 | 00–05 | 3 hrs | Foundation: Setup through prebuilt agents |
 | 2 | 06–09 | 3 hrs | Build: Custom agent, topics, cards, flows |
-| 3 | 10–14 | 3 hrs | Bridge: Events, publish, licensing, Hiring Agent setup, instructions |
+| 3 | 10–14 | 3 hrs | Bridge: Events, publish, licensing, Loan Processing Agent setup, instructions |
 | 4 | 15–18 | 3 hrs | Orchestrate: Multi-agent, automation, model selection, safety |
 | 5 | 19–22 | 3 hrs | Enterprise: Multimodal, grounding, doc gen, MCP |
 | 6 | 23–25 | 2 hrs | Close: Feedback, evaluation, VS Code |
@@ -196,6 +196,6 @@ Each session includes 10 min for session intro/recap + 5 min wrap-up. Sessions o
 - **Breaks:** Sessions over 2 hours should include at least one 10 min break.
 - **Buffer:** The 15% overhead accounts for session start/stop, recap, and Q&A. Increase to 20% if participants are less experienced.
 - **Lab 25:** Optional in all formats. Can be assigned as self-paced homework.
-- **Session 5** bridges Day 1 close into Day 2 start. This is the natural pivot point between the Recruit and Operative tracks.
+- **Session 5** bridges Day 1 close into Day 2 start. This is the natural pivot point between the Foundation and Enterprise tracks.
 - **Thematic grouping** ensures each session has a clear learning outcome, not just a time-based split.
 - **Between sessions:** Remind participants to keep their environment, SharePoint site, and agent intact. Each session builds on the previous one.

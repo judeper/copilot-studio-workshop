@@ -4,7 +4,7 @@ This folder contains the 13 PPTX module decks used for live workshop delivery (9
 
 ## Module-to-Lab Mapping
 
-### Day 1 — Recruit Track (Modules 00–06)
+### Day 1 — Foundation Track (Modules 00–06)
 
 | Module | Deck | Labs | Slides |
 |--------|------|------|--------|
@@ -16,11 +16,11 @@ This folder contains the 13 PPTX module decks used for live workshop delivery (9
 | 05 | `Module-05-Topic-Design.pptx` | Labs 07–09 | 8 |
 | 06 | `Module-06-Actions-and-Events.pptx` | Labs 10–12 | 11 |
 
-### Day 2 — Operative Track (Modules 07–12)
+### Day 2 — Enterprise Track (Modules 07–12)
 
 | Module | Deck | Labs | Slides |
 |--------|------|------|--------|
-| 07 | `Module-07-Hiring-Architecture.pptx` | Labs 13–15 | 10 |
+| 07 | `Module-07-Lending-Architecture.pptx` | Labs 13–15 | 10 |
 | 08 | `Module-08-Automation-and-Models.pptx` | Labs 16–17 | 8 |
 | 09 | `Module-09-Multimodal-and-Data.pptx` | Labs 18–19 | 11 |
 | 10 | `Module-10-MCP-and-Extensibility.pptx` | Labs 20–21 | 4 |

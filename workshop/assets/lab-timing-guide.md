@@ -39,8 +39,8 @@
 
 | Time | Duration | Module focus | Labs | Demo / hands-on | Facilitator cues | Recovery option |
 | --- | ---: | --- | --- | --- | --- | --- |
-| 9:00–9:15 | 15 min | Restart buffer and scenario reset | 13 prep | 35 / 65 | Reconfirm prerequisites, target environment, and the Hiring Agent scenario before any edits begin. | Skip the long Day 1 recap and use one-slide carry-forward only. |
-| 9:15–9:40 | 25 min | Hiring Agent setup | 13 | 35 / 65 | Get everyone to the same starting state quickly so the rest of Day 2 stays synchronized. | Hand slower learners a pre-staged agent while the room keeps moving. |
+| 9:00–9:15 | 15 min | Restart buffer and scenario reset | 13 prep | 35 / 65 | Reconfirm prerequisites, target environment, and the Loan Processing Agent scenario before any edits begin. | Skip the long Day 1 recap and use one-slide carry-forward only. |
+| 9:15–9:40 | 25 min | Loan Processing Agent setup | 13 | 35 / 65 | Get everyone to the same starting state quickly so the rest of Day 2 stays synchronized. | Hand slower learners a pre-staged agent while the room keeps moving. |
 | 9:40–10:10 | 30 min | Instructions and multi-agent design | 14–15 | 40 / 60 | Keep the discussion on boundaries, delegation, and maintainability rather than style debates. | Provide starter instruction text and a simplified delegation map. |
 | 10:10–10:20 | 10 min | Trigger automation reset | 16 prep | 50 / 50 | Use a short reset to explain the next automation path before the class clicks through it. | Trim the explanation to one concrete business event if time is tight. |
 | 10:20–10:35 | 15 min | **Break** | — | — | Use the pause to clear automation blockers before model and safety work. | Preserve the break and recover time by shortening the next demo. |
@@ -51,9 +51,9 @@
 | 12:00–13:00 | 60 min | **Lunch** | — | — | Check Dataverse, SharePoint, MCP wizard, and evaluation readiness before the afternoon labs begin. | Protect lunch if possible; recover later by tightening the feedback discussion. |
 | 13:00–13:25 | 25 min | Multimodal prompts | 19 | 35 / 65 | Keep the exercise on one controlled input and one business outcome. | Use a facilitator-provided sample artifact if participant files are inconsistent. |
 | 13:25–13:55 | 30 min | Dataverse grounding | 20 | 35 / 65 | Treat the block as a readiness checkpoint for governed data, not a data-modeling lecture. | Switch to a live demo if permissions vary too much across tables. |
-| 13:55–14:25 | 30 min | Document generation | 21 | 35 / 65 | Tie the output to a reviewable hiring artifact and ask for one improvement, not endless rewriting. | Provide a fixed template and focus the room on validation instead of authoring. |
+| 13:55–14:25 | 30 min | Document generation | 21 | 35 / 65 | Tie the output to a reviewable lending artifact and ask for one improvement, not endless rewriting. | Provide a fixed template and focus the room on validation instead of authoring. |
 | 14:25–14:55 | 30 min | MCP integration | 22 | 45 / 55 | Use the GA in-product onboarding wizard; keep tool scope narrow, auditable, and workshop-safe. | Convert the block to facilitator demo if the wizard is missing or blocked for most attendees. |
-| 14:55–15:10 | 15 min | **Break** | — | — | Confirm who is ready for feedback, evaluation, and optional developer branching. | Resume on time and collapse recap commentary to essentials only. |
+| 14:55–15:10 | 15 min | **Break** | — | — | Confirm who is ready for feedback, evaluation, and optional developer branching. | Financial Document on time and collapse recap commentary to essentials only. |
 | 15:10–15:30 | 20 min | User feedback and adoption signals | 23 | 35 / 65 | Show how feedback flows into backlog and release decisions instead of leaving it as anecdote. | Run one shared feedback submission and keep the rest as discussion. |
 | 15:30–16:00 | 30 min | **Agent Evaluation & Quality Assurance** | 24 | 40 / 60 | Core Day 2 quality block — protect time for pass rate, grader reasoning, and activity-map review. Lab 24 is not optional. | Use a facilitator-run baseline test set if the room cannot finish a full evaluation cycle. |
 | 16:00–16:30 | 30 min | Wrap-up + optional developer branch | 25 optional | Main room 60 / 40 · Dev branch 20 / 80 | **Main room:** evaluation recap, ROI analytics, and next-step planning. **Developer branch (Lab 25):** VS Code workflow runs in parallel for developers who are caught up on the core path. | If the room is behind, keep everyone on the core wrap-up and position Lab 25 as post-workshop follow-up only. |

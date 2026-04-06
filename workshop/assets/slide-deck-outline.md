@@ -21,7 +21,7 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 > | 04 | Custom Agent Design | 5 | 7 (+3 new) |
 > | 05 | Topic Design | 8 | 7 |
 > | 06 | Actions and Events | 11 | 11 |
-> | 07 | Hiring Architecture | 10 | 10 |
+> | 07 | Lending Architecture | 10 | 10 |
 > | 08 | Automation and Models | 8 | 8 |
 > | 09 | Multimodal and Data | 11 | 11 |
 > | 10 | MCP and Extensibility | 4 | 6 (+2 new) |
@@ -33,7 +33,7 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 
 ### Slide 1: Welcome and goals
 - Welcome makers, IT pros, and developers into one shared Copilot Studio learning path.
-- Set the expectation that Day 1 builds foundations and Day 2 turns them into an operational Hiring Agent solution.
+- Set the expectation that Day 1 builds foundations and Day 2 turns them into an operational Loan Processing Agent solution.
 - Define success as building, testing, evaluating, and explaining a production-ready direction.
 **Speaker note:** Open with outcomes and reassure the room that mixed roles are a strength, not a barrier.
 
@@ -339,38 +339,38 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 - Frame the checklist as operational hygiene that makes Day 2 orchestration, governed data, and evaluation trustworthy rather than a compliance gate.
 **Speaker note:** Pause on this slide long enough for participants to self-check. Anyone who cannot confirm an item should raise it now rather than discovering the gap during Lab 14 or Lab 20. For facilitators: if several participants are missing a baseline item (for example, web search is still on or solution packaging was skipped), fix it as a group before proceeding. This two-minute checkpoint prevents the most common Day 2 compounding errors and gives late joiners a concrete catch-up reference.
 
-### Slide 51: Module 7: Hiring architecture
-- Anchor the day around a Hiring Agent solution that feels closer to real operational complexity.
+### Slide 51: Module 7: Lending architecture
+- Anchor the day around a Loan Processing Agent solution that feels closer to real operational complexity.
 - Show the maintainable architecture: core agent, delegated capabilities, governed data, actions, and diagnostics.
 - Align makers, IT pros, and developers around shared delivery responsibilities.
-**Speaker note:** Position the Hiring Agent as a structured solution, not a larger prompt.
+**Speaker note:** Position the Loan Processing Agent as a structured solution, not a larger prompt.
 
 ### Slide 52: Multi-agent operating model
 - Use clear boundaries so each agent or capability owns a focused responsibility.
 - Explain how handoffs, escalation, and ownership reduce confusion when workflows expand.
 - Prefer coordinated components over one oversized agent that is hard to test or support.
-**Speaker note:** This framing helps the room understand why structured orchestration improves maintainability. Use the Application Intake and Interview Prep split to explain delegation boundaries, escalation, and ownership. Call out that the Activity map becomes the operating view for debugging handoffs, and that the same boundary-setting later makes flows, MCP tools, and evaluation results easier to reason about.
+**Speaker note:** This framing helps the room understand why structured orchestration improves maintainability. Use the Document Review and Loan Advisory split to explain delegation boundaries, escalation, and ownership. Call out that the Activity map becomes the operating view for debugging handoffs, and that the same boundary-setting later makes flows, MCP tools, and evaluation results easier to reason about.
 
 ### Slide 53: Lab Time: Lab 13
-- Set up the Hiring Agent baseline with the correct environment, naming, and scenario context.
+- Set up the Loan Processing Agent baseline with the correct environment, naming, and scenario context.
 - Ask learners to confirm data and knowledge prerequisites before changing behavior.
 - Define success as a reliable starting point for the rest of Day 2.
 **Speaker note:** A stable baseline now prevents compounded confusion in later connected labs.
 
-### Slide 54: Lab 13: Hiring setup
-- Create or open the Hiring Agent and confirm the main authoring surfaces are ready.
+### Slide 54: Lab 13: Lending setup
+- Create or open the Loan Processing Agent and confirm the main authoring surfaces are ready.
 - Review the scenario goals, dependencies, and any pre-staged assets the class will reuse.
 - Capture what must stay consistent across later labs for testing to remain meaningful.
 **Speaker note:** Use the setup lab to align expectations before the day becomes more complex.
 
 ### Slide 55: Lab Time: Lab 14
 - Strengthen the instructions before adding more tools, data, or automation.
-- Ask learners to write for maintainability, scope clarity, and recruiter-safe outputs.
+- Ask learners to write for maintainability, scope clarity, and loan-officer-safe outputs.
 - Keep the first improvement easy to test in the chat experience.
 **Speaker note:** Instructions are the control plane for later behavior, so invest here before extending further.
 
 ### Slide 56: Lab 14: Agent instructions
-- Refine the Hiring Agent instructions with clear scope, tone, escalation, and formatting guidance.
+- Refine the Loan Processing Agent instructions with clear scope, tone, escalation, and formatting guidance.
 - Align the instructions to configured tools and knowledge instead of asking the model to invent capability.
 - Test one direct request and one ambiguous request to see whether the guidance holds.
 **Speaker note:** This lab is most valuable when participants connect instruction quality to predictable outcomes.
@@ -382,7 +382,7 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 **Speaker note:** Keep the collaboration pattern simple so the operating model stays visible.
 
 ### Slide 58: Lab 15: Multi-agent team
-- Configure or review a multi-agent hiring pattern with clear delegation boundaries.
+- Configure or review a multi-agent lending pattern with clear delegation boundaries.
 - Confirm each specialized capability has a purpose, entry point, and expected outcome.
 - Validate that the coordination logic stays understandable in the UI and test flow.
 **Speaker note:** The main lesson is disciplined orchestration, not maximum branching.
@@ -394,28 +394,28 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 **Speaker note:** Frame model choice as an implementation decision that should stay tied to task quality. Connect Labs 16 and 17 explicitly: automation determines when the agent acts, while model selection influences how reliably it reasons once it acts. Ask the room to compare speed, structure, safety, and cost in business language rather than model hype.
 
 ### Slide 60: Lab Time: Lab 16
-- Automate one useful hiring workflow step with a clear trigger and outcome.
+- Automate one useful lending workflow step with a clear trigger and outcome.
 - Tell learners to keep the scenario observable and explainable to nontechnical stakeholders.
 - Capture what success evidence should appear if the automation works.
 **Speaker note:** Use the timebox to keep automation grounded in one measurable business step.
 
 ### Slide 61: Lab 16: Trigger automation
-- Configure trigger-based behavior tied to a concrete hiring event or process step.
+- Configure trigger-based behavior tied to a concrete lending event or process step.
 - Confirm the event path, connection state, and resulting action are visible in the UI.
 - Record any dependency that would matter for tenant readiness after the workshop.
 **Speaker note:** This lab teaches participants to treat automation as an operational commitment, not just a feature.
 
 ### Slide 62: Lab Time: Lab 17
-- Compare models using the same hiring task so the differences stay meaningful.
+- Compare models using the same lending task so the differences stay meaningful.
 - Use GPT-5 Chat as the recommended hands-on baseline for the workshop.
 - Mention GPT-4.1 only as platform context when participants need a comparison point.
 **Speaker note:** Keep the comparison lightweight so the room focuses on fit, not benchmarking theater.
 
 ### Slide 63: Lab 17: Model selection
-- Run the comparison in the UI and judge structure, speed, and usefulness for hiring tasks.
+- Run the comparison in the UI and judge structure, speed, and usefulness for lending tasks.
 - Select the model that best balances reliable output with the workshop scenario needs.
 - Save the chosen baseline so later labs evaluate against the same model.
-**Speaker note:** Model selection matters most when the room can explain why a choice was made. Keep the scorecard simple but explicit. If GPT-5 Chat is available, use it as the baseline, then explain any fallback in terms of recruiter trust, latency, and cost. Do not switch models casually after this point because Lab 24 evaluation needs a stable baseline.
+**Speaker note:** Model selection matters most when the room can explain why a choice was made. Keep the scorecard simple but explicit. If GPT-5 Chat is available, use it as the baseline, then explain any fallback in terms of loan officer trust, latency, and cost. Do not switch models casually after this point because Lab 24 evaluation needs a stable baseline.
 
 ### Slide 64: Safety by layered controls
 - Combine AI disclosure, instructions, moderation, error handling, and testing into one safety model.
@@ -426,7 +426,7 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 <!-- Progress: 62/95 slides complete -->
 
 ### Slide 65: Lab Time: Lab 18
-- Harden the Hiring Agent with realistic safe-use guardrails.
+- Harden the Loan Processing Agent with realistic safe-use guardrails.
 - Ask learners to note which protection layer responds to each risky prompt.
 - Keep one clean in-scope prompt as a control so safe behavior remains useful behavior.
 **Speaker note:** Red-team style testing works best when the room compares outcomes across the same prompt set.
@@ -438,35 +438,35 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 **Speaker note:** Emphasize that precise controls beat blanket loosening or blanket blocking. Make the room identify which layer fired in each example: agent moderation, prompt sensitivity, instructions, or error handling. Safe behavior still has to be useful, so compare one blocked prompt with one clean in-scope prompt. This is where Makers, IT pros, and developers see the same control stack from different angles.
 
 ### Slide 67: Module 9: Multimodal and data
-- Add richer inputs only when they improve the hiring workflow and decision quality.
+- Add richer inputs only when they improve the lending workflow and decision quality.
 - Connect the conversation to governed business data without losing traceability.
 - Keep every output reviewable, role-appropriate, and easy to justify.
 **Speaker note:** This module keeps capability growth tied to business value and control.
 
 ### Slide 68: Multimodal prompt framing
-- Decide what a document or image should contribute to the hiring workflow before prompting on it.
-- Constrain extraction and summarization to job-related outcomes the room can validate.
+- Decide what a document or image should contribute to the lending workflow before prompting on it.
+- Constrain extraction and summarization to lending-related outcomes the room can validate.
 - Use clarifying follow-up when the input is incomplete or ambiguous.
 **Speaker note:** Well-framed multimodal prompts stay useful because they are scoped to a real decision.
 
 ### Slide 69: Lab Time: Lab 19
 - Test one multimodal path with a controlled document or image input.
 - Ask learners to verify both usefulness and the need for human review.
-- Keep the exercise grounded in the Hiring Agent scenario rather than novelty.
+- Keep the exercise grounded in the Loan Processing Agent scenario rather than novelty.
 **Speaker note:** Use the lab to show where multimodal input helps and where human judgment still matters.
 
 ### Slide 70: Lab 19: Multimodal prompts
 - Run a multimodal prompt workflow in the UI and inspect the returned summary or extraction.
-- Confirm the output remains recruiter-friendly, job-related, and easy to review.
+- Confirm the output remains loan-officer-friendly, lending-related, and easy to review.
 - Note one improvement that would make the workflow safer or more maintainable.
 **Speaker note:** The value here comes from controlled usefulness, not from using every possible input type.
 
 <!-- NEW -->
 ### Slide 71: Dataverse readiness checkpoint
-- Before grounding the agent in Dataverse, verify that the Hiring Hub tables are visible and populated: Job Role, Evaluation Criteria, Candidate, Resume, and Job Application.
+- Before grounding the agent in Dataverse, verify that the Woodgrove Lending Hub tables are visible and populated: Loan Type, Assessment Criteria, Applicant, Financial Document, and Loan Application.
 - Walk the room through one table's columns and a few sample rows so participants know what correct data looks like and can distinguish data-readiness problems from model or prompt problems.
-- Provide a troubleshooting decision tree: no tables visible means the Operative solution import did not complete; empty tables means the base data load failed; tables present but no results means a permissions or filter issue.
-**Speaker note:** This single checkpoint prevents the most common Lab 20 support escalation. Open the Power Apps maker portal, navigate to the Dataverse tables view, and show the five Hiring Hub tables with sample data on screen. Ask the room to confirm they see the same tables before continuing. If any participant has missing or empty tables, resolve the data-readiness issue now rather than debugging it during Lab 20 when it will be mistaken for a grounding or model problem. Stress that schema quality and access control matter as much as prompt wording.
+- Provide a troubleshooting decision tree: no tables visible means the Enterprise solution import did not complete; empty tables means the base data load failed; tables present but no results means a permissions or filter issue.
+**Speaker note:** This single checkpoint prevents the most common Lab 20 support escalation. Open the Power Apps maker portal, navigate to the Dataverse tables view, and show the five Woodgrove Lending Hub tables with sample data on screen. Ask the room to confirm they see the same tables before continuing. If any participant has missing or empty tables, resolve the data-readiness issue now rather than debugging it during Lab 20 when it will be mistaken for a grounding or model problem. Stress that schema quality and access control matter as much as prompt wording.
 
 ### Slide 72: Dataverse grounding patterns
 - Use Dataverse when the scenario needs governed operational data, structured records, and role-based access.
@@ -475,20 +475,20 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 **Speaker note:** Tie Dataverse readiness to both business value and operational accountability. Contrast Dataverse with Day 1 grounding choices: public sites give breadth, SharePoint gives enterprise content and lists, files give narrow references, and Dataverse gives structured operational records with stronger filtering and permissions. Stress that schema quality and access control now matter as much as prompt wording.
 
 ### Slide 73: Lab Time: Lab 20
-- Connect the Hiring Agent to Dataverse safely and verify only the needed data is in scope.
+- Connect the Loan Processing Agent to Dataverse safely and verify only the needed data is in scope.
 - Ask learners to validate permissions early so the room does not mistake access issues for design issues.
 - Define success as visible, relevant, governed data access in the UI.
 **Speaker note:** Treat this as a readiness checkpoint because data access variability is common across tenants.
 
 ### Slide 74: Lab 20: Dataverse grounding
 - Open or configure the Dataverse grounding path and confirm the target data is visible.
-- Test a hiring question that benefits from governed business data instead of general knowledge only.
+- Test a lending question that benefits from governed business data instead of general knowledge only.
 - Capture any mismatch between scenario needs, data quality, and available permissions.
 **Speaker note:** Keep the lab focused on governed usefulness rather than deep schema exploration. Treat missing tables, empty results, or permission errors as data-readiness problems first, not model problems. This helps facilitators troubleshoot faster and teaches participants to separate AI behavior from data access.
 
 ### Slide 75: Document outputs with guardrails
 - Generated documents need clear inputs, approved templates, and obvious review points.
-- Focus on repeatable hiring artifacts such as interview packs, summaries, or recruiter briefs.
+- Focus on repeatable lending artifacts such as loan review packs, summaries, or loan officer briefs.
 - Make output quality measurable before anyone treats the result as production-ready.
 **Speaker note:** This framing helps document generation feel operational rather than magical.
 
@@ -499,8 +499,8 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 **Speaker note:** A good first output teaches more than a perfect tenth revision.
 
 ### Slide 77: Lab 21: Document generation
-- Create or review the document-generation step tied to the Hiring Agent scenario.
-- Validate the produced artifact against the expected structure, tone, and job-related scope.
+- Create or review the document-generation step tied to the Loan Processing Agent scenario.
+- Validate the produced artifact against the expected structure, tone, and lending-related scope.
 - Record one guardrail or template improvement before considering wider use.
 **Speaker note:** Keep the result tied to a business artifact someone could actually review or use.
 
@@ -530,7 +530,7 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 **Speaker note:** The consent flow is new to most participants. Demo it live if possible before they hit it in Lab 22.
 
 ### Slide 82: Lab Time: Lab 22
-- Add MCP through the supported UI path and keep the scope limited to one useful hiring task.
+- Add MCP through the supported UI path and keep the scope limited to one useful lending task.
 - Ask learners to validate why the server belongs in the scenario before they enable it.
 - Define success as a governed tool connection that is visible and explainable.
 **Speaker note:** Use this lab to connect extensibility to security and supportability, not just capability.
@@ -538,7 +538,7 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 ### Slide 83: Lab 22: MCP integration
 - Open the MCP onboarding wizard and add or review a supported server in the agent.
 - Confirm the tool appears with the right connection state and purpose in the UI.
-- Test one safe, auditable MCP-assisted task that fits the Hiring Agent scenario.
+- Test one safe, auditable MCP-assisted task that fits the Loan Processing Agent scenario.
 **Speaker note:** Keep the example small so the room learns the pattern without overextending scope.
 
 ### Slide 84: Module 11: Channels and feedback
@@ -599,7 +599,7 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 **Speaker note:** This lab matters most when participants leave with a reusable QA habit, not just one run.
 
 ### Slide 93: Lab 24: Evaluation and QA
-- Create or run an evaluation test set in the UI using realistic hiring prompts.
+- Create or run an evaluation test set in the UI using realistic lending prompts.
 - Inspect pass rate, grader reasoning, and activity-map evidence for at least one failing case.
 - Use the findings to refine the agent before calling it release-ready.
 **Speaker note:** Connect the workflow back to the transcript-analysis architecture so quality improvement feels operational and repeatable. Show what makes a failing case useful: clear expected behavior, grader reasoning, and an activity map that points to the real fix. Leave the room with the idea that evaluation is a reusable release gate, not a one-time workshop artifact.

@@ -20,10 +20,10 @@ These filenames come from `screenshot-capture-checklist.md`. If the screenshots 
 | Slides 38, 40 | Flow and trigger implementation | `../labs/lab-09-agent-flows/assets/lab-09-agent-flow.png`, `../labs/lab-10-event-triggers/assets/lab-10-event-trigger.png` |
 | Slides 43, 78 | Publish and channel examples | `../labs/lab-11-publish-agent/assets/lab-11-publish.png`, `../labs/lab-11-publish-agent/assets/lab-11-teams-open.png` |
 | Slides 45, 81 | Licensing and ROI discussion anchor | `../labs/lab-12-licensing/assets/lab-12-licensing-overview.png` |
-| Slides 50, 54 | Hiring setup and multi-agent topology | `../labs/lab-13-hiring-agent-setup/assets/lab-13-agent-details.png`, `../labs/lab-15-multi-agent/assets/lab-15-agent-topology.png` |
+| Slides 50, 54 | Lending setup and multi-agent topology | `../labs/lab-13-lending-agent-setup/assets/lab-13-agent-details.png`, `../labs/lab-15-multi-agent/assets/lab-15-agent-topology.png` |
 | Slides 57, 59 | Trigger automation and model comparison | `../labs/lab-16-trigger-automation/assets/lab-16-trigger-flow.png`, `../labs/lab-17-model-selection/assets/lab-17-model-comparison.png` |
 | Slides 62, 66 | Safety controls and multimodal results | `../labs/lab-18-content-moderation/assets/lab-18-prompt-sensitivity.png`, `../labs/lab-19-multimodal-prompts/assets/lab-19-json-output.png` |
-| Slides 69, 72 | Dataverse grounding and generated artifact | `../labs/lab-20-dataverse-grounding/assets/lab-20-grounded-prompt.png`, `../labs/lab-21-document-generation/assets/lab-21-offer-template.png` |
+| Slides 69, 72 | Dataverse grounding and generated artifact | `../labs/lab-20-dataverse-grounding/assets/lab-20-grounded-prompt.png`, `../labs/lab-21-document-generation/assets/lab-21-assessment-template.png` |
 | Slides 76, 80 | MCP tools and feedback view | `../labs/lab-22-mcp-integration/assets/lab-22-mcp-tools.png`, `../labs/lab-23-user-feedback/assets/lab-23-feedback-review.png` |
 | Slides 83, 85 | Evaluation evidence and VS Code branch | `../labs/lab-24-agent-evaluation/assets/lab-24-evaluation-results.png`, `../labs/lab-25-vscode-extension/assets/lab-25-vscode-apply.png` |
 
@@ -31,7 +31,7 @@ These filenames come from `screenshot-capture-checklist.md`. If the screenshots 
 
 | Visual | Why it matters | Build from |
 | --- | --- | --- |
-| Two-day journey and role map | The opening deck needs one clean view of Day 1 foundation to Day 2 enterprise progression for makers, IT pros, and developers | `../participant-guide/welcome-and-overview.md`, `../participant-guide/day1-recruit-guide.md`, `../participant-guide/day2-operative-guide.md` |
+| Two-day journey and role map | The opening deck needs one clean view of Day 1 foundation to Day 2 enterprise progression for makers, IT pros, and developers | `../participant-guide/welcome-and-overview.md`, `../participant-guide/day1-foundation-guide.md`, `../participant-guide/day2-enterprise-guide.md` |
 | [Grounding strategy comparison](#grounding-strategy-comparison-module-04--lab-06) | The deck needs one visual that contrasts public websites, SharePoint, files, and Dataverse across freshness, structure, and ownership | `../labs/lab-06-custom-agent/README.md`, `../labs/lab-20-dataverse-grounding/README.md`, `../tests/validation-checklist.md` |
 | [Multi-agent responsibility view](#multi-agent-responsibility-view-module-07--lab-15) | The room needs a clearer mental model for orchestrator, child agent, connected agent, tools, and data | `../labs/lab-15-multi-agent/README.md` |
 | Model trade-off comparison | Lab 17 is stronger with a simple side-by-side view for quality, latency, relative cost, and workshop fit | `../labs/lab-17-model-selection/README.md` |
@@ -66,56 +66,55 @@ These filenames come from `screenshot-capture-checklist.md`. If the screenshots 
 **Layout:** Hub-and-spoke architecture diagram with 3 agents.
 
 ```
-                    ┌─────────────────────────┐
-                    │     Hiring Agent         │
-                    │     (Orchestrator)       │
-                    │  Receives all user       │
-                    │  requests, delegates,    │
-                    │  synthesizes responses   │
-                    └────┬───────────────┬─────┘
-          Delegate       │               │       Delegate
-       resume intake     │               │    interview prep
-             ▼           │               │           ▼
-  ┌──────────────────┐   │               │   ┌──────────────────────┐
-  │ Application      │   │               │   │ Interview Prep       │
-  │ Intake Agent     │   │               │   │ Agent                │
-  │ (Child Agent)    │   │               │   │ (Connected Agent)    │
-  │                  │   │               │   │                      │
-  │ Resume intake,   │   │               │   │ Interview scheduling,│
-  │ data extraction, │   │               │   │ prep material        │
-  │ application      │   │               │   │ generation           │
-  │ creation         │   │               │   │                      │
-  └───────┬──────────┘   │               │   └──────────┬───────────┘
-          │   ▲ Results  │               │   Results +  │
-          │   + context  │               │   context ▲  │
-          ▼              │               │              ▼
-  ┌──────────────────┐                       ┌──────────────────────┐
-  │  Dataverse       │                       │  Outlook Calendar    │
-  │  ─ Job           │                       │  (via MCP)           │
-  │    Requisitions  │                       └──────────────────────┘
-  │  ─ Candidates    │
-  │  ─ Job           │
-  │    Applications  │
-  └──────────────────┘
+                   ┌────────────────────────────────┐
+                   │   Loan Processing Agent         │
+                   │   (Orchestrator)                │
+                   │   Receives all user             │
+                   │   requests, delegates,          │
+                   │   synthesizes responses         │
+                   └─────┬──────────────────┬────────┘
+          Delegate       │                  │       Delegate
+       document intake   │                  │    loan advisory
+             ▼           │                  │          ▼
+  ┌─────────────────────┐│                  │┌──────────────────────┐
+  │ Document Review     ││                  ││ Loan Advisory        │
+  │ Agent               ││                  ││ Agent                │
+  │ (Child Agent)       ││                  ││ (Connected Agent)    │
+  │                     ││                  ││                      │
+  │ Document intake,    ││                  ││ Loan review          │
+  │ data extraction,    ││                  ││ scheduling, advisory │
+  │ loan application    ││                  ││ material generation  │
+  │ creation            ││                  ││                      │
+  └──────────┬──────────┘│                  │└──────────┬───────────┘
+             │  ▲ Results│                  │Results +  │
+             │  + context│                  │context ▲  │
+             ▼           │                  │           ▼
+  ┌─────────────────────┐                    ┌──────────────────────┐
+  │  Dataverse          │                    │  Outlook Calendar    │
+  │  ─ Loan Types       │                    │  (via MCP)           │
+  │  ─ Applicants       │                    └──────────────────────┘
+  │  ─ Loan             │
+  │    Applications     │
+  └─────────────────────┘
 ```
 
 **Delegation arrows (labeled):**
 
-- Hiring Agent → Application Intake Agent: **"Delegate resume intake"**
-- Hiring Agent → Interview Prep Agent: **"Delegate interview prep"**
-- Application Intake Agent → Hiring Agent: **"Results + context"** (return)
-- Interview Prep Agent → Hiring Agent: **"Results + context"** (return)
+- Loan Processing Agent → Document Review Agent: **"Delegate document intake"**
+- Loan Processing Agent → Loan Advisory Agent: **"Delegate loan advisory preparation"**
+- Document Review Agent → Loan Processing Agent: **"Results + context"** (return)
+- Loan Advisory Agent → Loan Processing Agent: **"Results + context"** (return)
 
 **Data source connections:**
 
-- Application Intake Agent ↔ Dataverse tables: Job Requisitions, Candidates, Job Applications.
-- Interview Prep Agent ↔ Outlook Calendar via MCP connector.
+- Document Review Agent ↔ Dataverse tables: Loan Types, Applicants, Loan Applications.
+- Loan Advisory Agent ↔ Outlook Calendar via MCP connector.
 
 **Key visual cues:**
 
 - **Color-code** child vs. connected agent to show the architectural distinction:
-  - **Child Agent** (Application Intake) — solid border, same-color family as orchestrator. Same environment; tightly coupled.
-  - **Connected Agent** (Interview Prep) — dashed border, different color family. Cross-environment capable; loosely coupled.
+  - **Child Agent** (Document Review) — solid border, same-color family as orchestrator. Same environment; tightly coupled.
+  - **Connected Agent** (Loan Advisory) — dashed border, different color family. Cross-environment capable; loosely coupled.
 - Add a callout box near the connected agent showing the Copilot Studio toggle: *"Let other agents connect to and use this one"* — this is the setting participants must enable in Lab 15.
 - Use thicker arrows for delegation (outbound) and thinner arrows for result returns (inbound).
 
