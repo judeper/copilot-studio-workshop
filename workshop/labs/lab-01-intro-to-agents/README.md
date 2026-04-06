@@ -1,10 +1,10 @@
 # Copilot Studio Workshop
-## Day 1 — Recruit Track
+## Day 1 — Foundation Track
 ### Lab 01 — Introduction to Agents
 ⏱ Estimated time: 20 min
 
 #### Overview
-This lab establishes the concepts used in the rest of the workshop: conversational AI, large language models, retrieval-augmented generation, conversational agents, and autonomous agents. You will use the Contoso IT scenario to decide when each pattern is the right fit before you build anything in Copilot Studio.
+This lab establishes the concepts used in the rest of the workshop: conversational AI, large language models, retrieval-augmented generation, conversational agents, and autonomous agents. You will use the Woodgrove Bank scenario to decide when each pattern is the right fit before you build anything in Copilot Studio.
 
 > **Note:** This is a discussion-first lab, but it still has concrete participant tasks so you can validate the concepts before moving into hands-on authoring.
 
@@ -16,17 +16,17 @@ This lab establishes the concepts used in the rest of the workshop: conversation
 3. Join the instructor-led discussion channel in **Microsoft Teams** if your cohort is using one.
 
 #### Step-by-Step Instructions
-#### Step 1 — Review the Contoso IT scenario
+#### Step 1 — Review the Woodgrove Bank scenario
 1. Open this lab and read the **Overview** section aloud or silently.
 2. In your note-taking app, create three headings: `Questions`, `Tasks`, and `Triggers`.
-3. Under `Questions`, type `What devices are available?`.
-4. Under `Tasks`, type `Create a device request and notify my manager.`
-5. Under `Triggers`, type `When a new support ticket is created, send an acknowledgment.`
+3. Under `Questions`, type `What accounts are available for this customer?`.
+4. Under `Tasks`, type `Create a product application and notify the branch manager.`
+5. Under `Triggers`, type `When a new service request is created, send an acknowledgment.`
 
 #### Step 2 — Classify the agent experience
-1. Next to `What devices are available?`, label the scenario `Conversational agent`.
-2. Next to `Create a device request and notify my manager.`, label the scenario `Conversational agent with actions`.
-3. Next to `When a new support ticket is created, send an acknowledgment.`, label the scenario `Autonomous agent`.
+1. Next to `What accounts are available for this customer?`, label the scenario `Conversational agent`.
+2. Next to `Create a product application and notify the branch manager.`, label the scenario `Conversational agent with actions`.
+3. Next to `When a new service request is created, send an acknowledgment.`, label the scenario `Autonomous agent`.
 4. Compare your labels with the facilitator explanation and update your notes if needed.
 
 #### Step 3 — Map the role of the model
@@ -40,9 +40,9 @@ This lab establishes the concepts used in the rest of the workshop: conversation
 #### Step 4 — Apply the concepts to the workshop flow
 1. Open `https://copilotstudio.microsoft.com` in a browser tab.
 2. On the home page, identify the **Create** entry point and the **Agents** area.
-3. Say or write one example of a knowledge source you will use later, such as `Contoso IT SharePoint site`.
+3. Say or write one example of a knowledge source you will use later, such as `Woodgrove Bank SharePoint site`.
 4. Say or write one example of an action you will use later, such as `Create SharePoint item`.
-5. Say or write one example of an autonomous trigger you will use later, such as `When a ticket is created`.
+5. Say or write one example of an autonomous trigger you will use later, such as `When a service request is created`.
 
 #### Validation
 1. Explain, in one sentence, the difference between a conversational agent and an autonomous agent.
@@ -51,12 +51,12 @@ This lab establishes the concepts used in the rest of the workshop: conversation
 4. If you can answer all three prompts without notes, you are ready for Lab 02.
 
 #### Troubleshooting
-> **Tip:** If the terms feel abstract, anchor them to the Contoso IT examples: device lookup is knowledge, device request is an action, and ticket acknowledgment is an autonomous trigger.
+> **Tip:** If the terms feel abstract, anchor them to the Woodgrove Bank examples: account lookup is knowledge, product application is an action, and service request acknowledgment is an autonomous trigger.
 
 > **Tip:** If your group mixes up RAG and actions, remember that RAG helps the agent answer while actions help the agent do.
 
 #### Facilitator Notes
-1. Use the Contoso IT story consistently so participants hear the same examples before they build them.
+1. Use the Woodgrove Bank story consistently so participants hear the same examples before they build them.
 2. Pause after Step 2 and ask one [Maker], one [IT Pro], and one [Developer] participant to explain their classification.
 3. Keep the pace brisk; this lab should create shared language, not become a deep AI theory session.
 

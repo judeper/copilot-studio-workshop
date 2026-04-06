@@ -1,5 +1,5 @@
 # Copilot Studio Workshop
-## Day 1 — Recruit Track
+## Day 1 — Foundation Track
 ### Lab 02 — Copilot Studio Fundamentals
 ⏱ Estimated time: 30 min
 

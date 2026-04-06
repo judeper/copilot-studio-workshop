@@ -1,18 +1,18 @@
 # Copilot Studio Workshop
 
-## Day 2 — Operative Track
+## Day 2 — Enterprise Track
 
 ### Lab 22 — MCP Integration
 
 ⏱ Estimated time: 45 min
 
 #### Overview
-In this lab, you will extend the Hiring Agent solution with Model Context Protocol (MCP) capabilities. You will browse the pre-built Work IQ MCP server catalog in Copilot Studio, add user profile and calendar servers to your agent, and then use those tools to help schedule an interview-prep meeting.
+In this lab, you will extend the Loan Processing Agent solution with Model Context Protocol (MCP) capabilities. You will browse the pre-built Work IQ MCP server catalog in Copilot Studio, add user profile and calendar servers to your agent, and then use those tools to help schedule an loan review meeting.
 
 > **Note:** MCP integration with pre-built servers uses **Work IQ MCP**, the intelligence layer that grounds agents in real-time Microsoft 365 context. Work IQ MCP requires a **Microsoft 365 Copilot license**. If the MCP servers do not appear in your environment, ask your facilitator whether the required license and access are enabled. If MCP servers are unavailable, the facilitator will demo this lab.
 
 #### Prerequisites
-1. Complete **Lab 15** so you have **Interview Prep Agent** or **Hiring Agent** ready for extension.
+1. Complete **Lab 15** so you have **Loan Review Agent** or **Loan Processing Agent** ready for extension.
 2. **Microsoft 365 Copilot license** is required for Work IQ MCP servers. Confirm your workshop account has this license before starting.
 3. Have a manager configured for your workshop account in the Microsoft 365 Admin Center.
 4. Have at least one meeting on your calendar in the upcoming 24 hours.
@@ -22,7 +22,7 @@ In this lab, you will extend the Hiring Agent solution with Model Context Protoc
 
 #### Step-by-Step Instructions
 #### Part 1 — Browse the MCP server catalog
-1. Open **Interview Prep Agent** (if you completed Lab 15) or **Hiring Agent** (if you skipped Lab 15) in Copilot Studio.
+1. Open **Loan Review Agent** (if you completed Lab 15) or **Loan Processing Agent** (if you skipped Lab 15) in Copilot Studio.
 2. Select **Tools** in the top navigation and then select **+ Add a tool**.
 3. In the **Add tool** dialog, locate the filter row: **All | Connector | Prompt | Flow | REST API | Model Context Protocol**.
 4. Select the **Model Context Protocol** filter tab.
@@ -49,11 +49,11 @@ In this lab, you will extend the Hiring Agent solution with Model Context Protoc
 7. If the consent card appears again for this new server, select **Allow**.
 8. Confirm the agent returns your current meeting information.
 
-![Interview Prep Agent with MCP tools configured](./assets/lab-22-mcp-tools.png)
+![Loan Review Agent with MCP tools configured](./assets/lab-22-mcp-tools.png)
 
-#### Part 4 — Schedule an interview-prep meeting
+#### Part 4 — Schedule an loan review meeting
 1. Start a **New test session**.
-2. Enter a prompt such as `Can you find 3 meeting times for a 30 minute meeting with [coworker name] for an interview prep-meeting?` (replace `[coworker name]` with the name of your test coworker account).
+2. Enter a prompt such as `Can you find 3 meeting times for a 30 minute meeting with [coworker name] for an loan review meeting?` (replace `[coworker name]` with the name of your test coworker account).
 3. Review the returned time slots. The agent uses the *findMeetingTimes* MCP tool to check both calendars for availability.
 4. Reply with a selection such as `Please schedule the one at 10:30 AM.`
 5. Confirm the agent calls the *createEvent* MCP tool and schedules the meeting.
@@ -72,7 +72,7 @@ In this lab, you will extend the Hiring Agent solution with Model Context Protoc
 1. The **Model Context Protocol** filter tab in the **Add tool** dialog shows pre-built Work IQ MCP servers.
 2. The **Work IQ** user profile MCP server is added and can return manager or profile information.
 3. The **Work IQ Calendar** MCP server is added and can return meeting information.
-4. The agent can suggest available meeting times and create an interview-prep meeting.
+4. The agent can suggest available meeting times and create an loan review meeting.
 5. You documented one governance rule about what the MCP-enabled agent should and should not do.
 
 #### Troubleshooting

@@ -1,5 +1,5 @@
 # Copilot Studio Workshop
-## Day 1 — Recruit Track
+## Day 1 — Foundation Track
 ### Lab 12 — Licensing
 ⏱ Estimated time: 20 min
 
@@ -24,8 +24,8 @@ This lab is presentation-first and closes the day with the commercial model behi
 
 #### Step 2 — Map the workshop scenarios to licensing behavior
 1. Under a new heading named `Scenario mapping`, list `Basic internal Q&A in Microsoft 365 Copilot` and mark it `Often covered by user license for basic interaction`.
-2. List `Device request with SharePoint writeback and manager email` and mark it `Consumes Copilot Studio credits`.
-3. List `Autonomous ticket acknowledgment trigger` and mark it `Consumes Copilot Studio credits`.
+2. List `Product application with SharePoint writeback and branch manager email` and mark it `Consumes Copilot Studio credits`.
+3. List `Autonomous service request acknowledgment trigger` and mark it `Consumes Copilot Studio credits`.
 4. List `Maker building and editing agents` and mark it `Requires Copilot Studio maker access`.
 
 #### Step 3 — Review the planning checklist
@@ -49,9 +49,9 @@ This lab is presentation-first and closes the day with the commercial model behi
 
 > **Note:** Trial environments are ideal for workshops and proof of concept work, but they are not a durable production strategy. Plan the move to paid capacity before the trial clock becomes a delivery risk.
 
-#### Step 6 — Summarize your recommendation for Contoso
-1. In your notes, write a two-sentence recommendation for the Contoso IT scenario.
-2. Include one sentence on why the device request and event trigger workflows need Copilot Studio capacity planning.
+#### Step 6 — Summarize your recommendation for Woodgrove Bank
+1. In your notes, write a two-sentence recommendation for the Woodgrove Bank scenario.
+2. Include one sentence on why the product application and event trigger workflows need Copilot Studio capacity planning.
 3. Include one sentence on why monitoring after publish, including ROI analytics, is part of the implementation and not an afterthought.
 
 #### Validation
@@ -62,7 +62,7 @@ This lab is presentation-first and closes the day with the commercial model behi
 5. Explain why Savings analytics is valuable for leadership conversations about adoption and investment.
 
 #### Troubleshooting
-> **Tip:** If participants think `chat equals free`, bring them back to the Day 1 examples where the agent created SharePoint items, ran flows, and sent email.
+> **Tip:** If participants think `chat equals free`, bring them back to the Day 1 examples where the agent processed applications, ran flows, and sent email.
 
 > **Tip:** If the group confuses maker access with end-user access, separate the conversation into two lists: `who builds` and `who uses`.
 

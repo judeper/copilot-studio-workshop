@@ -1,10 +1,10 @@
 # Copilot Studio Workshop
-## Day 1 — Recruit Track
+## Day 1 — Foundation Track
 ### Lab 11 — Publish Agent
 ⏱ Estimated time: 30 min
 
 #### Overview
-In this lab, you will publish the Contoso Helpdesk Agent, add the Teams and Microsoft 365 Copilot channel, and validate that the latest version is available where users actually work. You will also review the broader channel landscape, including WhatsApp, so the workshop can end with a production-minded release discussion.
+In this lab, you will publish the Woodgrove Customer Service Agent, add the Teams and Microsoft 365 Copilot channel, and validate that the latest version is available where users actually work. You will also review the broader channel landscape, including WhatsApp, so the workshop can end with a production-minded release discussion.
 
 ![Publish dialog and Teams channel configuration for the agent](./assets/lab-11-publish.png)
 
@@ -15,7 +15,7 @@ In this lab, you will publish the Contoso Helpdesk Agent, add the Teams and Micr
 
 #### Step-by-Step Instructions
 #### Step 1 — Publish the latest agent version
-1. Open **Contoso Helpdesk Agent** in Copilot Studio.
+1. Open **Woodgrove Customer Service Agent** in Copilot Studio.
 2. Select **Publish** in the upper-right corner.
 3. Review the confirmation dialog and select **Publish** again.
 4. Wait for the completion notification at the top of the page.

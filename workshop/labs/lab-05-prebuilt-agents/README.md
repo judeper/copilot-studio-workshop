@@ -1,5 +1,5 @@
 # Copilot Studio Workshop
-## Day 1 — Recruit Track
+## Day 1 — Foundation Track
 ### Lab 05 — Prebuilt Agents
 ⏱ Estimated time: 30 min
 
@@ -11,7 +11,7 @@ In this lab, you will deploy a Microsoft-provided agent template and adapt it to
 #### Prerequisites
 1. Complete Lab 00 and Lab 02.
 2. Confirm you are signed in to Copilot Studio in the correct environment.
-3. If you completed Lab 04, confirm `Contoso Helpdesk Agent` is still the preferred solution.
+3. If you completed Lab 04, confirm `Woodgrove Customer Service Agent` is still the preferred solution.
 
 #### Step-by-Step Instructions
 #### Step 1 — Open the template gallery
@@ -46,7 +46,7 @@ In this lab, you will deploy a Microsoft-provided agent template and adapt it to
 
 > **Tip:** Template agents are useful learning assets even if you never deploy them to production. Use them to study naming patterns, starter prompts, and tool choices.
 
-> **Note:** The Safe Travels agent is an exploration exercise and does not need to be added to the `Contoso Helpdesk Agent` solution. Later labs (07–11) work exclusively with the custom agent you create in Lab 06.
+> **Note:** The Safe Travels agent is an exploration exercise and does not need to be added to the `Woodgrove Customer Service Agent` solution. Later labs (07–11) work exclusively with the custom agent you create in Lab 06.
 
 #### Validation
 1. Confirm the **Safe Travels** agent opens successfully.
