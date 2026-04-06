@@ -20,10 +20,10 @@ In this lab, you will use Copilot Studio evaluation capabilities to measure the 
 #### Step-by-Step Instructions
 1. In **Copilot Studio**, open **Hiring Agent**, then select the **Evaluation** tab.
 2. Select **Create a test set**.
-3. Choose either the in-product option to create test cases manually or the import option if you already have a CSV file. The CSV must have columns in exactly this order: **Question**, **Expected response**, **Testing method**. A sample template is available at `workshop/assets/evaluation-test-cases.csv`. Valid **Testing method** values map to grader types: `General quality`, `Compare meaning`, `Tool use`, or `Keyword match`.
+3. Choose either the in-product option to create test cases manually or the import option if you already have a CSV file. The CSV must have columns in exactly this order: **Question**, **Expected response**, **Testing method**. A sample template is available at `workshop/assets/evaluation-test-cases.csv`. Valid **Testing method** values map to grader types: `General quality`, `Compare meaning`, `Tool use`, `Keyword match`, `Text similarity`, or `Exact match`.
 4. Enter the test set name `Hiring Agent - Day 2 QA Baseline`.
 5. Add at least five test cases that reflect the Hiring Agent scenario, including one question about candidate matching, one about interview preparation, one about feedback capture, one ambiguous recruiter request, and one intentionally difficult case that should expose a weakness.
-6. For each test case, choose one or more graders that fit the scenario, such as **General quality**, **Compare meaning**, **Tool use**, or **Keyword match**.
+6. For each test case, choose one or more graders that fit the scenario, such as **General quality**, **Compare meaning**, **Tool use**, **Keyword match**, **Text similarity**, or **Exact match**. If your organization has custom evaluation policies, you can also configure a **Custom Grader** (Classification method) for compliance or branding checks.
 7. For the cases that use match-based graders, enter an expected response that rewards job-related guidance, correct use of configured tools or knowledge, and safe handling of recruiter requests.
 8. Select **User profile** and choose the connected workshop account so the evaluation can access the same tools and knowledge that a real maker would use.
 9. Select **Evaluate** and wait for the run to finish.
@@ -60,7 +60,7 @@ In this lab, you will use Copilot Studio evaluation capabilities to measure the 
 1. If the **Evaluation** tab is unavailable, refresh the browser and reopen the agent before retrying.
 2. If the run fails because tools or knowledge cannot authenticate, reopen **User profile** and repair the broken connection before rerunning the test set.
 3. If import fails, verify the CSV column order is exactly **Question**, **Expected response**, and **Testing method**, then save the file as `.csv` and import it again.
-4. If all cases pass too easily, tighten the expected responses or add **Tool use** and **Compare meaning** so the graders measure operational quality instead of surface-level politeness.
+4. If all cases pass too easily, tighten the expected responses or add **Tool use**, **Compare meaning**, **Text similarity**, or **Exact match** so the graders measure operational quality instead of surface-level politeness.
 5. If a valid test case is blocked by safety filtering, review the prompt or tool settings that generated the blocked content and adjust the per-prompt moderation sensitivity only where justified.
 6. If the agent keeps failing the same case after you edit instructions, simplify the instruction wording and make the expected behavior more explicit and job-related.
 

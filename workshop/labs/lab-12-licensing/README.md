@@ -15,11 +15,12 @@ This lab is presentation-first and closes the day with the commercial model behi
 
 #### Step-by-Step Instructions
 #### Step 1 — Record the core licensing terms
-1. In your notes, create four headings: `Copilot Credits`, `Capacity packs`, `Pay-as-you-go`, and `User licenses`.
+1. In your notes, create five headings: `Copilot Credits`, `Capacity packs`, `Pay-as-you-go`, `Copilot Credits Pre-Purchase Plan`, and `User licenses`.
 2. Under `Copilot Credits`, write `Usage currency for work performed by Copilot Studio agents.`
 3. Under `Capacity packs`, write `Prepaid monthly credit capacity pooled at the tenant level.`
 4. Under `Pay-as-you-go`, write `Azure-billed usage for actual credits consumed.`
-5. Under `User licenses`, write `Makers need Copilot Studio user access, and end users may still trigger Copilot Studio credits when agents perform advanced work.`
+5. Under `Copilot Credits Pre-Purchase Plan`, write `A one-year prepaid option purchased through the Azure portal. Copilot Credit Commit Units (CCCUs) automatically cover Copilot Credit consumption across eligible products.`
+6. Under `User licenses`, write `Makers need Copilot Studio user access, and end users may still trigger Copilot Studio credits when agents perform advanced work.`
 
 #### Step 2 — Map the workshop scenarios to licensing behavior
 1. Under a new heading named `Scenario mapping`, list `Basic internal Q&A in Microsoft 365 Copilot` and mark it `Often covered by user license for basic interaction`.

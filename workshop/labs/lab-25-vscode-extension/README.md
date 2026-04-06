@@ -2,7 +2,7 @@
 
 ## Day 2 — Operative Track
 
-### Lab 25 — Developer Workflow with VS Code
+### Lab 25 — Developer Workflow with VS Code (Optional)
 
 ⏱ Estimated time: 30 min
 

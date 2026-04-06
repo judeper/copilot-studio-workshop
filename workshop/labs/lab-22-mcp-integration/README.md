@@ -7,17 +7,18 @@
 ⏱ Estimated time: 45 min
 
 #### Overview
-In this lab, you will extend the Hiring Agent solution with Model Context Protocol (MCP) capabilities. You will browse the pre-built Microsoft MCP Servers catalog in Copilot Studio, add the User Profile and Outlook Calendar servers to your agent, and then use those tools to help schedule an interview-prep meeting.
+In this lab, you will extend the Hiring Agent solution with Model Context Protocol (MCP) capabilities. You will browse the pre-built Work IQ MCP server catalog in Copilot Studio, add user profile and calendar servers to your agent, and then use those tools to help schedule an interview-prep meeting.
 
-> **Note:** MCP integration with pre-built Microsoft MCP Servers uses **Agent 365** tooling servers. If the MCP servers do not appear in your environment, ask your facilitator whether the required access is enabled. If MCP servers are unavailable, the facilitator will demo this lab.
+> **Note:** MCP integration with pre-built servers uses **Work IQ MCP**, the intelligence layer that grounds agents in real-time Microsoft 365 context. Work IQ MCP requires a **Microsoft 365 Copilot license**. If the MCP servers do not appear in your environment, ask your facilitator whether the required license and access are enabled. If MCP servers are unavailable, the facilitator will demo this lab.
 
 #### Prerequisites
 1. Complete **Lab 15** so you have **Interview Prep Agent** or **Hiring Agent** ready for extension.
-2. Have a manager configured for your workshop account in the Microsoft 365 Admin Center.
-3. Have at least one meeting on your calendar in the upcoming 24 hours.
-4. Have one coworker account available for a test meeting invitation.
-5. Confirm that your account can create or approve the Microsoft 365 connections required by the MCP tools.
-6. Verify MCP server availability: open **Tools** > **+ Add a tool** > select the **Model Context Protocol** filter tab. If no servers appear, notify your facilitator before this lab begins so they can arrange a demo or troubleshoot access.
+2. **Microsoft 365 Copilot license** is required for Work IQ MCP servers. Confirm your workshop account has this license before starting.
+3. Have a manager configured for your workshop account in the Microsoft 365 Admin Center.
+4. Have at least one meeting on your calendar in the upcoming 24 hours.
+5. Have one coworker account available for a test meeting invitation.
+6. Confirm that your account can create or approve the Microsoft 365 connections required by the MCP tools.
+7. Verify MCP server availability: open **Tools** > **+ Add a tool** > select the **Model Context Protocol** filter tab. If no servers appear, notify your facilitator before this lab begins so they can arrange a demo or troubleshoot access.
 
 #### Step-by-Step Instructions
 #### Part 1 — Browse the MCP server catalog
@@ -25,10 +26,10 @@ In this lab, you will extend the Hiring Agent solution with Model Context Protoc
 2. Select **Tools** in the top navigation and then select **+ Add a tool**.
 3. In the **Add tool** dialog, locate the filter row: **All | Connector | Prompt | Flow | REST API | Model Context Protocol**.
 4. Select the **Model Context Protocol** filter tab.
-5. Review the pre-built **Microsoft MCP Servers** that appear, such as Microsoft 365 User Profile, Microsoft Outlook Calendar, Microsoft Teams, SharePoint, and others.
+5. Review the pre-built **Work IQ MCP** servers that appear, such as Work IQ Mail, Work IQ Calendar, Work IQ Teams, and others.
 
 #### Part 2 — Add the User Profile MCP server
-1. From the filtered MCP server list, select **Microsoft 365 User Profile M...** (Microsoft MCP Servers).
+1. From the filtered MCP server list, select the **Work IQ** user profile server (Microsoft MCP Servers).
 2. In the connection dropdown, select **Create new connection**.
 3. Select **Create** and then sign in with your workshop account when the pick-your-account popup appears.
 4. After authentication, select **Add and configure** to add the server to your agent.
@@ -41,7 +42,7 @@ In this lab, you will extend the Hiring Agent solution with Model Context Protoc
 #### Part 3 — Add the Outlook Calendar MCP server
 1. Return to **Tools** and select **+ Add a tool**.
 2. Select the **Model Context Protocol** filter tab.
-3. Select **Microsoft Outlook Calendar MCP** (Microsoft MCP Servers).
+3. Select **Work IQ Calendar** (Microsoft MCP Servers).
 4. Select **Add and configure**. If a connection already exists from Part 2, it may be reused automatically.
 5. Scroll down to review the MCP tools in this server (such as *findMeetingTimes*, *createEvent*, *getMyCalendarEvents*).
 6. In the test pane, enter `Get my meetings for today.`
@@ -65,24 +66,24 @@ In this lab, you will extend the Hiring Agent solution with Model Context Protoc
 4. Note that each MCP server entry covers multiple tools (unlike connectors, which require a separate action per capability). This is a key advantage of MCP.
 5. Save your notes for the Day 2 wrap-up discussion.
 
-> **Note:** MCP servers are governed through the Microsoft 365 admin center. Administrators can allow or block specific servers organization-wide, scope permissions using Microsoft Entra, and audit all tool calls through Microsoft Defender.
+> **Note:** MCP servers are governed through the **Copilot Control System in Microsoft 365 admin center**. Administrators can allow or block specific servers organization-wide under **Agents and Tools**, scope permissions using Microsoft Entra, and audit all tool calls through Microsoft Defender.
 
 #### Validation
-1. The **Model Context Protocol** filter tab in the **Add tool** dialog shows pre-built Microsoft MCP Servers.
-2. The **Microsoft 365 User Profile** MCP server is added and can return manager or profile information.
-3. The **Microsoft Outlook Calendar** MCP server is added and can return meeting information.
+1. The **Model Context Protocol** filter tab in the **Add tool** dialog shows pre-built Work IQ MCP servers.
+2. The **Work IQ** user profile MCP server is added and can return manager or profile information.
+3. The **Work IQ Calendar** MCP server is added and can return meeting information.
 4. The agent can suggest available meeting times and create an interview-prep meeting.
 5. You documented one governance rule about what the MCP-enabled agent should and should not do.
 
 #### Troubleshooting
-1. If no MCP servers appear under the **Model Context Protocol** filter tab, your tenant may not have Agent 365 tooling servers enabled. Ask the facilitator to demo this lab or check whether the required access has been configured.
+1. If no MCP servers appear under the **Model Context Protocol** filter tab, your tenant may not have Work IQ MCP servers enabled or the workshop account may not have a Microsoft 365 Copilot license. Ask the facilitator to demo this lab or check whether the required license and access have been configured.
 2. If connection setup fails, sign out of the connection prompt and sign back in with the same account used for the workshop.
 3. If calendar tests fail, verify that your user has a mailbox and at least one current or future meeting.
 4. If the consent card does not appear, the connection may already be authorized from a previous session. Proceed with testing.
 5. If the agent does not call the MCP server, review the tool descriptions and test with a more direct request such as `Show my meetings for today.`
 
 #### Facilitator Notes
-1. Demonstrate the MCP filter tab and the add-and-configure flow once before the room starts so participants understand the difference between the **Create new** card (for custom MCP servers) and the **Model Context Protocol** filter tab (for pre-built Microsoft MCP Servers).
-2. If your tenant does not have Agent 365 tooling servers available, demo from a pre-configured environment and let participants observe the end state.
+1. Demonstrate the MCP filter tab and the add-and-configure flow once before the room starts so participants understand the difference between the **Create new** card (for custom MCP servers) and the **Model Context Protocol** filter tab (for pre-built Work IQ MCP servers).
+2. If your tenant does not have Work IQ MCP servers available or participants lack a Microsoft 365 Copilot license, demo from a pre-configured environment and let participants observe the end state.
 3. Emphasize that one MCP server entry exposes multiple tools — contrast this with classic connectors that require one action per capability.
 4. Keep the conversation focused on governed tool use, not unlimited automation.
