@@ -90,7 +90,7 @@ if ($resolvedClientSecret.Value) {
     else {
         'workshop-config.json'
     }
-    Write-StepResult -Level PASS -Message "Identity.ClientSecret is available via $secretSource (supports facilitator Dataverse app-only steps such as Import-WorkshopOperativeAssets.ps1 -ImportBaseData and advanced fallback automation after one-time delegated Power Platform app registration)."
+    Write-StepResult -Level PASS -Message "Identity.ClientSecret is available via $secretSource (supports facilitator Dataverse app-only steps such as Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData and advanced fallback automation after one-time delegated Power Platform app registration)."
 } elseif (-not [string]::IsNullOrWhiteSpace($resolvedClientSecret.EnvironmentVariableName)) {
     Write-StepResult -Level WARN -Message "Identity.ClientSecretEnvVar is set to '$($resolvedClientSecret.EnvironmentVariableName)' but the environment variable is not defined. Facilitator Dataverse base-data import, advanced fallback automation, and app-only PowerApps admin auth will not be ready until a client secret is supplied."
 } else {
@@ -102,7 +102,7 @@ if ($null -ne (Get-Module -ListAvailable -Name 'Microsoft.PowerApps.Administrati
 else {
     Write-StepResult -Level WARN -Message 'Microsoft.PowerApps.Administration.PowerShell is not installed. Install workshop prerequisites before relying on facilitator Dataverse admin or fallback automation steps.'
 }
-Write-StepResult -Level INFO -Message "This check can't verify Power Platform management-app registration. Before relying on Import-WorkshopOperativeAssets.ps1 -ImportBaseData, advanced fallback automation, or other app-only Power Platform admin calls, make sure the workshop app has the Power Apps Service delegated permission with admin consent and that a delegated Power Platform admin has run New-PowerAppManagementApp or pac admin application register once."
+Write-StepResult -Level INFO -Message "This check can't verify Power Platform management-app registration. Before relying on Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData, advanced fallback automation, or other app-only Power Platform admin calls, make sure the workshop app has the Power Apps Service delegated permission with admin consent and that a delegated Power Platform admin has run New-PowerAppManagementApp or pac admin application register once."
 
 Write-Section "Checking local tooling"
 if ($null -eq (Get-Module -ListAvailable -Name 'PnP.PowerShell')) {
@@ -110,7 +110,7 @@ if ($null -eq (Get-Module -ListAvailable -Name 'PnP.PowerShell')) {
 }
 Write-StepResult -Level PASS -Message "PnP.PowerShell is installed."
 
-if ($Mode -eq 'FacilitatorDemo' -or [bool]$config.Day2.ImportOperativeSolution) {
+if ($Mode -eq 'FacilitatorDemo' -or [bool]$config.Day2.ImportEnterpriseSolution) {
     Require-Command -Name 'pac'
     Write-StepResult -Level PASS -Message "Power Platform CLI (pac) is available."
 }
@@ -190,21 +190,21 @@ Get-RequiredString -Value ([string]$config.Day1.SampleTicket.Priority) -Name 'Da
 Write-StepResult -Level PASS -Message "Configured $($sampleDevices.Count) sample devices and sample ticket '$sampleTicketTitle'."
 
 Write-Section "Validating Day 2 asset paths"
-$operativeZipPath = Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.OperativeSolutionZipPath)
-$jobRolesCsvPath = Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.JobRolesCsvPath)
-$evaluationCriteriaCsvPath = Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.EvaluationCriteriaCsvPath)
+$enterpriseZipPath = Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.EnterpriseSolutionZipPath)
+$loanTypesCsvPath = Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.LoanTypesCsvPath)
+$assessmentCriteriaCsvPath = Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.AssessmentCriteriaCsvPath)
 
-$operativeZipPath = Assert-FileExists -Path $operativeZipPath -Label 'Operative solution package'
-$jobRolesCsvPath = Assert-FileExists -Path $jobRolesCsvPath -Label 'Job roles CSV'
-$evaluationCriteriaCsvPath = Assert-FileExists -Path $evaluationCriteriaCsvPath -Label 'Evaluation criteria CSV'
+$enterpriseZipPath = Assert-FileExists -Path $enterpriseZipPath -Label 'WoodgroveLending solution package'
+$loanTypesCsvPath = Assert-FileExists -Path $loanTypesCsvPath -Label 'Loan types CSV'
+$assessmentCriteriaCsvPath = Assert-FileExists -Path $assessmentCriteriaCsvPath -Label 'Assessment criteria CSV'
 
-Write-StepResult -Level PASS -Message "Resolved Operative package path: $operativeZipPath"
-Write-StepResult -Level PASS -Message "Resolved job roles CSV path: $jobRolesCsvPath"
-Write-StepResult -Level PASS -Message "Resolved evaluation criteria CSV path: $evaluationCriteriaCsvPath"
+Write-StepResult -Level PASS -Message "Resolved WoodgroveLending package path: $enterpriseZipPath"
+Write-StepResult -Level PASS -Message "Resolved loan types CSV path: $loanTypesCsvPath"
+Write-StepResult -Level PASS -Message "Resolved assessment criteria CSV path: $assessmentCriteriaCsvPath"
 
 Write-Section "Prerequisite summary"
 Write-StepResult -Level INFO -Message "StudentReady mode preserves lab-owned build steps and only prepares shared prerequisites."
 if ($Mode -eq 'FacilitatorDemo') {
-    Write-StepResult -Level INFO -Message "FacilitatorDemo mode can be paired with Import-WorkshopOperativeAssets.ps1 when you want a separate demo environment pre-staged."
+    Write-StepResult -Level INFO -Message "FacilitatorDemo mode can be paired with Import-WorkshopEnterpriseAssets.ps1 when you want a separate demo environment pre-staged."
 }
 Write-StepResult -Level INFO -Message "This script validates shared facilitator prerequisites and selected app-only signals. It does not prove the facilitator demo import path, fallback path, or optional student-provisioning path end to end."

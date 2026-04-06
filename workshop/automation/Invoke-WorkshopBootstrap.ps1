@@ -450,7 +450,7 @@ $config = Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json -Depth 10
 
 # Tenant name (used to derive URLs)
 Write-Host "`n--- Tenant Information ---" -ForegroundColor Cyan
-$tenantName = Prompt-Value -Prompt 'Microsoft 365 tenant name (e.g. contoso)' -Required
+$tenantName = Prompt-Value -Prompt 'Microsoft 365 tenant name (e.g. woodgrove)' -Required
 
 # Try auto-detect TenantId from pac auth
 $detectedTenantId = ''
@@ -471,11 +471,11 @@ $config.TenantId = $tenantId
 
 # Derive SharePoint URLs from tenant name
 $adminUrl = "https://$tenantName-admin.sharepoint.com"
-$siteUrl = "https://$tenantName.sharepoint.com/sites/ContosoIT"
+$siteUrl = "https://$tenantName.sharepoint.com/sites/WoodgroveBank"
 
 Write-Host "`n--- SharePoint Configuration (auto-derived from tenant name) ---" -ForegroundColor Cyan
 Write-Host "  Admin URL:  $adminUrl" -ForegroundColor White
-Write-Host "  Site URL:   $siteUrl  (Contoso IT workshop site)" -ForegroundColor White
+Write-Host "  Site URL:   $siteUrl  (Woodgrove Bank workshop site)" -ForegroundColor White
 $config.SharePoint.AdminUrl = $adminUrl
 $config.SharePoint.SiteUrl = $siteUrl
 
@@ -1136,9 +1136,9 @@ $dashboard = @(
         Label = 'Day 2 assets'
         Check = {
             $assetsDir = Join-Path -Path $automationDir -ChildPath '..\assets'
-            (Test-Path (Join-Path $assetsDir 'Operative_1_0_0_0.zip')) -and
-            (Test-Path (Join-Path $assetsDir 'job-roles.csv')) -and
-            (Test-Path (Join-Path $assetsDir 'evaluation-criteria.csv'))
+            (Test-Path (Join-Path $assetsDir 'WoodgroveLending_1_0_0_0.zip')) -and
+            (Test-Path (Join-Path $assetsDir 'loan-types.csv')) -and
+            (Test-Path (Join-Path $assetsDir 'assessment-criteria.csv'))
         }
     }
 )

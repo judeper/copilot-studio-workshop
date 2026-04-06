@@ -14,7 +14,7 @@ param(
     [switch]$CreateEnvironment,
 
     [Parameter()]
-    [switch]$ImportOperativeSolution
+    [switch]$ImportEnterpriseSolution
 )
 
 $ErrorActionPreference = 'Stop'
@@ -58,18 +58,18 @@ if ($ValidateOnly) {
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-WorkshopSharePoint.ps1') -ConfigPath $ConfigPath
 
-$shouldImportOperativeSolution = if ($PSBoundParameters.ContainsKey('ImportOperativeSolution')) {
-    $ImportOperativeSolution.IsPresent
+$shouldImportEnterpriseSolution = if ($PSBoundParameters.ContainsKey('ImportEnterpriseSolution')) {
+    $ImportEnterpriseSolution.IsPresent
 }
 else {
-    $Mode -eq 'FacilitatorDemo' -and [bool]$config.Day2.ImportOperativeSolution
+    $Mode -eq 'FacilitatorDemo' -and [bool]$config.Day2.ImportEnterpriseSolution
 }
 
-if ($shouldImportOperativeSolution) {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'Import-WorkshopOperativeAssets.ps1') -ConfigPath $ConfigPath -ImportSolution
+if ($shouldImportEnterpriseSolution) {
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Import-WorkshopEnterpriseAssets.ps1') -ConfigPath $ConfigPath -ImportSolution
 }
 else {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'Import-WorkshopOperativeAssets.ps1') -ConfigPath $ConfigPath
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Import-WorkshopEnterpriseAssets.ps1') -ConfigPath $ConfigPath
 }
 
 Write-Section "Recommended next steps"

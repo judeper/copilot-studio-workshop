@@ -85,7 +85,7 @@ Before declaring a document done, confirm:
 - All user-requested files exist.
 - No additional files were created.
 - Each file covers its file-specific expectations.
-- Day 2 clearly depends on Day 1 familiarity, Recruit badge completion, or equivalent experience.
+- Day 2 clearly depends on Day 1 familiarity, Foundation lab completion, or equivalent experience.
 - Participant-facing docs remain flat in list structure.
 - Facilitator-facing docs include operational guidance, not just content summary.
 - Internal operator docs are directly reusable without further interpretation.
@@ -169,10 +169,10 @@ Focus:
 - Audience-aware notes
 
 Day 1 theme:
-- Foundational Recruit-style learning
+- Foundation-track learning
 
 Day 2 theme:
-- Operative-style Hiring Agent scenario
+- Enterprise-track Loan Processing Agent scenario
 
 Required output qualities:
 - Instructor-friendly
@@ -390,7 +390,7 @@ Run this checklist for every participant-facing lab or guide:
 
 - Read the user request carefully.
 - Read local lab folder names and structure.
-- Read source URLs for Recruit, Operative, and relevant Special Ops material.
+- Read source URLs for Foundation, Enterprise, and relevant Special Ops material.
 
 ### Outline
 

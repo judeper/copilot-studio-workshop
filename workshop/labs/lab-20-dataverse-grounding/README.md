@@ -81,7 +81,7 @@ Applicant details: /ApplicantFile
 
 #### Part 4 — Attach the grounded prompt to the lending workflow
 1. [Maker] Save the prompt.
-2. [Maker] Add the prompt to **Application Intake Agent** or **Loan Processing Agent** as a tool if you want the agent to suggest loan products directly.
+2. [Maker] Add the prompt to **Document Review Agent** or **Loan Processing Agent** as a tool if you want the agent to suggest loan products directly.
 3. [Developer] If you need deterministic processing, plan to call this prompt from an **Agent flow** that first stores the applicant details and then returns the matched loan products.
 
 #### Validation

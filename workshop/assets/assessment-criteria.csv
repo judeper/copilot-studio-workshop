@@ -1,0 +1,19 @@
+Criteria Name,Description,Loan Type,Weighting
+Credit Score,FICO score evaluation for creditworthiness assessment.,Mortgage,30.00
+Debt-to-Income Ratio,Monthly debt payments divided by gross monthly income.,Mortgage,25.00
+Employment History,Stability and duration of current and previous employment.,Mortgage,15.00
+Property Appraisal,Independent valuation of the property being financed.,Mortgage,20.00
+Down Payment,Percentage of purchase price paid upfront by the borrower.,Mortgage,10.00
+Credit Score,FICO score evaluation for vehicle financing eligibility.,Auto Loan,35.00
+Debt-to-Income Ratio,Monthly debt obligations relative to income for auto financing.,Auto Loan,25.00
+Employment History,Current employment status and income verification.,Auto Loan,20.00
+Vehicle Value,Loan-to-value ratio based on vehicle market price.,Auto Loan,20.00
+Credit Score,FICO score evaluation for unsecured lending risk.,Personal Loan,40.00
+Debt-to-Income Ratio,Capacity to take on additional unsecured debt.,Personal Loan,30.00
+Employment History,Income stability for unsecured loan repayment.,Personal Loan,20.00
+Existing Relationship,Length and depth of banking relationship with Woodgrove Bank.,Personal Loan,10.00
+Credit Score,Business and personal credit evaluation.,Small Business Loan,20.00
+Business Plan Quality,Completeness and viability of the submitted business plan.,Small Business Loan,25.00
+Revenue History,Documented business revenue over the past 24 months.,Small Business Loan,25.00
+Collateral,Available business or personal assets to secure the loan.,Small Business Loan,15.00
+Industry Risk,Risk assessment of the business industry and market conditions.,Small Business Loan,15.00

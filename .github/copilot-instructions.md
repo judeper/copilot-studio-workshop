@@ -1,4 +1,4 @@
-# Copilot Instructions for Copilot Studio Workshop
+# Copilot Instructions for Copilot Studio for Financial Services
 
 ## Working context
 
@@ -25,11 +25,11 @@
 - Bootstrap a facilitator-owned Power Platform environment when the config includes `EnvironmentBootstrap`:
   - `powershell -File .\workshop\automation\Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment`
 - Validate only the Lab 13 import inputs:
-  - `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1`
-- Import the Operative solution into the active demo environment:
-  - `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution`
-- Import the Lab 13 Hiring Hub base data into the active demo or fallback source environment:
-  - `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportBaseData`
+  - `powershell -File .\workshop\automation\Import-WorkshopEnterpriseAssets.ps1`
+- Import the WoodgroveLending solution into the active demo environment:
+  - `powershell -File .\workshop\automation\Import-WorkshopEnterpriseAssets.ps1 -ImportSolution`
+- Import the Lab 13 Woodgrove Lending Hub base data into the active demo or fallback source environment:
+  - `powershell -File .\workshop\automation\Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData`
 - Rebuild a facilitator-only completed fallback environment from a gold source (advanced, optional path):
   - `powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -ListCandidates`
   - `powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -SourceEnvironmentUrl https://<completed-source>.crm.dynamics.com -UpdateConfig`
@@ -52,7 +52,7 @@
   - `powershell -File .\workshop\automation\Remove-WorkshopFacilitatorEnvironment.ps1 -EnvironmentUrl https://<demo-or-fallback>.crm.dynamics.com`
 - No package-based build or lint command exists under `workshop`.
 - No automated test runner exists. The closest single-test equivalents are:
-  - a targeted dry run with `powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1`
+  - a targeted dry run with `powershell -File .\workshop\automation\Import-WorkshopEnterpriseAssets.ps1`
   - one check from `workshop\tests\environment-smoke-tests.md`
   - the `Validation` section in the specific lab README you changed
 
@@ -69,15 +69,15 @@
 - `FacilitatorFallback` contains the advanced facilitator-only full-copy settings: `SourceEnvironmentUrl`, `CopyType`, `MaxAsyncWaitTimeMinutes`, `SkipAuditData`.
 - `SharePoint` contains: `AdminUrl`, `SiteUrl`, `SiteTitle`, `SiteAlias`, `SitePrefix`, `SiteDescription`, `PnPClientId`, `PnPLoginMode`, `PnPCertificateThumbprint`.
 - `Teams` contains: `WorkshopTeamName`, `StudentTeamPrefix`.
-- `Identity` contains: `AgentCreatorsGroupName`, `ParticipantEmails` (array of student email addresses for batch provisioning), `ClientSecret`, and `ClientSecretEnvVar`.
+- `Identity` contains: `WoodgroveBankAgentsGroupName`, `ParticipantEmails` (array of student email addresses for batch provisioning), `ClientSecret`, and `ClientSecretEnvVar`.
 - `Workshop` contains: `Wave`, `Concurrency`.
 - When adding new config fields, add them to `workshop-config.example.json` with placeholder values and document them in the facilitator guide.
 
 ### Batch student provisioning
-- `Invoke-StudentEnvironmentProvisioning.ps1` is the 12-phase batch orchestrator that provisions per-student Power Platform Sandbox environments with Dataverse, SharePoint TeamSites (with full schema and sample data via `Initialize-WorkshopSiteContent`), Teams teams, Copilot Studio credits, Environment Maker roles, and AgentCreators security group membership. It uses `Get-SafeGroupAlias` (no hyphens, for M365 Group mailNickname) and `Get-SafeSiteAlias` (hyphens OK, for SharePoint URL) to generate the split `-Alias`/`-SiteAlias` pattern for `New-PnPSite -Type TeamSite`. Environment creation uses `pac admin create --templates "D365_CDSSampleApp"` to trigger Dataverse provisioning; this template is enabled for `unitedstates` but may be disabled in other regions.
-- Per-student SharePoint sites get the **same full schema and sample data** as the shared facilitator site: Devices list (10 custom columns + 4 sample items with Status choices Available/Requested/Retired), Tickets list (3 custom columns + 1 sample item), Device Requests list (7 custom columns), and Incoming Resumes document library. This ensures Labs 06-10 work identically on student-specific sites.
+- `Invoke-StudentEnvironmentProvisioning.ps1` is the 12-phase batch orchestrator that provisions per-student Power Platform Sandbox environments with Dataverse, SharePoint TeamSites (with full schema and sample data via `Initialize-WorkshopSiteContent`), Teams teams, Copilot Studio credits, Environment Maker roles, and WoodgroveBankAgents security group membership. It uses `Get-SafeGroupAlias` (no hyphens, for M365 Group mailNickname) and `Get-SafeSiteAlias` (hyphens OK, for SharePoint URL) to generate the split `-Alias`/`-SiteAlias` pattern for `New-PnPSite -Type TeamSite`. Environment creation uses `pac admin create --templates "D365_CDSSampleApp"` to trigger Dataverse provisioning; this template is enabled for `unitedstates` but may be disabled in other regions.
+- Per-student SharePoint sites get the **same full schema and sample data** as the shared facilitator site: Customer Accounts list (10 custom columns + 4 sample items with Status choices Available/Requested/Retired), Service Requests list (3 custom columns + 1 sample item), Product Applications list (7 custom columns), and Loan Documents document library. This ensures Labs 06-10 work identically on student-specific sites.
 - `Remove-StudentEnvironments.ps1` tears down all student resources. With `-HardDelete`, it permanently purges M365 Groups from the Entra recycle bin (`Remove-PnPDeletedMicrosoft365Group`), SharePoint sites from the site recycle bin (`Remove-PnPTenantDeletedSite -Force`), and deletes Power Platform environments.
-- `Ensure-SecurityGroup` in Common.ps1 creates the AgentCreators Entra security group (if missing) and adds participant emails as members. Requires `Connect-MgGraph` with `Group.ReadWrite.All` permission.
+- `Ensure-SecurityGroup` in Common.ps1 creates the WoodgroveBankAgents Entra security group (if missing) and adds participant emails as members. Requires `Connect-MgGraph` with `Group.ReadWrite.All` permission.
 - The bootstrap wizard now prepares student-provisioning auth by reusing/importing/creating a certificate, registering its public key on the workshop Entra app, and optionally storing a client secret in the configured user environment variable.
 - Student provisioning should try SharePoint app-only site creation and site-content initialization first, but when the tenant rejects those app-only calls it must fall back to delegated PnP login (`OSLogin`, `Interactive`, or `DeviceLogin`), grant the delegated facilitator account site-collection-admin access alongside the student, and then retry against the existing site instead of pretending the tenant cmdlets are still unattended.
 - `Get-SafeDomainName` must preserve a unique student alias inside the 24-character Power Platform domain limit. Do not truncate away the student alias; shorten the shared prefix first when necessary.
@@ -94,29 +94,29 @@
 - `workshop\assets\slide-deck-outline.md` is the canonical instructor presentation narrative and the text-first companion to the PPTX decks. It contains 95 numbered entries (85 baseline + 10 concept slides marked `<!-- NEW -->` for Modules 04, 07, 09, 10, 11, and 12) with a per-module slide count table showing both PPTX and outline counts. Use it for speaker notes, teaching intent, and structural review, and keep it aligned with the PPTX decks when slide sequencing, module boundaries, or teaching intent changes.
 - `workshop\assets\slide-deck-delivery-notes.md` and `workshop\assets\slide-deck-visual-plan.md` are companion markdown sources for speaker support, transition planning, and visual planning. The delivery notes include per-module pre-lab facilitator guidance for modules with thin concept coverage (04, 05, 07, 09, 10, 11, 12). The visual plan includes detailed specifications for three load-bearing custom visuals: grounding strategy comparison (Module 04), multi-agent responsibility view (Module 07), and evaluation improvement loop (Module 12).
 - `workshop\labs` is the source of truth for hands-on content:
-  - Labs `00`-`12` are the Day 1 Recruit track. They establish the environment, build the `Contoso Helpdesk Agent`, and layer SharePoint grounding, topics, Adaptive Cards, flows, triggers, publishing, and licensing.
-  - Labs `13`-`24` are the Day 2 Operative track. They import the `Operative` solution, use Dataverse and the `Hiring Hub` app, then extend the `Hiring Agent` with instructions, multi-agent behavior, automation, model selection, moderation, multimodal prompts, document generation, MCP, feedback, and evaluation.
+  - Labs `00`-`12` are the Day 1 Foundation track. They establish the environment, build the `Woodgrove Customer Service Agent`, and layer SharePoint grounding, topics, Adaptive Cards, flows, triggers, publishing, and licensing.
+  - Labs `13`-`24` are the Day 2 Enterprise track. They import the `WoodgroveLending` solution, use Dataverse and the `Woodgrove Lending Hub` app, then extend the `Loan Processing Agent` with instructions, multi-agent behavior, automation, model selection, moderation, multimodal prompts, document generation, MCP, feedback, and evaluation.
   - Lab `25` is an optional VS Code workflow that edits the cloud agent definition locally and syncs it back to Copilot Studio.
-- `workshop\automation` is for facilitator or demo preparation, not for skipping the student journey. `StudentReady` intentionally leaves later student-owned work unfinished, while `FacilitatorDemo` can pre-stage Day 2 assets in a separate demo environment. `Import-WorkshopOperativeAssets.ps1 -ImportBaseData` now seeds the Lab 13 Hiring Hub baseline (job roles, evaluation criteria, sample candidates, resumes, and job applications) into a facilitator-owned demo or fallback source environment. `Generate-WorkshopPDFs.js` produces 10 branded PDFs (4 student workbooks + 6 facilitator references) from the Markdown sources into `workshop\pdf-output\`.
+- `workshop\automation` is for facilitator or demo preparation, not for skipping the student journey. `StudentReady` intentionally leaves later student-owned work unfinished, while `FacilitatorDemo` can pre-stage Day 2 assets in a separate demo environment. `Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData` now seeds the Lab 13 Woodgrove Lending Hub baseline (loan products, compliance criteria, sample customers, loan documents, and loan applications) into a facilitator-owned demo or fallback source environment. `Generate-WorkshopPDFs.js` produces 10 branded PDFs (4 student workbooks + 6 facilitator references) from the Markdown sources into `workshop\pdf-output\`.
 - The advanced facilitator fallback path now produces two git-ignored machine artifacts in `workshop\automation`: `facilitator-fallback-artifacts.json` (source snapshot of repairable artifacts) and `facilitator-fallback-repair-report.json` (post-copy repair report for connection references and environment variables).
 - `Set-WorkshopFacilitatorFallbackSource.ps1` is the safe designation step for the advanced fallback model: it lists candidate environments, validates a completed gold source against the fallback manifest, and can persist `FacilitatorFallback.SourceEnvironmentUrl`.
 - `Export-WorkshopFacilitatorArtifactLayers.ps1` packages a JSON snapshot of connection references and environment variable values from the gold source into `workshop\automation\facilitator-fallback-artifacts.json`; this snapshot drives binding repair in the copied target.
 - `Invoke-WorkshopFacilitatorBindingRepair.ps1` compares the artifact snapshot against the target environment, identifies connection-reference and environment-variable drift, applies safe replacement rules, and writes `workshop\automation\facilitator-fallback-repair-report.json` for facilitator review.
 - `Invoke-WorkshopFacilitatorFallbackBuild.ps1` is an advanced facilitator-only helper that can refresh a separate rescue environment from a completed gold source with `pac admin copy`. Keep that gold source and copied fallback environment separate from the student hands-on path.
-- `Invoke-WorkshopFacilitatorFallbackValidation.ps1` runs Dataverse FetchXML checks (Operative solution, Hiring Hub records, sample candidates, resumes, job applications) and presents a lab-by-lab manual spot-check list; accepts `-EnvironmentUrl` to test any facilitator-owned environment.
+- `Invoke-WorkshopFacilitatorFallbackValidation.ps1` runs Dataverse FetchXML checks (WoodgroveLending solution, Woodgrove Lending Hub records, sample customers, loan documents, loan applications) and presents a lab-by-lab manual spot-check list; accepts `-EnvironmentUrl` to test any facilitator-owned environment.
 - `Remove-WorkshopFacilitatorEnvironment.ps1` safely deletes a facilitator demo or fallback target; it refuses to remove the configured gold source unless `-AllowGoldSourceDeletion` is supplied.
 - `workshop\automation\facilitator-fallback-manifest.json` is the build contract for the advanced fallback path, mapping all 25 labs to a fallback strategy and embedding the FetchXML queries used by `Invoke-WorkshopFacilitatorFallbackValidation.ps1`.
 - Future edits should preserve the three-track rollout model: shared prerequisites, facilitator-only demo base, and student hands-on environments. Do not blur facilitator demo imports or fallback artifacts into the student hands-on path.
 - The facilitator guide now includes a quick runbook for new facilitators. Keep that section sequence-first, concise, and aligned with the more detailed environment checklist.
 - `workshop\automation\Common.ps1` is the shared utility module dot-sourced by all PowerShell scripts. It contains config I/O, validation helpers, console and file logging, and building blocks for batch student provisioning (alias derivation, environment GUID resolution, Power Platform Licensing API wrappers, retry logic, and student-environment map persistence).
 - `workshop\automation\workshop-config.example.json` defines the full config schema including `EnvironmentBootstrap` (environment creation settings and per-student credit allocation), `SharePoint` (site creation and PnP auth), `Teams` (team prefix for student teams), `Identity` (participant email list for batch provisioning), and `Workshop` (wave and concurrency settings).
-- `workshop\assets` contains the Day 2 setup files (`Operative_1_0_0_0.zip`, `job-roles.csv`, `evaluation-criteria.csv`), sample resumes, starter templates, and the `evaluation-test-cases.csv` template for Lab 24. Lab 13 points participants to the local `workshop/assets/` copies first, with facilitator-provided delivery channels as a fallback.
+- `workshop\assets` contains the Day 2 setup files (`WoodgroveLending_1_0_0_0.zip`, `loan-products.csv`, `compliance-criteria.csv`), sample loan documents, starter templates, and the `evaluation-test-cases.csv` template for Lab 24. Lab 13 points participants to the local `workshop/assets/` copies first, with facilitator-provided delivery channels as a fallback.
 - `workshop\tests` holds manual readiness and validation checklists. Use it as the canonical success/failure reference when editing lab steps or troubleshooting guidance.
-- Day 2 assumes Day 1 completion, the Recruit badge, or equivalent Copilot Studio familiarity. Preserve that dependency when restructuring docs.
+- Day 2 assumes Day 1 completion, Foundation completion, or equivalent Copilot Studio familiarity. Preserve that dependency when restructuring docs.
 
 ## Key conventions
 
-- Keep the canonical scenario names unchanged: `Contoso IT`, `Contoso Helpdesk Agent`, `Hiring Agent`, `Operative`, `Hiring Hub`, and `AgentCreators`.
+- Keep the canonical scenario names unchanged: `Woodgrove Bank`, `Woodgrove Customer Service Agent`, `Loan Processing Agent`, `WoodgroveLending`, `Woodgrove Lending Hub`, and `WoodgroveBankAgents`.
 - Preserve the two-day narrative. Day 1 is foundation-building; Day 2 is the governed enterprise extension of that same scenario, not a reset.
 - Keep sample identities fictitious. Use `example.com` for sample email addresses and remove customer-specific names, tenant URLs, Teams routing IDs, and other environment-bound values before checking in exported assets or starter solutions.
 - When slide work is in scope, inspect the committed PPTX decks together with the markdown source set: `workshop\assets\slide-deck-outline.md`, `slide-deck-delivery-notes.md`, and `slide-deck-visual-plan.md`. PPTX is the delivery format; the markdown files are companion authoring and review sources.

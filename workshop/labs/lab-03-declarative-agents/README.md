@@ -4,7 +4,7 @@
 ⏱ Estimated time: 60 min
 
 #### Overview
-In this lab, you will create a declarative agent for Microsoft 365 Copilot and Microsoft Teams. You will define the agent mission, add a reusable prompt tool, test the orchestration, and publish the experience so participants can see how declarative agents extend Microsoft 365 Copilot with focused skills.
+In this lab, you will create a declarative agent for Microsoft 365 Copilot and Microsoft Teams. You will define the agent purpose, add a reusable prompt tool, test the orchestration, and publish the experience so participants can see how declarative agents extend Microsoft 365 Copilot with focused skills.
 
 ![Declarative agent setup screen with name instructions and starter prompts](./assets/lab-03-create-agent.png)
 

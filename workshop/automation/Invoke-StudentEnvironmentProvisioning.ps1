@@ -49,7 +49,7 @@ $batchSize = if ($bootstrapConfig.BatchSize) { [int]$bootstrapConfig.BatchSize }
 $domainPrefix = if ([string]::IsNullOrWhiteSpace([string]$bootstrapConfig.DomainName)) { 'workshop' } else { [string]$bootstrapConfig.DomainName }
 
 $sharePointConfig = $config.SharePoint
-$sitePrefix = if ([string]::IsNullOrWhiteSpace([string]$sharePointConfig.SitePrefix)) { 'ContosoIT' } else { [string]$sharePointConfig.SitePrefix }
+$sitePrefix = if ([string]::IsNullOrWhiteSpace([string]$sharePointConfig.SitePrefix)) { 'WoodgroveBank' } else { [string]$sharePointConfig.SitePrefix }
 $adminUrl = Get-RequiredString -Value ([string]$sharePointConfig.AdminUrl) -Name 'SharePoint.AdminUrl'
 $pnpClientId = Get-RequiredString -Value ([string]$sharePointConfig.PnPClientId) -Name 'SharePoint.PnPClientId'
 $pnpLoginMode = if ([string]::IsNullOrWhiteSpace([string]$sharePointConfig.PnPLoginMode)) { 'OSLogin' } else { [string]$sharePointConfig.PnPLoginMode }
@@ -75,7 +75,7 @@ $resolvedClientSecret = Resolve-ConfiguredClientSecret -Config $config
 $clientSecret = [string]$resolvedClientSecret.Value
 
 $teamsConfig = $config.Teams
-$teamPrefix = if ($null -eq $teamsConfig -or [string]::IsNullOrWhiteSpace([string]$teamsConfig.StudentTeamPrefix)) { 'Contoso Recruiting' } else { [string]$teamsConfig.StudentTeamPrefix }
+$teamPrefix = if ($null -eq $teamsConfig -or [string]::IsNullOrWhiteSpace([string]$teamsConfig.StudentTeamPrefix)) { 'Woodgrove Lending' } else { [string]$teamsConfig.StudentTeamPrefix }
 
 $mapFilePath = Join-Path -Path $PSScriptRoot -ChildPath 'student-environment-map.json'
 $canAttemptCreditAllocation = (-not [string]::IsNullOrWhiteSpace($clientSecret)) -and (-not (Test-PlaceholderValue -Value $clientSecret))
@@ -767,7 +767,7 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
                         # Connect to root tenant URL — New-PnPSite calls SPSiteManager/create on the root site
                         Connect-PnPOnline -Url $rootTenantUrl -ClientId $pnpClientId -Tenant $tenantId -Thumbprint $pnpCertThumbprint -ErrorAction Stop
                         New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
-                            -Title "Contoso IT - $studentAlias" `
+                            -Title "Woodgrove Bank - $studentAlias" `
                             -Url $expectedSiteUrl `
                             -Owner $facilitatorUpn `
                             -Description "Workshop site for $studentAlias" | Out-Null
@@ -803,7 +803,7 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
                                     -Label 'the tenant root SharePoint site'
 
                                 New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
-                                    -Title "Contoso IT - $studentAlias" `
+                                    -Title "Woodgrove Bank - $studentAlias" `
                                     -Url $expectedSiteUrl `
                                     -Owner $facilitatorUpn `
                                     -Description "Workshop site for $studentAlias" | Out-Null
@@ -840,7 +840,7 @@ for ($i = 0; $i -lt $studentsToProvision.Count; $i += $batchSize) {
                                         -Label 'the SharePoint admin center'
 
                                     New-PnPTenantSite `
-                                        -Title "Contoso IT - $studentAlias" `
+                                        -Title "Woodgrove Bank - $studentAlias" `
                                         -Url $expectedSiteUrl `
                                         -Template 'STS#3' `
                                         -Owner $facilitatorUpn `

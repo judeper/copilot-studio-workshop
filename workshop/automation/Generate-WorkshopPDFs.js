@@ -35,23 +35,23 @@ const PDF_DEFS = [
   },
   {
     id: 'S2',
-    filename: '02-Student-Workbook-Day1-Recruit.pdf',
-    title: 'Day 1 — Recruit Track',
+    filename: '02-Student-Workbook-Day1-Foundation.pdf',
+    title: 'Day 1 — Foundation Track',
     subtitle: 'Student Workbook · Labs 00–12',
     audience: 'Student',
     sources: [
-      rel('participant-guide/day1-recruit-guide.md'),
+      rel('participant-guide/day1-foundation-guide.md'),
       ...labReadmes(0, 12),
     ],
   },
   {
     id: 'S3',
-    filename: '03-Student-Workbook-Day2-Operative.pdf',
-    title: 'Day 2 — Operative Track',
+    filename: '03-Student-Workbook-Day2-Enterprise.pdf',
+    title: 'Day 2 — Enterprise Track',
     subtitle: 'Student Workbook · Labs 13–24',
     audience: 'Student',
     sources: [
-      rel('participant-guide/day2-operative-guide.md'),
+      rel('participant-guide/day2-enterprise-guide.md'),
       ...labReadmes(13, 24),
     ],
   },
@@ -195,7 +195,7 @@ function buildHtml(def) {
     min-height: 85vh;
     text-align: center;
   }
-  .cover .badge {
+  .cover .audience-label {
     display: inline-block;
     padding: 4px 14px;
     border-radius: 4px;
@@ -285,7 +285,7 @@ function buildHtml(def) {
 </head>
 <body>
   <div class="cover">
-    <div class="badge">${audienceLabel}</div>
+    <div class="audience-label">${audienceLabel}</div>
     <h1>${def.title}</h1>
     <div class="subtitle">${def.subtitle}</div>
     <div class="meta">Copilot Studio Workshop &middot; Generated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>

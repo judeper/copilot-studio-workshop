@@ -15,49 +15,49 @@ Set-StrictMode -Version Latest
 
 . (Join-Path -Path $PSScriptRoot -ChildPath 'Common.ps1')
 
-$sourceOwner = 'microsoft'
-$sourceRepository = 'agent-academy'
-$sourceAssetPath = 'docs/operative/01-get-started/assets'
+$sourceOwner = 'judeper'
+$sourceRepository = 'copilot-studio-workshop'
+$sourceAssetPath = 'workshop/assets'
 $assetDefinitions = @(
     [pscustomobject]@{
-        Name = 'Operative_1_0_0_0.zip'
+        Name = 'WoodgroveLending_1_0_0_0.zip'
         Type = 'Zip'
         SourcePath = $sourceAssetPath
     },
     [pscustomobject]@{
-        Name = 'job-roles.csv'
+        Name = 'loan-types.csv'
         Type = 'Csv'
         SourcePath = $sourceAssetPath
     },
     [pscustomobject]@{
-        Name = 'evaluation-criteria.csv'
+        Name = 'assessment-criteria.csv'
         Type = 'Csv'
         SourcePath = $sourceAssetPath
     },
     [pscustomobject]@{
-        Name = 'AVERY EXAMPLE (FICTITIOUS).pdf'
+        Name = 'MORGAN CHEN (FICTITIOUS).pdf'
         Type = 'Binary'
-        SourcePath = 'docs/operative/test-data/resumes'
+        SourcePath = $sourceAssetPath
     },
     [pscustomobject]@{
-        Name = 'TAYLOR TESTPERSON (FICTITIOUS).pdf'
+        Name = 'ALEX RIVERA (FICTITIOUS).pdf'
         Type = 'Binary'
-        SourcePath = 'docs/operative/test-data/resumes'
+        SourcePath = $sourceAssetPath
     },
     [pscustomobject]@{
-        Name = 'Interview_Questions_Template.docx'
+        Name = 'Loan_Assessment_Template.docx'
         Type = 'Binary'
-        SourcePath = 'docs/operative/09-document-generation/assets'
+        SourcePath = $sourceAssetPath
     },
     [pscustomobject]@{
-        Name = 'Operative07StarterTemplate.zip'
+        Name = 'Enterprise07StarterTemplate.zip'
         Type = 'Zip'
-        SourcePath = 'docs/operative/07-multimodal-prompts/assets'
+        SourcePath = $sourceAssetPath
     },
     [pscustomobject]@{
-        Name = 'Operative09StarterSolution.zip'
+        Name = 'Enterprise09StarterSolution.zip'
         Type = 'Zip'
-        SourcePath = 'docs/operative/09-document-generation/assets'
+        SourcePath = $sourceAssetPath
     }
 )
 
@@ -206,4 +206,4 @@ foreach ($asset in $assetDefinitions) {
 }
 
 Write-Section "Day 2 asset bootstrap complete"
-Write-StepResult -Level PASS -Message "Day 2 workshop assets are ready in '$resolvedDestinationDirectory'. Core assets (solution ZIP and CSVs) match the default paths used by workshop-config.example.json. Sample resumes, Word template, and starter solutions are also available for Labs 16, 19, and 21."
+Write-StepResult -Level PASS -Message "Day 2 workshop assets are ready in '$resolvedDestinationDirectory'. Core assets (WoodgroveLending solution ZIP and CSVs) match the default paths used by workshop-config.example.json. Sample resumes, assessment template, and Enterprise starter solutions are also available for Labs 16, 19, and 21."

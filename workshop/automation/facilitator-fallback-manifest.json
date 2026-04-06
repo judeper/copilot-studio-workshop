@@ -11,58 +11,58 @@
   },
   "automatedChecks": [
     {
-      "id": "operative-solution",
-      "description": "Operative solution exists in the target facilitator environment.",
+      "id": "enterprise-solution",
+      "description": "WoodgroveLending solution exists in the target facilitator environment.",
       "alias": "recordcount",
       "minimumCount": 1,
-      "fetchXml": "<fetch aggregate='true'><entity name='solution'><attribute name='solutionid' alias='recordcount' aggregate='count' /><filter><condition attribute='uniquename' operator='eq' value='Operative' /></filter></entity></fetch>",
-      "successMessage": "Operative solution is present in the facilitator fallback environment.",
-      "failureMessage": "Operative solution was not found. Rebuild from the gold source or re-import the Operative package before relying on this environment."
+      "fetchXml": "<fetch aggregate='true'><entity name='solution'><attribute name='solutionid' alias='recordcount' aggregate='count' /><filter><condition attribute='uniquename' operator='eq' value='WoodgroveLending' /></filter></entity></fetch>",
+      "successMessage": "WoodgroveLending solution is present in the facilitator fallback environment.",
+      "failureMessage": "WoodgroveLending solution was not found. Rebuild from the gold source or re-import the WoodgroveLending package before relying on this environment."
     },
     {
-      "id": "hiring-hub-job-roles",
-      "description": "Hiring Hub job roles were copied into Dataverse.",
+      "id": "lending-hub-loan-types",
+      "description": "Woodgrove Lending Hub loan types were copied into Dataverse.",
       "alias": "recordcount",
       "minimumCount": 1,
-      "fetchXml": "<fetch aggregate='true'><entity name='ppa_jobrole'><attribute name='ppa_jobroleid' alias='recordcount' aggregate='count' /></entity></fetch>",
-      "successMessage": "Hiring Hub job roles are present.",
-      "failureMessage": "No Hiring Hub job roles were found. Lab 13 fallback data is incomplete."
+      "fetchXml": "<fetch aggregate='true'><entity name='wgb_loantype'><attribute name='wgb_loantypeid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Woodgrove Lending Hub loan types are present.",
+      "failureMessage": "No Woodgrove Lending Hub loan types were found. Lab 13 fallback data is incomplete."
     },
     {
-      "id": "hiring-hub-evaluation-criteria",
-      "description": "Hiring Hub evaluation criteria were copied into Dataverse.",
+      "id": "lending-hub-assessment-criteria",
+      "description": "Woodgrove Lending Hub assessment criteria were copied into Dataverse.",
       "alias": "recordcount",
       "minimumCount": 1,
-      "fetchXml": "<fetch aggregate='true'><entity name='ppa_evaluationcriteria'><attribute name='ppa_evaluationcriteriaid' alias='recordcount' aggregate='count' /></entity></fetch>",
-      "successMessage": "Hiring Hub evaluation criteria are present.",
-      "failureMessage": "No Hiring Hub evaluation criteria were found. Lab 13 fallback data is incomplete."
+      "fetchXml": "<fetch aggregate='true'><entity name='wgb_assessmentcriteria'><attribute name='wgb_assessmentcriteriaid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Woodgrove Lending Hub assessment criteria are present.",
+      "failureMessage": "No Woodgrove Lending Hub assessment criteria were found. Lab 13 fallback data is incomplete."
     },
     {
-      "id": "sample-candidates",
-      "description": "Sample candidates were copied into Dataverse.",
+      "id": "sample-applicants",
+      "description": "Sample applicants were copied into Dataverse.",
       "alias": "recordcount",
       "minimumCount": 1,
-      "fetchXml": "<fetch aggregate='true'><entity name='ppa_candidate'><attribute name='ppa_candidateid' alias='recordcount' aggregate='count' /></entity></fetch>",
-      "successMessage": "Sample candidates are present.",
-      "failureMessage": "No candidate records were found. The facilitator fallback environment is missing Day 2 sample data."
+      "fetchXml": "<fetch aggregate='true'><entity name='wgb_applicant'><attribute name='wgb_applicantid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Sample applicants are present.",
+      "failureMessage": "No applicant records were found. The facilitator fallback environment is missing Day 2 sample data."
     },
     {
-      "id": "sample-resumes",
-      "description": "Sample resumes were copied into Dataverse.",
+      "id": "sample-application-documents",
+      "description": "Sample application documents were copied into Dataverse.",
       "alias": "recordcount",
       "minimumCount": 1,
-      "fetchXml": "<fetch aggregate='true'><entity name='ppa_resume'><attribute name='ppa_resumeid' alias='recordcount' aggregate='count' /></entity></fetch>",
-      "successMessage": "Sample resumes are present.",
-      "failureMessage": "No resume records were found. Labs 16, 19, and 21 fallback state will be incomplete."
+      "fetchXml": "<fetch aggregate='true'><entity name='wgb_applicationdocument'><attribute name='wgb_applicationdocumentid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Sample application documents are present.",
+      "failureMessage": "No application document records were found. Labs 16, 19, and 21 fallback state will be incomplete."
     },
     {
-      "id": "sample-job-applications",
-      "description": "Sample job applications were copied into Dataverse.",
+      "id": "sample-loan-applications",
+      "description": "Sample loan applications were copied into Dataverse.",
       "alias": "recordcount",
       "minimumCount": 1,
-      "fetchXml": "<fetch aggregate='true'><entity name='ppa_jobapplication'><attribute name='ppa_jobapplicationid' alias='recordcount' aggregate='count' /></entity></fetch>",
-      "successMessage": "Sample job applications are present.",
-      "failureMessage": "No job application records were found. Hiring Hub fallback demos are incomplete."
+      "fetchXml": "<fetch aggregate='true'><entity name='wgb_loanapplication'><attribute name='wgb_loanapplicationid' alias='recordcount' aggregate='count' /></entity></fetch>",
+      "successMessage": "Sample loan applications are present.",
+      "failureMessage": "No loan application records were found. Woodgrove Lending Hub fallback demos are incomplete."
     }
   ],
   "labs": [
@@ -148,13 +148,13 @@
       "labNumber": 6,
       "title": "Custom Agent",
       "day": 1,
-      "artifactType": "Contoso Helpdesk Agent",
+      "artifactType": "Woodgrove Customer Service Agent",
       "portability": "gold-copy",
       "buildPath": "Gold source environment full copy",
       "validationMode": "manual",
-      "validationSummary": "The copied environment should preserve a working facilitator-owned Contoso Helpdesk Agent.",
+      "validationSummary": "The copied environment should preserve a working facilitator-owned Woodgrove Customer Service Agent.",
       "manualChecks": [
-        "Open Contoso Helpdesk Agent and confirm it loads successfully in Copilot Studio."
+        "Open Woodgrove Customer Service Agent and confirm it loads successfully in Copilot Studio."
       ]
     },
     {
@@ -237,24 +237,24 @@
     },
     {
       "labNumber": 13,
-      "title": "Hiring Agent Setup",
+      "title": "Loan Processing Agent Setup",
       "day": 2,
-      "artifactType": "Operative solution and Hiring Hub seed data",
+      "artifactType": "Enterprise solution and Woodgrove Lending Hub seed data",
       "portability": "gold-copy",
       "buildPath": "Gold source environment full copy",
       "validationMode": "automated+manual",
-      "validationSummary": "This is the first fully automated fallback proof: Operative plus the base Hiring Hub data must exist in Dataverse.",
+      "validationSummary": "This is the first fully automated fallback proof: WoodgroveLending plus the base Woodgrove Lending Hub data must exist in Dataverse.",
       "automatedChecks": [
-        "operative-solution",
-        "hiring-hub-job-roles",
-        "hiring-hub-evaluation-criteria",
-        "sample-candidates",
-        "sample-resumes",
-        "sample-job-applications"
+        "enterprise-solution",
+        "lending-hub-loan-types",
+        "lending-hub-assessment-criteria",
+        "sample-applicants",
+        "sample-application-documents",
+        "sample-loan-applications"
       ],
       "manualChecks": [
-        "Open Hiring Hub and confirm the copied records are visible in the app.",
-        "Open Hiring Agent and confirm it loads without missing-connection prompts."
+        "Open Woodgrove Lending Hub and confirm the copied records are visible in the app.",
+        "Open Loan Processing Agent and confirm it loads without missing-connection prompts."
       ]
     },
     {
@@ -267,12 +267,12 @@
       "validationMode": "manual",
       "validationSummary": "Instructions are facilitator-owned agent content and should copy cleanly with the environment.",
       "manualChecks": [
-        "Open Hiring Agent instructions and confirm the facilitator-owned guidance is present."
+        "Open Loan Processing Agent instructions and confirm the facilitator-owned guidance is present."
       ]
     },
     {
       "labNumber": 15,
-      "title": "Multi-Agent Hiring Team",
+      "title": "Multi-Agent Lending Team",
       "day": 2,
       "artifactType": "Multi-agent topology",
       "portability": "repairable",
@@ -280,20 +280,20 @@
       "validationMode": "manual",
       "validationSummary": "Agent-to-agent references should be validated after every rebuild because they are environment content with downstream dependencies.",
       "manualChecks": [
-        "Confirm the Hiring Agent still references the expected supporting agents and routing paths."
+        "Confirm the Loan Processing Agent still references the expected supporting agents and routing paths."
       ]
     },
     {
       "labNumber": 16,
       "title": "Trigger Automation",
       "day": 2,
-      "artifactType": "SharePoint-triggered flow and resume handling",
+      "artifactType": "SharePoint-triggered flow and document handling",
       "portability": "repairable",
       "buildPath": "Gold source environment full copy plus SharePoint/flow repair as needed",
       "validationMode": "manual",
       "validationSummary": "This lab depends on SharePoint triggers and should always receive a live facilitator smoke test.",
       "manualChecks": [
-        "Confirm the resume-processing trigger still opens with valid connection references and target library paths."
+        "Confirm the document-processing trigger still opens with valid connection references and target library paths."
       ]
     },
     {
@@ -343,28 +343,28 @@
       "portability": "gold-copy",
       "buildPath": "Gold source environment full copy",
       "validationMode": "automated+manual",
-      "validationSummary": "Dataverse grounding is validated through the copied Hiring Hub data plus a live facilitator check in the agent.",
+      "validationSummary": "Dataverse grounding is validated through the copied Woodgrove Lending Hub data plus a live facilitator check in the agent.",
       "automatedChecks": [
-        "hiring-hub-job-roles",
-        "hiring-hub-evaluation-criteria",
-        "sample-candidates",
-        "sample-job-applications"
+        "lending-hub-loan-types",
+        "lending-hub-assessment-criteria",
+        "sample-applicants",
+        "sample-loan-applications"
       ],
       "manualChecks": [
-        "Run a grounded Hiring Agent test and confirm it can reference the copied Hiring Hub data."
+        "Run a grounded Loan Processing Agent test and confirm it can reference the copied Woodgrove Lending Hub data."
       ]
     },
     {
       "labNumber": 21,
       "title": "Document Generation",
       "day": 2,
-      "artifactType": "Offer letter flow and template wiring",
+      "artifactType": "Loan assessment flow and template wiring",
       "portability": "repairable",
       "buildPath": "Gold source environment full copy plus document-template verification",
       "validationMode": "manual",
       "validationSummary": "Template paths and flow connections can drift after copy, so this remains a facilitator smoke test.",
       "manualChecks": [
-        "Confirm the offer-letter flow and Word template still open without broken references."
+        "Confirm the loan-assessment flow and Word template still open without broken references."
       ]
     },
     {

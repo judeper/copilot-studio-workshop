@@ -66,7 +66,7 @@ function Assert-ZipLooksLikeSolutionPackage {
     $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
     try {
         if ($archive.Entries.Count -lt 1) {
-            throw "Operative solution package '$Path' is empty."
+            throw "WoodgroveLending solution package '$Path' is empty."
         }
 
         $matchingEntry = $archive.Entries | Where-Object {
@@ -74,37 +74,45 @@ function Assert-ZipLooksLikeSolutionPackage {
         } | Select-Object -First 1
 
         if ($null -eq $matchingEntry) {
-            throw "Operative solution package '$Path' does not look like a Dataverse solution ZIP."
+            throw "WoodgroveLending solution package '$Path' does not look like a Dataverse solution ZIP."
         }
     }
     finally {
         $archive.Dispose()
     }
 
-    Write-StepResult -Level PASS -Message "Operative package contains Dataverse solution metadata."
+    Write-StepResult -Level PASS -Message "WoodgroveLending package contains Dataverse solution metadata."
 }
 
-function Get-WorkshopDay2SeedCandidates {
+function Get-WorkshopDay2SeedApplicants {
     return @(
         [pscustomobject]@{
-            CandidateName         = 'Jordan Lee'
-            Email                 = 'jordan@email.com'
-            Phone                 = '555-0101'
-            ResumeTitle           = 'Jordan Lee Resume'
-            ResumeSummary         = 'Experienced Power Platform developer with strong Power Apps, Power Automate, connector, and Azure integration experience. Known for building enterprise solutions, troubleshooting complex flows, and collaborating with delivery teams.'
-            JobRoleTitle          = 'Power Platform Developer'
-            ApplicationDate       = '2026-01-15'
-            InitialRecommendation = 894250003
+            ApplicantName     = 'Morgan Chen'
+            Email             = 'morgan.chen@email.com'
+            Phone             = '555-0201'
+            AnnualIncome      = 92000
+            EmploymentStatus  = 894250000  # Employed
+            DocumentName      = 'Morgan Chen Financial Summary'
+            DocumentType      = 894250000  # Financial Summary
+            LoanTypeName      = 'Personal Loan'
+            ApplicationDate   = '2026-01-15'
+            RequestedAmount   = 25000
+            Status            = 894250000  # Submitted
+            AssignedOfficer   = 'James Park'
         }
         [pscustomobject]@{
-            CandidateName         = 'Casey Bennett'
-            Email                 = 'casey@sample.com'
-            Phone                 = '555-0102'
-            ResumeTitle           = 'Casey Bennett Resume'
-            ResumeSummary         = 'Consultant with strong client engagement, workshop facilitation, requirements gathering, project delivery, and training experience across Power Platform programs. Comfortable translating business needs into governed solutions.'
-            JobRoleTitle          = 'Power Platform Consultant'
-            ApplicationDate       = '2026-01-20'
-            InitialRecommendation = 894250000
+            ApplicantName     = 'Alex Rivera'
+            Email             = 'alex.rivera@email.com'
+            Phone             = '555-0202'
+            AnnualIncome      = 145000
+            EmploymentStatus  = 894250000  # Employed
+            DocumentName      = 'Alex Rivera Financial Summary'
+            DocumentType      = 894250000  # Financial Summary
+            LoanTypeName      = 'Mortgage'
+            ApplicationDate   = '2026-01-20'
+            RequestedAmount   = 450000
+            Status            = 894250001  # Under Review
+            AssignedOfficer   = 'Lisa Chen'
         }
     )
 }
@@ -317,7 +325,7 @@ function Upsert-DataverseRecord {
     return $record
 }
 
-function Assert-OperativeSolutionPresent {
+function Assert-EnterpriseSolutionPresent {
     param(
         [Parameter(Mandatory = $true)]
         [string]$EnvironmentUrl,
@@ -326,12 +334,12 @@ function Assert-OperativeSolutionPresent {
         [string]$AccessToken
     )
 
-    $solution = Get-SingleDataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $AccessToken -EntitySetName 'solutions' -Select @('solutionid', 'uniquename', 'friendlyname') -Filter "uniquename eq 'Operative'" -Label 'Operative solution'
+    $solution = Get-SingleDataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $AccessToken -EntitySetName 'solutions' -Select @('solutionid', 'uniquename', 'friendlyname') -Filter "uniquename eq 'WoodgroveLending'" -Label 'WoodgroveLending solution'
     if ($null -eq $solution) {
-        throw "The Operative solution is not present in '$EnvironmentUrl'. Import the solution before importing the Day 2 base data."
+        throw "The WoodgroveLending solution is not present in '$EnvironmentUrl'. Import the solution before importing the Day 2 base data."
     }
 
-    Write-StepResult -Level PASS -Message "Confirmed that the Operative solution exists before base-data import."
+    Write-StepResult -Level PASS -Message "Confirmed that the WoodgroveLending solution exists before base-data import."
 }
 
 function Import-WorkshopDay2BaseData {
@@ -343,10 +351,10 @@ function Import-WorkshopDay2BaseData {
         [string]$EnvironmentUrl,
 
         [Parameter(Mandatory = $true)]
-        [object[]]$JobRolesRows,
+        [object[]]$LoanTypeRows,
 
         [Parameter(Mandatory = $true)]
-        [object[]]$EvaluationCriteriaRows
+        [object[]]$AssessmentCriteriaRows
     )
 
     $tenantId = Get-RequiredString -Value ([string]$Config.TenantId) -Name 'TenantId'
@@ -359,121 +367,125 @@ function Import-WorkshopDay2BaseData {
     Write-Section "Preparing Dataverse access for base-data import"
     Ensure-DataverseApplicationUser -EnvironmentUrl $EnvironmentUrl -ApplicationId $clientId
     $accessToken = Get-DataverseAccessToken -TenantId $tenantId -ClientId $clientId -ClientSecret $secretInfo.Value -EnvironmentUrl $EnvironmentUrl
-    Assert-OperativeSolutionPresent -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken
+    Assert-EnterpriseSolutionPresent -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken
 
-    Write-Section "Importing job roles"
-    $jobRoleMap = @{}
-    foreach ($row in $JobRolesRows) {
-        $jobTitle = ([string]$row.'Job Title').Trim()
-        if ([string]::IsNullOrWhiteSpace($jobTitle)) {
+    Write-Section "Importing loan types"
+    $loanTypeMap = @{}
+    foreach ($row in $LoanTypeRows) {
+        $loanTypeName = ([string]$row.'Loan Type Name').Trim()
+        if ([string]::IsNullOrWhiteSpace($loanTypeName)) {
             continue
         }
 
-        $filter = "ppa_jobtitle eq '{0}'" -f (ConvertTo-ODataStringLiteral -Value $jobTitle)
+        $filter = "wgb_loantypename eq '{0}'" -f (ConvertTo-ODataStringLiteral -Value $loanTypeName)
         $body = @{
-            ppa_jobtitle       = $jobTitle
-            ppa_description    = ([string]$row.Description).Trim()
-            ppa_closedate      = ([string]$row.'Close Date').Trim()
-            ppa_numberofhires  = [int]([string]$row.'Number of Hires')
+            wgb_loantypename   = $loanTypeName
+            wgb_description    = ([string]$row.Description).Trim()
+            wgb_maximumterm    = [int]([string]$row.'Maximum Term (Months)')
+            wgb_minimumamount  = [decimal]::Parse(([string]$row.'Minimum Amount').Trim(), [System.Globalization.CultureInfo]::InvariantCulture)
+            wgb_maximumamount  = [decimal]::Parse(([string]$row.'Maximum Amount').Trim(), [System.Globalization.CultureInfo]::InvariantCulture)
         }
 
-        $record = Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'ppa_jobroles' -PrimaryIdColumn 'ppa_jobroleid' -Select @('ppa_jobroleid', 'ppa_jobtitle') -Filter $filter -Body $body -Label "job role '$jobTitle'"
-        $jobRoleMap[$jobTitle] = [string]$record.ppa_jobroleid
+        $record = Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'wgb_loantypes' -PrimaryIdColumn 'wgb_loantypeid' -Select @('wgb_loantypeid', 'wgb_loantypename') -Filter $filter -Body $body -Label "loan type '$loanTypeName'"
+        $loanTypeMap[$loanTypeName] = [string]$record.wgb_loantypeid
     }
 
-    Write-Section "Importing evaluation criteria"
-    foreach ($row in $EvaluationCriteriaRows) {
+    Write-Section "Importing assessment criteria"
+    foreach ($row in $AssessmentCriteriaRows) {
         $criteriaName = ([string]$row.'Criteria Name').Trim()
-        $jobRoleTitle = ([string]$row.'Job Role').Trim()
-        if ([string]::IsNullOrWhiteSpace($criteriaName) -or [string]::IsNullOrWhiteSpace($jobRoleTitle)) {
+        $loanTypeName = ([string]$row.'Loan Type').Trim()
+        if ([string]::IsNullOrWhiteSpace($criteriaName) -or [string]::IsNullOrWhiteSpace($loanTypeName)) {
             continue
         }
 
-        if (-not $jobRoleMap.ContainsKey($jobRoleTitle)) {
-            throw "Unable to resolve job role '$jobRoleTitle' for evaluation criterion '$criteriaName'."
+        if (-not $loanTypeMap.ContainsKey($loanTypeName)) {
+            throw "Unable to resolve loan type '$loanTypeName' for assessment criterion '$criteriaName'."
         }
 
-        $jobRoleId = $jobRoleMap[$jobRoleTitle]
-        $filter = "_ppa_jobrole_value eq $jobRoleId and ppa_criterianame eq '{0}'" -f (ConvertTo-ODataStringLiteral -Value $criteriaName)
+        $loanTypeId = $loanTypeMap[$loanTypeName]
+        $filter = "_wgb_loantype_value eq $loanTypeId and wgb_criterianame eq '{0}'" -f (ConvertTo-ODataStringLiteral -Value $criteriaName)
         $body = @{
-            ppa_criterianame          = $criteriaName
-            ppa_description           = ([string]$row.Description).Trim()
-            ppa_weighting             = [decimal]::Parse(([string]$row.Weighting).Trim(), [System.Globalization.CultureInfo]::InvariantCulture)
-            'ppa_JobRole@odata.bind'  = "/ppa_jobroles($jobRoleId)"
+            wgb_criterianame            = $criteriaName
+            wgb_description             = ([string]$row.Description).Trim()
+            wgb_weighting               = [decimal]::Parse(([string]$row.Weighting).Trim(), [System.Globalization.CultureInfo]::InvariantCulture)
+            'wgb_LoanType@odata.bind'   = "/wgb_loantypes($loanTypeId)"
         }
 
-        [void](Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'ppa_evaluationcriterias' -PrimaryIdColumn 'ppa_evaluationcriteriaid' -Select @('ppa_evaluationcriteriaid', 'ppa_criterianame') -Filter $filter -Body $body -Label "evaluation criterion '$criteriaName' for '$jobRoleTitle'")
+        [void](Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'wgb_assessmentcriterias' -PrimaryIdColumn 'wgb_assessmentcriteriaid' -Select @('wgb_assessmentcriteriaid', 'wgb_criterianame') -Filter $filter -Body $body -Label "assessment criterion '$criteriaName' for '$loanTypeName'")
     }
 
-    Write-Section "Importing sample candidates, resumes, and job applications"
-    foreach ($seedCandidate in Get-WorkshopDay2SeedCandidates) {
-        $candidateName = [string]$seedCandidate.CandidateName
-        $candidateEmail = [string]$seedCandidate.Email
-        $candidateFilter = "ppa_email eq '{0}'" -f (ConvertTo-ODataStringLiteral -Value $candidateEmail)
-        $candidateBody = @{
-            ppa_candidatename = $candidateName
-            ppa_email         = $candidateEmail
-            ppa_phone         = [string]$seedCandidate.Phone
+    Write-Section "Importing sample applicants, application documents, and loan applications"
+    foreach ($seedApplicant in Get-WorkshopDay2SeedApplicants) {
+        $applicantName = [string]$seedApplicant.ApplicantName
+        $applicantEmail = [string]$seedApplicant.Email
+        $applicantFilter = "wgb_email eq '{0}'" -f (ConvertTo-ODataStringLiteral -Value $applicantEmail)
+        $applicantBody = @{
+            wgb_applicantname    = $applicantName
+            wgb_email            = $applicantEmail
+            wgb_phone            = [string]$seedApplicant.Phone
+            wgb_annualincome     = [decimal]$seedApplicant.AnnualIncome
+            wgb_employmentstatus = [int]$seedApplicant.EmploymentStatus
         }
 
-        $candidateRecord = Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'ppa_candidates' -PrimaryIdColumn 'ppa_candidateid' -Select @('ppa_candidateid', 'ppa_candidatename', 'ppa_email') -Filter $candidateFilter -Body $candidateBody -Label "candidate '$candidateName'"
-        $candidateId = [string]$candidateRecord.ppa_candidateid
+        $applicantRecord = Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'wgb_applicants' -PrimaryIdColumn 'wgb_applicantid' -Select @('wgb_applicantid', 'wgb_applicantname', 'wgb_email') -Filter $applicantFilter -Body $applicantBody -Label "applicant '$applicantName'"
+        $applicantId = [string]$applicantRecord.wgb_applicantid
 
-        $resumeTitle = [string]$seedCandidate.ResumeTitle
-        $resumeFilter = "_ppa_candidate_value eq $candidateId and ppa_resumetitle eq '{0}'" -f (ConvertTo-ODataStringLiteral -Value $resumeTitle)
-        $resumeBody = @{
-            ppa_resumetitle               = $resumeTitle
-            ppa_sourceemailaddress        = $candidateEmail
-            ppa_summary                   = [string]$seedCandidate.ResumeSummary
-            ppa_uploaddate                = [string]$seedCandidate.ApplicationDate
-            'ppa_Candidate@odata.bind'    = "/ppa_candidates($candidateId)"
+        $documentName = [string]$seedApplicant.DocumentName
+        $documentFilter = "_wgb_applicant_value eq $applicantId and wgb_documentname eq '{0}'" -f (ConvertTo-ODataStringLiteral -Value $documentName)
+        $documentBody = @{
+            wgb_documentname                = $documentName
+            wgb_documenttype                = [int]$seedApplicant.DocumentType
+            wgb_uploaddate                  = [string]$seedApplicant.ApplicationDate
+            'wgb_Applicant@odata.bind'      = "/wgb_applicants($applicantId)"
         }
 
-        $resumeRecord = Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'ppa_resumes' -PrimaryIdColumn 'ppa_resumeid' -Select @('ppa_resumeid', 'ppa_resumetitle') -Filter $resumeFilter -Body $resumeBody -Label "resume '$resumeTitle'"
-        $resumeId = [string]$resumeRecord.ppa_resumeid
+        $documentRecord = Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'wgb_applicationdocuments' -PrimaryIdColumn 'wgb_applicationdocumentid' -Select @('wgb_applicationdocumentid', 'wgb_documentname') -Filter $documentFilter -Body $documentBody -Label "application document '$documentName'"
+        $documentId = [string]$documentRecord.wgb_applicationdocumentid
 
-        $jobRoleTitle = [string]$seedCandidate.JobRoleTitle
-        if (-not $jobRoleMap.ContainsKey($jobRoleTitle)) {
-            throw "Unable to resolve job role '$jobRoleTitle' for candidate '$candidateName'."
+        $loanTypeName = [string]$seedApplicant.LoanTypeName
+        if (-not $loanTypeMap.ContainsKey($loanTypeName)) {
+            throw "Unable to resolve loan type '$loanTypeName' for applicant '$applicantName'."
         }
 
-        $jobRoleId = $jobRoleMap[$jobRoleTitle]
-        $jobApplicationFilter = "_ppa_candidate_value eq $candidateId and _ppa_jobrole_value eq $jobRoleId and _ppa_resume_value eq $resumeId"
-        $jobApplicationBody = @{
-            ppa_applicationdate              = [string]$seedCandidate.ApplicationDate
-            ppa_initialrecommendation        = [int]$seedCandidate.InitialRecommendation
-            'ppa_Candidate@odata.bind'       = "/ppa_candidates($candidateId)"
-            'ppa_JobRole@odata.bind'         = "/ppa_jobroles($jobRoleId)"
-            'ppa_Resume@odata.bind'          = "/ppa_resumes($resumeId)"
+        $loanTypeId = $loanTypeMap[$loanTypeName]
+        $loanApplicationFilter = "_wgb_applicant_value eq $applicantId and _wgb_loantype_value eq $loanTypeId and _wgb_applicationdocument_value eq $documentId"
+        $loanApplicationBody = @{
+            wgb_applicationdate                  = [string]$seedApplicant.ApplicationDate
+            wgb_requestedamount                  = [decimal]$seedApplicant.RequestedAmount
+            wgb_status                           = [int]$seedApplicant.Status
+            wgb_assignedofficer                  = [string]$seedApplicant.AssignedOfficer
+            'wgb_Applicant@odata.bind'           = "/wgb_applicants($applicantId)"
+            'wgb_LoanType@odata.bind'            = "/wgb_loantypes($loanTypeId)"
+            'wgb_ApplicationDocument@odata.bind'  = "/wgb_applicationdocuments($documentId)"
         }
 
-        [void](Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'ppa_jobapplications' -PrimaryIdColumn 'ppa_jobapplicationid' -Select @('ppa_jobapplicationid') -Filter $jobApplicationFilter -Body $jobApplicationBody -Label "job application for '$candidateName' and '$jobRoleTitle'")
+        [void](Upsert-DataverseRecord -EnvironmentUrl $EnvironmentUrl -AccessToken $accessToken -EntitySetName 'wgb_loanapplications' -PrimaryIdColumn 'wgb_loanapplicationid' -Select @('wgb_loanapplicationid') -Filter $loanApplicationFilter -Body $loanApplicationBody -Label "loan application for '$applicantName' and '$loanTypeName'")
     }
 }
 
 Write-Section "Loading workshop configuration"
 $config = Get-WorkshopConfig -Path $ConfigPath
 
-$operativeZipPath = Assert-FileExists -Path (Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.OperativeSolutionZipPath)) -Label 'Operative solution package'
-$jobRolesCsvPath = Assert-FileExists -Path (Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.JobRolesCsvPath)) -Label 'Job roles CSV'
-$evaluationCriteriaCsvPath = Assert-FileExists -Path (Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.EvaluationCriteriaCsvPath)) -Label 'Evaluation criteria CSV'
+$enterpriseZipPath = Assert-FileExists -Path (Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.EnterpriseSolutionZipPath)) -Label 'WoodgroveLending solution package'
+$jobRolesCsvPath = Assert-FileExists -Path (Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.LoanTypesCsvPath)) -Label 'Loan types CSV'
+$evaluationCriteriaCsvPath = Assert-FileExists -Path (Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.AssessmentCriteriaCsvPath)) -Label 'Assessment criteria CSV'
 
 Write-Section "Validating the Day 2 setup assets"
-Assert-ZipLooksLikeSolutionPackage -Path $operativeZipPath
+Assert-ZipLooksLikeSolutionPackage -Path $enterpriseZipPath
 
-$jobRolesRows = Get-CsvRows -Path $jobRolesCsvPath -Label 'job-roles.csv'
-$evaluationCriteriaRows = Get-CsvRows -Path $evaluationCriteriaCsvPath -Label 'evaluation-criteria.csv'
+$loanTypeRows = Get-CsvRows -Path $jobRolesCsvPath -Label 'loan-types.csv'
+$assessmentCriteriaRows = Get-CsvRows -Path $evaluationCriteriaCsvPath -Label 'assessment-criteria.csv'
 
-Assert-CsvColumns -Rows $jobRolesRows -RequiredColumns @('Job Title') -Label 'job-roles.csv'
-Assert-CsvColumns -Rows $evaluationCriteriaRows -RequiredColumns @('Job Role', 'Criteria Name', 'Description', 'Weighting') -Label 'evaluation-criteria.csv'
+Assert-CsvColumns -Rows $loanTypeRows -RequiredColumns @('Loan Type Name') -Label 'loan-types.csv'
+Assert-CsvColumns -Rows $assessmentCriteriaRows -RequiredColumns @('Loan Type', 'Criteria Name', 'Description', 'Weighting') -Label 'assessment-criteria.csv'
 
-$jobTitles = @($jobRolesRows | ForEach-Object { ([string]$_.'Job Title').Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)
-$unknownJobRoles = @($evaluationCriteriaRows | ForEach-Object { ([string]$_.'Job Role').Trim() } | Where-Object {
-    -not [string]::IsNullOrWhiteSpace($_) -and $_ -notin $jobTitles
+$loanTypeNames = @($loanTypeRows | ForEach-Object { ([string]$_.'Loan Type Name').Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)
+$unknownLoanTypes = @($assessmentCriteriaRows | ForEach-Object { ([string]$_.'Loan Type').Trim() } | Where-Object {
+    -not [string]::IsNullOrWhiteSpace($_) -and $_ -notin $loanTypeNames
 } | Sort-Object -Unique)
 
-if ($unknownJobRoles.Count -gt 0) {
-    throw "evaluation-criteria.csv contains Job Role values that do not exist in job-roles.csv: $($unknownJobRoles -join ', ')"
+if ($unknownLoanTypes.Count -gt 0) {
+    throw "assessment-criteria.csv contains Loan Type values that do not exist in loan-types.csv: $($unknownLoanTypes -join ', ')"
 }
 
 Write-StepResult -Level PASS -Message "CSV relationships look consistent for Lab 13 imports."
@@ -496,15 +508,15 @@ Invoke-NativeCommand -FilePath 'pac' -Arguments @('auth', 'list') -FailureMessag
 Write-StepResult -Level INFO -Message "Import target comes from -EnvironmentUrl or config.EnvironmentUrl. pac auth provides tenant and account context only."
 
 if ($ImportSolution) {
-    Write-Section "Importing the Operative solution"
+    Write-Section "Importing the WoodgroveLending solution"
     Write-StepResult -Level INFO -Message "Targeting the Power Platform environment '$environmentUrl' for solution import."
-    Invoke-NativeCommand -FilePath 'pac' -Arguments @('solution', 'import', '--environment', $environmentUrl, '--path', $operativeZipPath) -FailureMessage 'Operative solution import failed'
-    Write-StepResult -Level PASS -Message "Imported the Operative solution package."
+    Invoke-NativeCommand -FilePath 'pac' -Arguments @('solution', 'import', '--environment', $environmentUrl, '--path', $enterpriseZipPath) -FailureMessage 'WoodgroveLending solution import failed'
+    Write-StepResult -Level PASS -Message "Imported the WoodgroveLending solution package."
 }
 
 if ($ImportBaseData) {
-    Write-Section "Importing Hiring Hub base data"
-    Write-StepResult -Level INFO -Message "Targeting the Power Platform environment '$environmentUrl' for Hiring Hub base-data import."
-    Import-WorkshopDay2BaseData -Config $config -EnvironmentUrl $environmentUrl -JobRolesRows $jobRolesRows -EvaluationCriteriaRows $evaluationCriteriaRows
-    Write-StepResult -Level PASS -Message 'Imported the Day 2 Hiring Hub base data, including job roles, evaluation criteria, sample candidates, sample resumes, and sample job applications.'
+    Write-Section "Importing Woodgrove Lending Hub base data"
+    Write-StepResult -Level INFO -Message "Targeting the Power Platform environment '$environmentUrl' for Woodgrove Lending Hub base-data import."
+    Import-WorkshopDay2BaseData -Config $config -EnvironmentUrl $environmentUrl -LoanTypeRows $loanTypeRows -AssessmentCriteriaRows $assessmentCriteriaRows
+    Write-StepResult -Level PASS -Message 'Imported the Day 2 Woodgrove Lending Hub base data, including loan types, assessment criteria, sample applicants, application documents, and loan applications.'
 }

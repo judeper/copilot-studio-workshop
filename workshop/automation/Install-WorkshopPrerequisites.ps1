@@ -40,5 +40,5 @@ if (Get-Command -Name 'pac' -ErrorAction SilentlyContinue) {
     Write-StepResult -Level PASS -Message "Power Platform CLI (pac) is available."
 }
 else {
-    Write-StepResult -Level WARN -Message "Power Platform CLI (pac) is not installed. Install it before you try to bootstrap a workshop environment or import the Operative solution."
+    Write-StepResult -Level WARN -Message "Power Platform CLI (pac) is not installed. Install it before you try to bootstrap a workshop environment or import the WoodgroveLending solution."
 }

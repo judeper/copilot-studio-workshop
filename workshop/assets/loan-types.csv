@@ -1,0 +1,6 @@
+Loan Type Name,Description,Maximum Term (Months),Minimum Amount,Maximum Amount
+Mortgage,"Fixed and adjustable-rate home loans for primary residences and investment properties. Requires property appraisal and title insurance.",360,50000,2000000
+Auto Loan,"New and used vehicle financing with competitive rates. Vehicle serves as collateral for the loan.",84,5000,150000
+Personal Loan,"Unsecured personal loans for debt consolidation, home improvement, or major purchases. No collateral required.",60,1000,50000
+Small Business Loan,"Working capital and expansion financing for small businesses. Requires business plan and financial statements.",120,10000,500000
+Home Equity Line of Credit,"Revolving credit line secured by home equity. Variable rate with interest-only payment option during draw period.",240,25000,500000

@@ -16,7 +16,7 @@ In this lab, you will teach the Loan Processing Agent to read financial document
 
 #### Step-by-Step Instructions
 #### Part 1 — Create the multimodal prompt
-1. Open **Loan Processing Agent** (or **Application Intake Agent**) in Copilot Studio and select **Tools**.
+1. Open **Loan Processing Agent** (or **Document Review Agent**) in Copilot Studio and select **Tools**.
 2. Select **+ Add a tool** and then select **Prompt**.
 3. Rename the prompt to `Financial Document Analysis`.
 4. In the instructions area, paste the prompt below.
@@ -75,7 +75,7 @@ Officer context: /OfficerContext
 #### Part 4 — Make the prompt available to the lending workflow
 1. Select **Save**.
 2. In the post-save dialog, select **Configure for use in agent** if you want to expose the prompt directly as a tool.
-3. [Maker] Add the prompt to **Application Intake Agent** if you want a specialist agent to use it later in the day.
+3. [Maker] Add the prompt to **Document Review Agent** if you want a specialist agent to use it later in the day.
 4. [Developer] If you prefer deterministic orchestration, plan to call the prompt from an **Agent flow** in a later step rather than from the agent directly.
 
 ![JSON output from multimodal financial document analysis](./assets/lab-19-json-output.png)

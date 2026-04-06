@@ -1,13 +1,13 @@
-# Copilot Studio Workshop
+# Copilot Studio for Financial Services
 
 A two-day, hands-on workshop for building, extending, and governing AI agents with [Microsoft Copilot Studio](https://copilotstudio.microsoft.com).
 
 ## Workshop Overview
 
-| | Day 1 — Recruit Track | Day 2 — Operative Track |
+| | Day 1 — Foundation Track | Day 2 — Enterprise Track |
 |---|---|---|
 | **Theme** | Foundation-building | Governed enterprise extension |
-| **Scenario** | Contoso IT Helpdesk Agent | Hiring Agent & Operative solution |
+| **Scenario** | Woodgrove Bank Customer Service Agent | Loan Processing / Woodgrove Lending Hub |
 | **Labs** | 00–12 | 13–25 |
 | **Audience** | Makers, IT Pros, Developers | Same — building on Day 1 skills |
 
@@ -36,7 +36,7 @@ The workshop includes 13 committed PowerPoint presentation decks covering the fu
 | 04 | `Module-04-Custom-Agent-Design.pptx` | Custom agent architecture |
 | 05 | `Module-05-Topic-Design.pptx` | Conversational topic patterns |
 | 06 | `Module-06-Actions-and-Events.pptx` | Actions and event-driven design |
-| 07 | `Module-07-Hiring-Architecture.pptx` | Enterprise hiring scenario |
+| 07 | `Module-07-Lending-Architecture.pptx` | Enterprise lending scenario |
 | 08 | `Module-08-Automation-and-Models.pptx` | Automation and model strategy |
 | 09 | `Module-09-Multimodal-and-Data.pptx` | Multimodal capabilities and data grounding |
 | 10 | `Module-10-MCP-and-Extensibility.pptx` | MCP and extensibility patterns |
@@ -76,38 +76,38 @@ Use the PPTX decks for presentation and screen sharing, then use the markdown ou
 - Keep all sample identities fictitious.
 - Use `example.com` for sample email addresses unless a file explicitly needs a placeholder token such as `<replace-with-org>`.
 - Do not commit customer-specific names, mailboxes, tenant URLs, Teams routing IDs, or other environment-bound values in exported assets or starter solutions.
-- Preserve the canonical workshop fiction: `Contoso`, `Contoso IT`, `Contoso Helpdesk Agent`, `Hiring Agent`, `Hiring Hub`, `Operative`, and `AgentCreators`.
+- Preserve the canonical workshop fiction: `Woodgrove Bank`, `Woodgrove Customer Service Agent`, `Loan Processing Agent`, `WoodgroveLending`, `Woodgrove Lending Hub`, and `WoodgroveBankAgents`.
 
 ## Lab Index
 
-### Day 1 — Recruit Track
+### Day 1 — Foundation Track
 
 | Lab | Title | Time |
 |-----|-------|------|
 | [00](workshop/labs/lab-00-environment-setup/) | Environment Setup | 45 min |
-| [01](workshop/labs/lab-01-intro-to-agents/) | Intro to Agents | 20 min |
+| [01](workshop/labs/lab-01-intro-to-agents/) | Introduction to AI Agents | 20 min |
 | [02](workshop/labs/lab-02-copilot-studio-fundamentals/) | Copilot Studio Fundamentals | 30 min |
 | [03](workshop/labs/lab-03-declarative-agents/) | Declarative Agents | 60 min |
-| [04](workshop/labs/lab-04-solutions/) | Solutions | 45 min |
+| [04](workshop/labs/lab-04-solutions/) | Solutions and Lifecycle Management | 45 min |
 | [05](workshop/labs/lab-05-prebuilt-agents/) | Prebuilt Agents | 30 min |
-| [06](workshop/labs/lab-06-custom-agent/) | Custom Agent | 75 min |
-| [07](workshop/labs/lab-07-topics-triggers/) | Topics & Triggers | 60 min |
+| [06](workshop/labs/lab-06-custom-agent/) | Build the Customer Service Agent | 75 min |
+| [07](workshop/labs/lab-07-topics-triggers/) | Topics and Triggers | 60 min |
 | [08](workshop/labs/lab-08-adaptive-cards/) | Adaptive Cards | 45 min |
 | [09](workshop/labs/lab-09-agent-flows/) | Agent Flows | 45 min |
 | [10](workshop/labs/lab-10-event-triggers/) | Event Triggers | 25 min |
-| [11](workshop/labs/lab-11-publish-agent/) | Publish Agent | 30 min |
-| [12](workshop/labs/lab-12-licensing/) | Licensing | 20 min |
+| [11](workshop/labs/lab-11-publish-agent/) | Publish Your Agent | 30 min |
+| [12](workshop/labs/lab-12-licensing/) | Licensing and Copilot Credits | 20 min |
 
-### Day 2 — Operative Track
+### Day 2 — Enterprise Track
 
 | Lab | Title | Time |
 |-----|-------|------|
-| [13](workshop/labs/lab-13-hiring-agent-setup/) | Hiring Agent Setup | 45 min |
+| [13](workshop/labs/lab-13-loan-processing-agent-setup/) | Loan Processing Agent Setup | 45 min |
 | [14](workshop/labs/lab-14-agent-instructions/) | Agent Instructions | 25 min |
-| [15](workshop/labs/lab-15-multi-agent/) | Multi-Agent Hiring Team | 40 min |
+| [15](workshop/labs/lab-15-multi-agent/) | Multi-Agent Orchestration | 40 min |
 | [16](workshop/labs/lab-16-trigger-automation/) | Trigger Automation | 40 min |
 | [17](workshop/labs/lab-17-model-selection/) | Model Selection | 30 min |
-| [18](workshop/labs/lab-18-content-moderation/) | Content Moderation | 40 min |
+| [18](workshop/labs/lab-18-content-moderation/) | Content Moderation and AI Safety | 40 min |
 | [19](workshop/labs/lab-19-multimodal-prompts/) | Multimodal Prompts | 35 min |
 | [20](workshop/labs/lab-20-dataverse-grounding/) | Dataverse Grounding | 40 min |
 | [21](workshop/labs/lab-21-document-generation/) | Document Generation | 45 min |
@@ -146,7 +146,7 @@ pwsh -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
 After the wizard completes:
 
 ```powershell
-# 1. Pre-stage shared Day 1 prerequisites (Contoso IT site, lists, schema, and sample data)
+# 1. Pre-stage shared Day 1 prerequisites (Woodgrove Bank site, lists, schema, and sample data)
 powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
 
 # 2. Optional: create or reserve a separate facilitator demo environment
@@ -155,9 +155,9 @@ powershell -File .\workshop\automation\Initialize-WorkshopPowerPlatformEnvironme
 
 # 3. Optional: pre-import the Day 2 base state in the facilitator demo environment only
 # Import target comes from -EnvironmentUrl or config.EnvironmentUrl; pac auth only supplies tenant/account context
-powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
+powershell -File .\workshop\automation\Import-WorkshopEnterpriseAssets.ps1 -ImportSolution -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
 # -ImportBaseData also requires a Dataverse-capable client secret plus one-time Power Platform app registration
-powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportBaseData -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
+powershell -File .\workshop\automation\Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
 
 # 4. Optional advanced path: qualify a completed facilitator gold source, then rebuild the fallback environment
 powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -ListCandidates
@@ -167,7 +167,7 @@ powershell -File .\workshop\automation\Invoke-WorkshopFacilitatorFallbackBuild.p
 # 5. Optional: validate one student first, then batch-provision per-student environments for hands-on
 powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
 
-# 6. Reset the shared environment for re-testing (deletes ContosoIT site + purges recycle bin)
+# 6. Reset the shared environment for re-testing (deletes WoodgroveBank site + purges recycle bin)
 pwsh -File .\workshop\automation\Reset-WorkshopEnvironment.ps1 -HardDelete
 
 # 7. Post-workshop: tear down all student environments
@@ -220,12 +220,12 @@ Generate a subset with `--only`: `node Generate-WorkshopPDFs.js --only S2,F1`
 
 | Name | Purpose |
 |------|---------|
-| Contoso IT | SharePoint site for Day 1 grounding |
-| Contoso Helpdesk Agent | Day 1 custom agent |
-| Hiring Agent | Day 2 orchestrator agent |
-| Operative | Day 2 Dataverse solution |
-| Hiring Hub | Day 2 model-driven app |
-| AgentCreators | Security group for authoring permissions |
+| Woodgrove Bank | SharePoint site for Day 1 grounding |
+| Woodgrove Customer Service Agent | Day 1 custom agent |
+| Loan Processing Agent | Day 2 orchestrator agent |
+| WoodgroveLending | Day 2 Dataverse solution |
+| Woodgrove Lending Hub | Day 2 model-driven app |
+| WoodgroveBankAgents | Security group for authoring permissions |
 
 ## License
 

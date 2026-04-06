@@ -2,7 +2,7 @@
 .SYNOPSIS
     Resets the shared workshop environment for re-testing.
 .DESCRIPTION
-    Deletes the shared Contoso IT SharePoint site (and optionally the Entra app
+    Deletes the shared Woodgrove Bank SharePoint site (and optionally the Entra app
     registration and MSAL token caches) so the facilitator can re-run the bootstrap
     and lab setup scripts from scratch.
 

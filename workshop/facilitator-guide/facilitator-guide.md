@@ -2,7 +2,7 @@
 
 ## Workshop goals
 
-This two-day workshop helps customers move from foundational Copilot Studio concepts to a practical, enterprise-shaped multi-agent scenario. By the end of the event, participants should be able to build, ground, test, and publish agents on Day 1, then extend that foundation into a governed Hiring Agent solution on Day 2.
+This two-day workshop helps customers move from foundational Copilot Studio concepts to a practical, enterprise-shaped multi-agent scenario. By the end of the event, participants should be able to build, ground, test, and publish agents on Day 1, then extend that foundation into a governed Loan Processing Agent solution on Day 2.
 
 Primary goals:
 
@@ -23,7 +23,7 @@ Recommended baseline:
 
 - Comfortable using Microsoft 365 and web apps.
 - Familiarity with Power Platform concepts is helpful but not required for Day 1.
-- Day 2 assumes Day 1 familiarity, a completed Recruit badge, or equivalent hands-on Copilot Studio experience.
+- Day 2 assumes Day 1 familiarity, completed Foundation labs, or equivalent hands-on Copilot Studio experience.
 
 > **Note:** If several attendees skip Day 1, open Day 2 with a stricter prerequisite check and be ready to pair them with stronger table groups.
 
@@ -69,7 +69,7 @@ The wizard handles these steps automatically:
 After the wizard completes:
 
 ```powershell
-# 1. Pre-stage shared Day 1 site (creates Contoso IT site, lists, schema, and sample data)
+# 1. Pre-stage shared Day 1 site (creates Woodgrove Bank site, lists, schema, and sample data)
 powershell -File .\workshop\automation\Invoke-WorkshopLabSetup.ps1 -Mode StudentReady
 
 # 2. Optional: create or reserve a separate facilitator demo environment
@@ -78,9 +78,9 @@ powershell -File .\workshop\automation\Initialize-WorkshopPowerPlatformEnvironme
 
 # 3. Optional: pre-import the Day 2 base state in a separate demo environment only
 # Import target comes from -EnvironmentUrl or config.EnvironmentUrl; pac auth only supplies tenant/account context
-powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportSolution -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
+powershell -File .\workshop\automation\Import-WorkshopEnterpriseAssets.ps1 -ImportSolution -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
 # -ImportBaseData also needs a Dataverse-capable client secret plus one-time Power Platform app registration
-powershell -File .\workshop\automation\Import-WorkshopOperativeAssets.ps1 -ImportBaseData -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
+powershell -File .\workshop\automation\Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData -EnvironmentUrl https://<facilitator-demo>.crm.dynamics.com
 
 # 4. Optional advanced path: qualify a completed facilitator gold source, then rebuild the fallback environment
 powershell -File .\workshop\automation\Set-WorkshopFacilitatorFallbackSource.ps1 -ListCandidates
@@ -90,7 +90,7 @@ powershell -File .\workshop\automation\Invoke-WorkshopFacilitatorFallbackBuild.p
 # 5. Optional: validate one student first, then batch-provision per-student environments
 powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1
 
-# 6. Reset the shared environment for re-testing (deletes ContosoIT site + purges recycle bin)
+# 6. Reset the shared environment for re-testing (deletes WoodgroveBank site + purges recycle bin)
 pwsh -File .\workshop\automation\Reset-WorkshopEnvironment.ps1 -HardDelete
 
 # 7. Post-workshop: tear down all student environments
@@ -110,12 +110,12 @@ Decision point:
 
 - Use `-Mode StudentReady` for participant environments.
 - Use `-ImportSolution` and `-ImportBaseData` only for a separate facilitator demo environment.
-- Expected result for optional import: the selected facilitator environment can be pre-staged with the Operative solution plus the base Hiring Hub job roles, evaluation criteria, candidates, resumes, and job applications.
-- `Import-WorkshopOperativeAssets.ps1` targets the URL supplied by `-EnvironmentUrl`, or `config.EnvironmentUrl` when `-EnvironmentUrl` is omitted. Changing the active `pac` environment alone does not retarget the import.
+- Expected result for optional import: the selected facilitator environment can be pre-staged with the Enterprise solution plus the base Woodgrove Lending Hub job roles, evaluation criteria, candidates, resumes, and job applications.
+- `Import-WorkshopEnterpriseAssets.ps1` targets the URL supplied by `-EnvironmentUrl`, or `config.EnvironmentUrl` when `-EnvironmentUrl` is omitted. Changing the active `pac` environment alone does not retarget the import.
 - `Initialize-WorkshopPowerPlatformEnvironment.ps1 -CreateEnvironment` only writes the resolved URL back to `workshop-config.json` when you also pass `-UpdateConfig`.
 - `-ImportBaseData` and the advanced facilitator fallback automation require a client secret (`Identity.ClientSecret` or `Identity.ClientSecretEnvVar`), the Power Apps Service delegated permission with admin consent, and a one-time Power Platform app registration by a delegated admin (`New-PowerAppManagementApp` or `pac admin application register`).
 
-> **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID. The default login mode is `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. You can override this by setting `SharePoint.PnPLoginMode` to `DeviceLogin`, `Interactive`, or `CertificateThumbprint` in `workshop-config.json`. If setup runs under `DeviceLogin`, the first provisioning pass can prompt separately for the SharePoint admin center, tenant root, and target site; that is expected. Open `https://microsoft.com/devicelogin` and then enter the current code shown by the script rather than relying on the auto-opened browser tab. For Power Platform work, keep the active `pac` profile in the correct tenant and admin account context, but remember that `Import-WorkshopOperativeAssets.ps1` still targets `-EnvironmentUrl` or `config.EnvironmentUrl`.
+> **Operator expectation:** SharePoint setup uses PnP PowerShell sign-in with the configured Entra app client ID. The default login mode is `OSLogin` (Windows native sign-in via WAM) with automatic fallback to `DeviceLogin`. You can override this by setting `SharePoint.PnPLoginMode` to `DeviceLogin`, `Interactive`, or `CertificateThumbprint` in `workshop-config.json`. If setup runs under `DeviceLogin`, the first provisioning pass can prompt separately for the SharePoint admin center, tenant root, and target site; that is expected. Open `https://microsoft.com/devicelogin` and then enter the current code shown by the script rather than relying on the auto-opened browser tab. For Power Platform work, keep the active `pac` profile in the correct tenant and admin account context, but remember that `Import-WorkshopEnterpriseAssets.ps1` still targets `-EnvironmentUrl` or `config.EnvironmentUrl`.
 
 > **Student domain naming:** Per-student Power Platform domains are derived from `EnvironmentBootstrap.DomainName`, but the automation now shortens the prefix when needed so the student alias still survives inside the 24-character platform limit. This keeps domains unique across students instead of truncating them all to the same shared prefix.
 
@@ -126,12 +126,12 @@ Treat the workshop as three separate readiness tracks, not one blended setup job
 1. **Shared prerequisites**
    - Facilitator machine readiness
    - Tenant/app/auth readiness
-   - Shared Day 1 `Contoso IT` SharePoint site and sample data
+   - Shared Day 1 `Woodgrove Bank` SharePoint site and sample data
    - Day 2 localized assets
 
 2. **Facilitator-only demo base**
    - A separate Power Platform environment reserved for facilitator demos and rescue moments
-   - Optional Day 2 Operative solution and Hiring Hub base-data import only in that demo environment
+   - Optional Day 2 Enterprise solution and Woodgrove Lending Hub base-data import only in that demo environment
    - A validated fallback path for the riskiest modules
 
 3. **Student hands-on environments**
@@ -143,7 +143,7 @@ Recommended setup order:
 1. Run the bootstrap wizard and make sure the shared-readiness dashboard is green enough to continue.
 2. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to establish the shared Day 1 baseline.
 3. Reserve or create a **separate facilitator demo environment**, persist its URL with `-UpdateConfig` or plan to pass `-EnvironmentUrl`, and keep `pac` in the correct tenant/admin account context before any optional demo-only imports.
-4. If Day 2 demo pre-staging is needed, run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` and, when you want the Lab 13 base data present too, `Import-WorkshopOperativeAssets.ps1 -ImportBaseData` only against that facilitator demo URL.
+4. If Day 2 demo pre-staging is needed, run `Import-WorkshopEnterpriseAssets.ps1 -ImportSolution` and, when you want the Lab 13 base data present too, `Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData` only against that facilitator demo URL.
 5. If you maintain a completed gold source environment, first run `Set-WorkshopFacilitatorFallbackSource.ps1` to qualify it and save `FacilitatorFallback.SourceEnvironmentUrl`, then run `Invoke-WorkshopFacilitatorFallbackBuild.ps1` only against a separate facilitator-owned fallback target.
 6. If you want isolated student environments, validate with one student first, then run `Invoke-StudentEnvironmentProvisioning.ps1` after the shared prerequisites are already stable.
 7. Validate the facilitator demo path or copied facilitator fallback path separately from the student path. A green student setup does not prove the facilitator rescue path is ready, and a green facilitator demo does not prove hands-on students can build forward unaided.
@@ -161,7 +161,7 @@ If you are a new facilitator, follow this exact order:
 3. Run `Invoke-WorkshopLabSetup.ps1 -Mode StudentReady` to create the shared Day 1 baseline.
 4. Decide whether students will use the shared baseline only or per-student environments.
 5. Reserve or create a **separate facilitator demo environment** before any demo-only Day 2 import, and either persist its URL with `-UpdateConfig` or plan to pass `-EnvironmentUrl`. After the environment exists, configure Copilot billing in PPAC by linking pay-as-you-go or assigning Copilot Studio capacity before you test agents in it.
-6. If you need Day 2 demo pre-staging, keep `pac` in the correct tenant/admin context and run `Import-WorkshopOperativeAssets.ps1 -ImportSolution` against that facilitator demo URL. If you also want the Lab 13 base records present, follow with `Import-WorkshopOperativeAssets.ps1 -ImportBaseData` after confirming the Dataverse client-secret prerequisites are in place.
+6. If you need Day 2 demo pre-staging, keep `pac` in the correct tenant/admin context and run `Import-WorkshopEnterpriseAssets.ps1 -ImportSolution` against that facilitator demo URL. If you also want the Lab 13 base records present, follow with `Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData` after confirming the Dataverse client-secret prerequisites are in place.
 7. If you use a completed facilitator fallback environment, run `Set-WorkshopFacilitatorFallbackSource.ps1` to qualify the gold source and persist `FacilitatorFallback.SourceEnvironmentUrl`, then run `Invoke-WorkshopFacilitatorFallbackBuild.ps1` only against a separate facilitator-owned target environment and review `facilitator-fallback-repair-report.json` after the copy.
 8. If you need isolated student environments, validate with one student first, then run `Invoke-StudentEnvironmentProvisioning.ps1` for the full batch only after the shared prerequisites are already stable. If the saved result ends as `FollowUpRequired` because credit allocation did not complete, finish the billing step in PPAC before you hand that environment to a student.
 9. Validate the facilitator demo base or copied facilitator fallback environment separately from the student path.
@@ -204,7 +204,7 @@ For pacing-sensitive delivery, keep the workshop's protected labs in view: Labs 
 
 ## Suggested delivery flow
 
-### Day 1: Recruit foundations
+### Day 1: Foundation essentials
 
 Use Day 1 to create shared language and shared wins. Keep the pace brisk through concepts, then maximize keyboard time once participants enter guided build modules.
 
@@ -215,7 +215,7 @@ Suggested pattern:
 3. Guided tour of Copilot Studio fundamentals.
 4. Structured build sequence through declarative patterns, solutions, prebuilt agents, and custom agent concepts.
 5. Hands-on work through knowledge, topics, cards, flows, triggers, publishing, and the Day 1 licensing close.
-6. End-of-day recap tied to Recruit badge or equivalent readiness.
+6. End-of-day recap tied to Foundation completion or equivalent readiness.
 
 Recommended labs to reference:
 
@@ -233,14 +233,14 @@ Recommended labs to reference:
 - [Lab 11 - Publish Agent](../labs/lab-11-publish-agent/)
 - [Lab 12 - Licensing](../labs/lab-12-licensing/)
 
-### Day 2: Operative scenario
+### Day 2: Enterprise scenario
 
-Day 2 should feel like a progression, not a reset. Anchor the day around the Hiring Agent scenario and repeatedly connect new material to business readiness, governance, and operational quality.
+Day 2 should feel like a progression, not a reset. Anchor the day around the Loan Processing Agent scenario and repeatedly connect new material to business readiness, governance, and operational quality.
 
 Suggested pattern:
 
 1. Reconfirm prerequisites and Day 1 carry-forward.
-2. Reorient participants to the Hiring Agent business process.
+2. Reorient participants to the Loan Processing Agent business process.
 3. Build through instruction quality, connected agents, automation, model choices, safety, multimodal processing, Dataverse grounding, document generation, MCP integration, user feedback, and evaluation on the shared core path.
 4. Close with architecture review, governance discussion, and next-step planning while developers who are caught up can branch to the optional VS Code workflow.
 
@@ -248,7 +248,7 @@ Recommended labs to reference:
 
 Shared core path:
 
-- [Lab 13 - Hiring Agent Setup](../labs/lab-13-hiring-agent-setup/)
+- [Lab 13 - Loan Processing Agent Setup](../labs/lab-13-hiring-agent-setup/)
 - [Lab 14 - Agent Instructions](../labs/lab-14-agent-instructions/)
 - [Lab 15 - Multi-Agent](../labs/lab-15-multi-agent/)
 - [Lab 16 - Trigger Automation](../labs/lab-16-trigger-automation/)
@@ -311,7 +311,7 @@ Let participants work without interruption when:
 | Day 1 | Custom agent built | 13:45 | Most tables have a working agent with knowledge attached. |
 | Day 1 | Interaction layer complete | 15:15 | Topics, Adaptive Cards, and flows are functioning for most participants. |
 | Day 1 | Publish and recap | 16:30 | Participants have published or observed publishing and know Day 2 prerequisites. |
-| Day 2 | Scenario reset complete | 09:30 | Hiring Agent architecture and prerequisites are clear to everyone. |
+| Day 2 | Scenario reset complete | 09:30 | Loan Processing Agent architecture and prerequisites are clear to everyone. |
 | Day 2 | Multi-agent core built | 11:15 | Central agent and connected-agent pattern are working. |
 | Day 2 | Safety and grounding complete | 14:00 | Safety, model selection, multimodal, and Dataverse topics are covered. |
 | Day 2 | MCP, feedback, and evaluation complete | 16:00 | MCP configuration, feedback capture, evaluation flow, and the end-to-end scenario can be demonstrated. |
@@ -332,7 +332,7 @@ Useful recovery tactics:
 - Pair blocked attendees with a working partner for observation-based learning.
 - Keep screenshots or a completed demo environment ready for catch-up moments.
 - If a licensing or tenant issue blocks a full exercise, switch the attendee to observe key checkpoints and continue later.
-- For Day 2, allow participants who are behind to use a pre-staged Hiring Agent solution for later modules.
+- For Day 2, allow participants who are behind to use a pre-staged Loan Processing Agent solution for later modules.
 
 ## Escalation guidance
 
@@ -415,7 +415,7 @@ Suggested rhythm:
 
 ### Day 2 modules
 
-#### Hiring Agent setup and instructions
+#### Loan Processing Agent setup and instructions
 
 - Re-anchor the room on the scenario and business value.
 - Stress that instruction quality drives downstream behavior.
@@ -444,19 +444,19 @@ Suggested rhythm:
 - End with measurable deliverables, not just a feature tour.
 - Keep user feedback and evaluation with the full room; [Lab 25 - VS Code Extension](../labs/lab-25-vscode-extension/) is the optional developer-only stretch path once the core build is complete.
 - Ask participants what would be required to productionize the scenario in their organization.
-- Close on badge guidance, next labs, and ownership after the workshop.
+- Close on completion guidance, next labs, and ownership after the workshop.
 
 ## End-of-day outcomes
 
 ### Day 1 outcomes
 
 - Participants understand core Copilot Studio concepts.
-- Participants have completed or observed the core Recruit build path.
+- Participants have completed or observed the core Foundation build path.
 - Participants know whether they are ready for Day 2 or need additional practice.
 
 ### Day 2 outcomes
 
-- Participants can explain the Hiring Agent architecture and supporting governance controls.
+- Participants can explain the Loan Processing Agent architecture and supporting governance controls.
 - Participants have worked through the shared core path of enterprise-focused agent patterns.
 - Participants leave with a practical adoption conversation for their own environment.
 

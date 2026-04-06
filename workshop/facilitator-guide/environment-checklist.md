@@ -38,7 +38,7 @@ Review the workshop in this order so a new facilitator does not mix the setup tr
 - [ ] The facilitator demo environment URL is either saved in `EnvironmentUrl` or recorded for explicit `-EnvironmentUrl` use during imports
 - [ ] For any newly created facilitator demo environment, PPAC billing is configured before agent testing: either **Billing > Link Azure subscription** for PAYGO or allocate Copilot Studio capacity/credits to the environment
 - [ ] Before any optional Day 2 import, `pac auth list` / `pac auth who` confirm the active profile is the intended tenant/admin account context; import targeting still comes from `-EnvironmentUrl` or `config.EnvironmentUrl`
-- [ ] If Day 2 demo pre-staging is needed, `Import-WorkshopOperativeAssets.ps1 -ImportSolution` and, when required, `Import-WorkshopOperativeAssets.ps1 -ImportBaseData` have been validated only against that facilitator demo URL
+- [ ] If Day 2 demo pre-staging is needed, `Import-WorkshopEnterpriseAssets.ps1 -ImportSolution` and, when required, `Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData` have been validated only against that facilitator demo URL
 - [ ] For `-ImportBaseData` and advanced facilitator fallback automation, a client secret is available either in `Identity.ClientSecret` or via `Identity.ClientSecretEnvVar`
 - [ ] For `-ImportBaseData` and advanced facilitator fallback automation, the Entra app has the Power Apps Service delegated permission with admin consent and a delegated Power Platform admin has completed the one-time registration step (`New-PowerAppManagementApp` or `pac admin application register`)
 - [ ] The facilitator can demonstrate the highest-risk modules from this demo environment without depending on student environments
@@ -78,7 +78,7 @@ If provisioning per-student environments (instead of a shared environment), addi
 
 If you need to tear down the shared environment and re-test from scratch:
 
-1. **Reset the shared environment** — deletes the Contoso IT SharePoint site and purges it from the recycle bin:
+1. **Reset the shared environment** — deletes the Woodgrove Bank SharePoint site and purges it from the recycle bin:
    ```powershell
    pwsh -File .\workshop\automation\Reset-WorkshopEnvironment.ps1 -HardDelete
    ```
@@ -123,9 +123,9 @@ Additional reset options:
 - [ ] Confirm facilitators can create or open the workshop solution in the intended environment.
 - [ ] Confirm facilitators can create or open agents, connections, and tables inside that solution.
 - [ ] Confirm environment maker permissions are assigned to expected users.
-- [ ] Confirm the localized Day 2 Hiring Agent files (`Operative_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv`) are present locally before you begin the Lab 13 walkthrough in that environment.
+- [ ] Confirm the localized Day 2 Loan Processing Agent files (`WoodgroveLending_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv`) are present locally before you begin the Lab 13 walkthrough in that environment.
 - [ ] Confirm the facilitator demo environment URL is the one saved in `EnvironmentUrl` or the one you will pass with `-EnvironmentUrl` before any optional solution import.
-- [ ] Confirm `pac auth list` shows the intended tenant/admin account context before any optional solution import. Do not rely on active `pac` environment selection alone to retarget `Import-WorkshopOperativeAssets.ps1`.
+- [ ] Confirm `pac auth list` shows the intended tenant/admin account context before any optional solution import. Do not rely on active `pac` environment selection alone to retarget `Import-WorkshopEnterpriseAssets.ps1`.
 - [ ] Confirm at least one clean demo environment is reserved for live walkthroughs and any optional solution-package pre-staging.
 
 **If unresolved:** Treat the environment as not ready for hands-on. Both workshop days depend on stable environment and solution access.
@@ -185,7 +185,7 @@ Additional reset options:
 
 ## Document generation readiness
 
-- [ ] Confirm participants have **Microsoft Word desktop** (not Word Online) for Lab 21, or pre-stage the prebuilt `OfferLetterTemplate.docx` from `workshop/assets/Operative09StarterSolution.zip`.
+- [ ] Confirm participants have **Microsoft Word desktop** (not Word Online) for Lab 21, or pre-stage the prebuilt `OfferLetterTemplate.docx` from `workshop/assets/Enterprise09StarterSolution.zip`.
 - [ ] Confirm facilitators can distribute the extracted template to participants who lack Word desktop.
 
 **If unresolved:** Distribute the prebuilt template before Lab 21 starts. Do not let Word desktop availability block the lab.
@@ -204,7 +204,7 @@ Additional reset options:
 
 - [ ] Send pre-event email with schedule, prerequisites, and sign-in expectations.
 - [ ] Share required URLs, tenant guidance, and any software install steps in advance.
-- [ ] Provide Day 1 and Day 2 readiness notes, including Day 2 dependency on Day 1 familiarity or Recruit-equivalent experience.
+- [ ] Provide Day 1 and Day 2 readiness notes, including Day 2 dependency on Day 1 familiarity or Foundation-equivalent experience.
 - [ ] Prepare a support message template for common sign-in, licensing, and environment issues.
 - [ ] Prepare a visible “current lab and restart point” message for breaks.
 
