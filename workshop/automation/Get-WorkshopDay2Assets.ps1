@@ -159,6 +159,8 @@ function Save-WorkshopAsset {
         $invokeWebRequestParameters.UseBasicParsing = $true
     }
 
+    $invokeWebRequestParameters.TimeoutSec = 300
+
     $previousProgressPreference = $ProgressPreference
     $ProgressPreference = 'SilentlyContinue'
 

@@ -147,6 +147,34 @@ function Get-RequiredString {
     return $Value
 }
 
+function Assert-FacilitatorOnlyEnvironment {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Config,
+
+        [Parameter()]
+        [string[]]$AllowedPurposes = @('FacilitatorDemo', 'Fallback')
+    )
+
+    $purpose = $null
+    if ($Config -and $Config.PSObject.Properties.Name -contains 'Workshop' -and $Config.Workshop) {
+        if ($Config.Workshop.PSObject.Properties.Name -contains 'EnvironmentPurpose') {
+            $purpose = [string]$Config.Workshop.EnvironmentPurpose
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($purpose) -or (Test-PlaceholderValue -Value $purpose)) {
+        throw "Workshop.EnvironmentPurpose is not set in config. This script is facilitator-only. Set EnvironmentPurpose to one of: $($AllowedPurposes -join ', ') in workshop-config.json before running."
+    }
+
+    if ($purpose -notin $AllowedPurposes) {
+        throw "Workshop.EnvironmentPurpose is '$purpose' but this script requires one of: $($AllowedPurposes -join ', '). Refusing to run to protect non-facilitator environments."
+    }
+
+    Write-Log -Level INFO -Message "EnvironmentPurpose check passed: $purpose"
+}
+
 function Get-OptionalConfigString {
     param(
         [Parameter()]
@@ -607,7 +635,7 @@ function Get-PacEnvironmentListJson {
     $jsonLines = ($jsonLines -split "`n" | Where-Object { $_ -notmatch '^\s*\[[\d:]+\]' }) -join "`n"
 
     if ([string]::IsNullOrWhiteSpace($jsonLines)) {
-        throw 'pac admin list --json returned no usable output.'
+        throw "pac admin list returned no JSON after filtering diagnostic output. Raw output: $((($rawOutput | ForEach-Object { $_.ToString() }) -join '`n'))"
     }
 
     return $jsonLines | ConvertFrom-Json
@@ -695,6 +723,7 @@ function Get-OAuthAccessToken {
     $tokenResponse = Invoke-RestMethod -Method POST `
         -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" `
         -ContentType 'application/x-www-form-urlencoded' `
+        -TimeoutSec 30 `
         -Body @{
             grant_type    = 'client_credentials'
             client_id     = $ClientId
@@ -867,7 +896,7 @@ function Invoke-DataverseWebApiRequest {
         }
     }
 
-    return Invoke-RestMethod @requestParameters
+    return Invoke-RestMethod @requestParameters -TimeoutSec 120
 }
 
 function Set-EnvironmentCopilotCredits {
@@ -895,6 +924,7 @@ function Set-EnvironmentCopilotCredits {
         -Uri "https://api.powerplatform.com/licensing/environments/$EnvironmentGuid/allocations?api-version=2022-03-01-preview" `
         -ContentType 'application/json' `
         -Headers @{ Authorization = "Bearer $AccessToken" } `
+        -TimeoutSec 60 `
         -Body $body
 }
 
@@ -912,7 +942,8 @@ function Confirm-EnvironmentCopilotCredits {
 
     $response = Invoke-RestMethod -Method GET `
         -Uri "https://api.powerplatform.com/licensing/environments/$EnvironmentGuid/allocations?api-version=2022-03-01-preview" `
-        -Headers @{ Authorization = "Bearer $AccessToken" }
+        -Headers @{ Authorization = "Bearer $AccessToken" } `
+        -TimeoutSec 60
 
     $allocs = $response.currencyAllocations
     if ($null -eq $allocs) { $allocs = $response.value }
@@ -949,6 +980,13 @@ function Invoke-WithRetry {
             return & $ScriptBlock
         }
         catch {
+            $reason = [string]$_.CategoryInfo.Reason
+            $exceptionTypeName = if ($null -ne $_.Exception) { $_.Exception.GetType().Name } else { '' }
+            $nonRetryableTypes = @('AuthenticationException', 'UnauthorizedAccessException', 'SecurityException')
+            if ($exceptionTypeName -in $nonRetryableTypes -or $reason -match '(?i)(auth|unauthor)') {
+                throw "$OperationName failed without retry because the error is non-retryable (exception: $exceptionTypeName, reason: $reason). Last error: $_"
+            }
+
             $errorText = $_.ToString()
             $matchedNonRetryablePattern = $NonRetryablePatterns | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and $errorText -match $_ } | Select-Object -First 1
             if ($matchedNonRetryablePattern) {
@@ -976,7 +1014,9 @@ function Save-StudentEnvironmentMap {
     )
 
     $json = ConvertTo-Json -InputObject @($StudentMap) -Depth 10
-    Set-Content -LiteralPath $Path -Value $json -Encoding UTF8
+    $tempPath = "$Path.tmp"
+    Set-Content -LiteralPath $tempPath -Value $json -Encoding UTF8
+    Move-Item -Force -LiteralPath $tempPath -Destination $Path
 }
 
 function Read-StudentEnvironmentMap {

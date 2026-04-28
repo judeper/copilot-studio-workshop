@@ -412,31 +412,41 @@ if ($null -eq $existingSite) {
     $rootTenantUrl = $adminUrl -replace '-admin\.sharepoint\.com', '.sharepoint.com'
 
     try {
-        # Connect to root tenant URL — New-PnPSite calls SPSiteManager/create which lives on the root site
-        $rootConnection = Connect-WorkshopPnPOnline -Url $rootTenantUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -ReturnConnection -Label 'tenant root (for site creation)'
-        New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
-            -Title $siteTitle `
-            -Url $siteUrl `
-            -Connection $rootConnection `
-            -Description $siteDescription | Out-Null
+        try {
+            # Connect to root tenant URL — New-PnPSite calls SPSiteManager/create which lives on the root site
+            $rootConnection = Connect-WorkshopPnPOnline -Url $rootTenantUrl -Tenant $tenantId -ClientId $pnpClientId -LoginMode $pnpLoginMode -CertificateThumbprint $pnpCertificateThumbprint -ReturnConnection -Label 'tenant root (for site creation)'
+            New-PnPSite -Type TeamSiteWithoutMicrosoft365Group `
+                -Title $siteTitle `
+                -Url $siteUrl `
+                -Connection $rootConnection `
+                -Description $siteDescription | Out-Null
+        }
+        catch {
+            Write-StepResult -Level WARN -Message "New-PnPSite failed: $($_.Exception.Message). Trying New-PnPTenantSite..."
+
+            # Fallback: use the classic admin cmdlet from admin URL
+            $adminWeb = Get-PnPWeb -Connection $adminConnection -ErrorAction Stop
+            $adminCurrentUser = Get-PnPProperty -ClientObject $adminWeb -Property CurrentUser
+            New-PnPTenantSite `
+                -Title $siteTitle `
+                -Url $siteUrl `
+                -Template 'STS#3' `
+                -Owner $adminCurrentUser.Email `
+                -Connection $adminConnection `
+                -TimeZone 13 `
+                -Wait
+        }
+
+        Wait-ForSiteProvisioning -SiteUrl $siteUrl -AdminConnection $adminConnection
     }
     catch {
-        Write-StepResult -Level WARN -Message "New-PnPSite failed: $($_.Exception.Message). Trying New-PnPTenantSite..."
-
-        # Fallback: use the classic admin cmdlet from admin URL
-        $adminWeb = Get-PnPWeb -Connection $adminConnection -ErrorAction Stop
-        $adminCurrentUser = Get-PnPProperty -ClientObject $adminWeb -Property CurrentUser
-        New-PnPTenantSite `
-            -Title $siteTitle `
-            -Url $siteUrl `
-            -Template 'STS#3' `
-            -Owner $adminCurrentUser.Email `
-            -Connection $adminConnection `
-            -TimeZone 13 `
-            -Wait
+        # Wait-ForSiteProvisioning throws when provisioning never completes; clean up the half-created site so reruns can recreate it.
+        if ($_.Exception.Message -match 'was not provisioned within') {
+            Write-StepResult -Level WARN -Message "Site provisioning timed out for '$siteUrl'. Attempting cleanup before rethrowing."
+            Remove-PnPTenantSite -Url $siteUrl -Force -SkipRecycleBin -Connection $adminConnection -ErrorAction SilentlyContinue
+        }
+        throw
     }
-
-    Wait-ForSiteProvisioning -SiteUrl $siteUrl -AdminConnection $adminConnection
 }
 else {
     Write-StepResult -Level PASS -Message "SharePoint site '$siteUrl' already exists."

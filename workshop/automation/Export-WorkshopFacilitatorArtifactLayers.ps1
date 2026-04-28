@@ -142,6 +142,7 @@ function Get-RepairableLabSnapshot {
 
 Write-Section "Loading facilitator artifact packaging inputs"
 $config = Get-WorkshopConfig -Path $ConfigPath
+Assert-FacilitatorOnlyEnvironment -Config $config
 $manifest = Get-FacilitatorFallbackManifest -Path $ManifestPath
 
 $sourceEnvironmentUrl = if ($PSBoundParameters.ContainsKey('EnvironmentUrl')) {
@@ -157,7 +158,7 @@ else {
 }
 
 $configuredTargetEnvironmentUrl = Get-OptionalConfigString -Value $config.EnvironmentUrl
-$context = New-DataverseClientContext -Config $config -EnvironmentUrl $sourceEnvironmentUrl -EnsureApplicationUserPresent
+$context = New-DataverseClientContext -Config $config -EnvironmentUrl $sourceEnvironmentUrl -EnsureApplicationUserPresent  # explicit for clarity — switch defaults to off in New-DataverseClientContext
 
 Write-StepResult -Level INFO -Message "Packaging facilitator artifact layers from '$sourceEnvironmentUrl'."
 if (-not [string]::IsNullOrWhiteSpace($configuredTargetEnvironmentUrl) -and -not (Test-PlaceholderValue -Value $configuredTargetEnvironmentUrl)) {

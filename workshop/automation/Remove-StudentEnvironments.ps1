@@ -195,8 +195,23 @@ function Get-PacAdminEnvironmentRecord {
     )
 
     $normalizedEnvironmentUrl = Normalize-EnvironmentUrl -Url $EnvironmentUrl
-    $pacOutput = & pac admin list --json 2>&1
+    try {
+        $pacOutput = & pac admin list --json 2>&1
+    }
+    catch {
+        $exceptionMessage = [string]$_.Exception.Message
+        if ($exceptionMessage -match '(?i)(not found|does not exist)') {
+            Write-Log -Level Information -Message "Environment already removed: $($EnvironmentGuid)$(if ($EnvironmentUrl) { " ($EnvironmentUrl)" })" -Component 'ENV'
+            return $null
+        }
+        throw
+    }
     $pacOutputText = ($pacOutput | Out-String).Trim()
+
+    if ($pacOutputText -match '(?mi)(not found|does not exist)') {
+        Write-Log -Level Information -Message "Environment already removed: $($EnvironmentGuid)$(if ($EnvironmentUrl) { " ($EnvironmentUrl)" })" -Component 'ENV'
+        return $null
+    }
 
     if ($pacOutputText -match '(?mi)^Error:') {
         throw "pac admin list failed. $pacOutputText"

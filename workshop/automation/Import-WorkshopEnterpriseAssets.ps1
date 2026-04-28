@@ -198,7 +198,7 @@ function Invoke-DataverseGet {
     )
 
     $uri = New-DataverseQueryUri -EnvironmentUrl $EnvironmentUrl -EntitySetName $EntitySetName -Select $Select -Filter $Filter
-    return Invoke-RestMethod -Method GET -Uri $uri -Headers (Get-DataverseHeaders -AccessToken $AccessToken)
+    return Invoke-RestMethod -Method GET -Uri $uri -Headers (Get-DataverseHeaders -AccessToken $AccessToken) -TimeoutSec 120
 }
 
 function Get-SingleDataverseRecord {
@@ -254,7 +254,7 @@ function Invoke-DataverseCreate {
     )
 
     $headers = Get-DataverseHeaders -AccessToken $AccessToken
-    Invoke-RestMethod -Method POST -Uri "$($EnvironmentUrl.TrimEnd('/'))/api/data/v9.2/$EntitySetName" -Headers $headers -ContentType 'application/json' -Body ($Body | ConvertTo-Json -Depth 10) | Out-Null
+    Invoke-RestMethod -Method POST -Uri "$($EnvironmentUrl.TrimEnd('/'))/api/data/v9.2/$EntitySetName" -Headers $headers -ContentType 'application/json' -Body ($Body | ConvertTo-Json -Depth 10) -TimeoutSec 120 | Out-Null
 }
 
 function Invoke-DataverseUpdate {
@@ -276,7 +276,7 @@ function Invoke-DataverseUpdate {
     )
 
     $headers = Get-DataverseHeaders -AccessToken $AccessToken
-    Invoke-RestMethod -Method PATCH -Uri "$($EnvironmentUrl.TrimEnd('/'))/api/data/v9.2/$EntitySetName($RecordId)" -Headers $headers -ContentType 'application/json' -Body ($Body | ConvertTo-Json -Depth 10) | Out-Null
+    Invoke-RestMethod -Method PATCH -Uri "$($EnvironmentUrl.TrimEnd('/'))/api/data/v9.2/$EntitySetName($RecordId)" -Headers $headers -ContentType 'application/json' -Body ($Body | ConvertTo-Json -Depth 10) -TimeoutSec 120 | Out-Null
 }
 
 function Upsert-DataverseRecord {
@@ -465,6 +465,7 @@ function Import-WorkshopDay2BaseData {
 
 Write-Section "Loading workshop configuration"
 $config = Get-WorkshopConfig -Path $ConfigPath
+Assert-FacilitatorOnlyEnvironment -Config $config
 
 $enterpriseZipPath = Assert-FileExists -Path (Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.EnterpriseSolutionZipPath)) -Label 'WoodgroveLending solution package'
 $jobRolesCsvPath = Assert-FileExists -Path (Resolve-ConfiguredPath -ConfigPath $ConfigPath -ConfiguredPath ([string]$config.Day2.LoanTypesCsvPath)) -Label 'Loan types CSV'
