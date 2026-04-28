@@ -14,7 +14,7 @@ In this lab, you will automate the first step of the Loan Processing Agent pipel
 2. [Maker] Confirm that you can create a SharePoint document library and a Power Automate connection.
 3. [Maker] Confirm that the **Application Document** Dataverse table (displayed as **Application Documents** in Power Automate table pickers) exists from the imported lending solution.
 4. [IT Pro] Confirm that your tenant policies allow SharePoint, Dataverse, and Microsoft Teams connections.
-5. [Maker] Download or locate one sample loan document PDF for testing. Two fictitious sample documents are available in `workshop/assets/` (`AVERY EXAMPLE (FICTITIOUS).pdf` and `TAYLOR TESTPERSON (FICTITIOUS).pdf`).
+5. [Maker] Download or locate one sample loan document PDF for testing. Two fictitious sample documents are available in `workshop/assets/` (`MORGAN CHEN (FICTITIOUS).pdf` and `ALEX RIVERA (FICTITIOUS).pdf`).
 
 #### Step-by-Step Instructions
 #### Part 1 — Create the SharePoint drop-off location
