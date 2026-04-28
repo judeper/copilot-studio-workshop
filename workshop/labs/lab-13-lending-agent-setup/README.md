@@ -48,7 +48,7 @@ In this lab, you will stand up the Day 2 Loan Processing Agent scenario that you
 2. On the command bar, select the **...** (more commands) dropdown, then select **Import from CSV**.
 3. Select **Choose File**, upload `loan-types.csv`, confirm the **Owner For Imported Records** is set to your account, and then select **Next**.
 4. On the **Delimiter Settings** screen, keep the defaults (Quotation mark data delimiter, Comma field delimiter, First row contains column headings checked, Allow Duplicates set to **No**) and select **Next**.
-5. On the **Map Attributes** screen, in the **Primary Fields** section, map **Loan Name** by selecting the matching source column from the dropdown. The `loan-types.csv` columns are: `Loan Name`, `Description`, `Close Date`, `Number of Loans`.
+5. On the **Map Attributes** screen, in the **Primary Fields** section, map **Loan Type Name** by selecting the matching source column from the dropdown. The `loan-types.csv` columns are: `Loan Type Name`, `Description`, `Maximum Term (Months)`, `Minimum Amount`, `Maximum Amount`.
 6. Select **Finish Import**.
 7. When the confirmation reads **Your data has been submitted for import**, select **Done**. Wait for the import to complete and then select **Refresh** until you see the imported loan type records.
 8. In the left navigation, select **Assessment Criteria**.

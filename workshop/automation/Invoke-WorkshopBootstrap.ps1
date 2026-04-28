@@ -8,7 +8,7 @@
 
     Two ways to run:
     1. From a cloned repo:  powershell -File .\workshop\automation\Invoke-WorkshopBootstrap.ps1
-    2. From any machine:    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/master/workshop/automation/Invoke-WorkshopBootstrap.ps1)))
+    2. From any machine:    & ([scriptblock]::Create((irm https://raw.githubusercontent.com/judeper/copilot-studio-workshop/$Branch/workshop/automation/Invoke-WorkshopBootstrap.ps1)))
 #>
 [CmdletBinding()]
 param(
@@ -16,7 +16,10 @@ param(
     [string]$ConfigPath,
 
     [Parameter()]
-    [string]$RepoUrl = 'https://github.com/judeper/copilot-studio-workshop.git'
+    [string]$RepoUrl = 'https://github.com/judeper/copilot-studio-workshop.git',
+
+    [Parameter()]
+    [string]$Branch = 'master'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -56,6 +59,9 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
 # ============================================================================
 # Helpers (inline -- cannot depend on Common.ps1 until repo is confirmed)
 # ============================================================================
+# NOTE: Logging helpers are duplicated inline because this bootstrap
+# script runs BEFORE the repository (and Common.ps1) is cloned.
+# Once the repo is available, downstream scripts dot-source Common.ps1.
 
 # Detect execution context: invoked via irm | iex (no $PSScriptRoot) vs file
 $scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { $null }
@@ -169,7 +175,7 @@ if ($null -eq $repoRoot) {
         if (-not (Test-Path -LiteralPath (Join-Path -Path $cloneTarget -ChildPath '.git'))) {
             # Empty folder with the right name -- clone into current dir
             Write-Host "Cloning repository into current directory ($cloneTarget)..." -ForegroundColor Cyan
-            & git clone $RepoUrl . 2>&1 | Out-Null
+            & git clone --branch $Branch $RepoUrl . 2>&1 | Out-Null
             if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
         }
     } else {
@@ -178,7 +184,7 @@ if ($null -eq $repoRoot) {
             Write-Status -Label 'Repository' -Status "Already cloned at $cloneTarget" -Color 'Green'
         } else {
             Write-Host "Cloning repository to $cloneTarget..." -ForegroundColor Cyan
-            & git clone $RepoUrl $cloneTarget 2>&1 | Out-Null
+            & git clone --branch $Branch $RepoUrl $cloneTarget 2>&1 | Out-Null
             if ($LASTEXITCODE -ne 0) { throw 'git clone failed.' }
         }
     }

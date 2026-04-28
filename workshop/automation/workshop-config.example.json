@@ -19,8 +19,11 @@
   "FacilitatorFallback": {
     "SourceEnvironmentUrl": "<replace-with-gold-source-org-url>",
     "CopyType": "FullCopy",
+    "_CopyTypeDoc": "MinimalCopy (faster, structure-only) or FullCopy (full data clone)",
     "MaxAsyncWaitTimeMinutes": 120,
-    "SkipAuditData": false
+    "_MaxAsyncWaitTimeMinutesDoc": "How long to poll pac admin copy before giving up (default 120)",
+    "SkipAuditData": false,
+    "_SkipAuditDataDoc": "true to skip audit history during copy (faster, recommended)"
   },
 
   "SharePoint": {

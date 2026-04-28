@@ -12,7 +12,7 @@ In this lab, you will extend the Loan Processing Agent solution with Model Conte
 > **Note:** MCP integration with pre-built servers uses **Work IQ MCP**, the intelligence layer that grounds agents in real-time Microsoft 365 context. Work IQ MCP requires a **Microsoft 365 Copilot license**. If the MCP servers do not appear in your environment, ask your facilitator whether the required license and access are enabled. If MCP servers are unavailable, the facilitator will demo this lab.
 
 #### Prerequisites
-1. Complete **Lab 15** so you have **Loan Review Agent** or **Loan Processing Agent** ready for extension.
+1. Complete **Lab 15** so you have **Loan Processing Agent** ready for extension.
 2. **Microsoft 365 Copilot license** is required for Work IQ MCP servers. Confirm your workshop account has this license before starting.
 3. Have a manager configured for your workshop account in the Microsoft 365 Admin Center.
 4. Have at least one meeting on your calendar in the upcoming 24 hours.
@@ -22,7 +22,7 @@ In this lab, you will extend the Loan Processing Agent solution with Model Conte
 
 #### Step-by-Step Instructions
 #### Part 1 — Browse the MCP server catalog
-1. Open **Loan Review Agent** (if you completed Lab 15) or **Loan Processing Agent** (if you skipped Lab 15) in Copilot Studio.
+1. Open **Loan Processing Agent** in Copilot Studio.
 2. Select **Tools** in the top navigation and then select **+ Add a tool**.
 3. In the **Add tool** dialog, locate the filter row: **All | Connector | Prompt | Flow | REST API | Model Context Protocol**.
 4. Select the **Model Context Protocol** filter tab.
@@ -49,7 +49,7 @@ In this lab, you will extend the Loan Processing Agent solution with Model Conte
 7. If the consent card appears again for this new server, select **Allow**.
 8. Confirm the agent returns your current meeting information.
 
-![Loan Review Agent with MCP tools configured](./assets/lab-22-mcp-tools.png)
+![Loan Processing Agent with MCP tools configured](./assets/lab-22-mcp-tools.png)
 
 #### Part 4 — Schedule an loan review meeting
 1. Start a **New test session**.

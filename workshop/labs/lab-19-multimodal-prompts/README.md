@@ -97,4 +97,4 @@ Officer context: /OfficerContext
 1. Show both a clean PDF and a messy phone photo so participants see why multimodal prompt quality depends on input quality.
 2. Emphasize that multimodal extraction is a building block; later labs connect it to grounding and workflow automation.
 3. If time is short, have everyone test the PDF path first and demo the image path centrally.
-4. A prebuilt starter template is available at `workshop\assets\FSI07StarterTemplate.zip`. Offer it to participants who need help getting started or are falling behind. If they use it, remind them to reconfigure any placeholder Teams routing, Dataverse environment values, and app or view ID placeholders after import.
+4. A prebuilt starter template is available at `workshop\assets\Enterprise07StarterTemplate.zip`. Offer it to participants who need help getting started or are falling behind. If they use it, remind them to reconfigure any placeholder Teams routing, Dataverse environment values, and app or view ID placeholders after import.

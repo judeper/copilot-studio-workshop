@@ -69,7 +69,7 @@
 - `FacilitatorFallback` contains the advanced facilitator-only full-copy settings: `SourceEnvironmentUrl`, `CopyType`, `MaxAsyncWaitTimeMinutes`, `SkipAuditData`.
 - `SharePoint` contains: `AdminUrl`, `SiteUrl`, `SiteTitle`, `SiteAlias`, `SitePrefix`, `SiteDescription`, `PnPClientId`, `PnPLoginMode`, `PnPCertificateThumbprint`.
 - `Teams` contains: `WorkshopTeamName`, `StudentTeamPrefix`.
-- `Identity` contains: `WoodgroveBankAgentsGroupName`, `ParticipantEmails` (array of student email addresses for batch provisioning), `ClientSecret`, and `ClientSecretEnvVar`.
+- `Identity` contains: `AgentCreatorsGroupName`, `ParticipantEmails` (array of student email addresses for batch provisioning), `ClientSecret`, and `ClientSecretEnvVar`.
 - `Workshop` contains: `Wave`, `Concurrency`.
 - When adding new config fields, add them to `workshop-config.example.json` with placeholder values and document them in the facilitator guide.
 

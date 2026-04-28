@@ -76,13 +76,13 @@ In this lab, you will prepare the shared Woodgrove Bank workshop scenario used t
 
 ![SharePoint team site creation form with Woodgrove Bank values](./assets/lab-00-sharepoint-site.png)
 
-#### Step 6 — Prepare the Devices list for later labs
+#### Step 6 — Prepare the Customer Accounts list for later labs
 1. In the **Woodgrove Bank** site, select **Site contents** and open the **Customer Accounts** list.
 2. Scroll to the far right of the list header, select **+ Add column**, choose **Hyperlink**, enter `Image` in the **Name** field, and select **Save**.
 3. Select **New** and create at least four sample items using the values below, keeping **Status** set to `Available` for at least three items.
 4. Enter values such as `Surface Laptop 13`, `Surface Laptop 15`, `Surface Pro 12`, and `Surface Studio` in the **Title** field.
 5. Populate the remaining fields with realistic values for **Manufacturer**, **Model**, **Asset Type**, **Color**, **Serial Number**, **Purchase Date**, **Purchase Price**, and **Order #**.
-6. Open the **Status** column settings and confirm the choices include `Available` and `Requested`. Add `Requested` if it is missing, because Lab 09 uses this value when processing device request flows.
+6. Open the **Status** column settings and confirm the choices include `Available` and `Requested`. Add `Requested` if it is missing, because Lab 09 uses this value when processing account request flows.
 7. If your tenant allows public image links, paste a valid PNG or JPG URL into the new **Image** column; otherwise leave the field blank.
 8. Save each item and confirm the list displays the rows.
 
@@ -100,7 +100,7 @@ In this lab, you will prepare the shared Woodgrove Bank workshop scenario used t
 2. Confirm the **Woodgrove Bank** SharePoint site opens successfully from the saved site URL.
 3. Confirm the **Customer Accounts** list contains at least four items and the **Image** column is visible.
 4. Confirm the **Service Requests** list contains at least one sample ticket.
-5. Record these four values in your notes: tenant domain, environment name, SharePoint site URL, and one sample device title.
+5. Record these four values in your notes: tenant domain, environment name, SharePoint site URL, and one sample account title.
 
 #### Troubleshooting
 > **Tip:** If Copilot Studio opens in the wrong environment, select the environment name in the upper-right corner and switch back to your developer environment before creating any agents.

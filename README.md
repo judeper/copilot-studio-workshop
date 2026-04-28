@@ -102,7 +102,7 @@ Use the PPTX decks for presentation and screen sharing, then use the markdown ou
 
 | Lab | Title | Time |
 |-----|-------|------|
-| [13](workshop/labs/lab-13-loan-processing-agent-setup/) | Loan Processing Agent Setup | 45 min |
+| [13](workshop/labs/lab-13-lending-agent-setup/) | Loan Processing Agent Setup | 45 min |
 | [14](workshop/labs/lab-14-agent-instructions/) | Agent Instructions | 25 min |
 | [15](workshop/labs/lab-15-multi-agent/) | Multi-Agent Orchestration | 40 min |
 | [16](workshop/labs/lab-16-trigger-automation/) | Trigger Automation | 40 min |

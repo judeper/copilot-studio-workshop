@@ -13,7 +13,7 @@ In this lab, you will extend the Loan Processing Agent scenario with a loan asse
 1. Complete **Lab 13** and **Lab 20** in the same environment.
 2. Confirm that you have at least one applicant (`wgb_applicant`), one loan application (`wgb_loanapplication`), and one loan type (`wgb_loantype`) available for testing.
 3. Confirm that you can edit a Word document template and store it in SharePoint or OneDrive.
-4. [Maker] You need **Microsoft Word desktop** (not Word Online) to create the template with content controls. If you do not have Word desktop, the prebuilt `Loan_Assessment_Template.docx` is included in `workshop/assets/FSI09StarterSolution.zip`. Extract it and upload it to SharePoint before starting Part 1.
+4. [Maker] You need **Microsoft Word desktop** (not Word Online) to create the template with content controls. If you do not have Word desktop, the prebuilt `Loan_Assessment_Template.docx` is included in `workshop/assets/Enterprise09StarterSolution.zip`. Extract it and upload it to SharePoint before starting Part 1.
 5. Confirm that the flow account can use **Word Online (Business)** and **Dataverse** connections.
 
 #### Step-by-Step Instructions
@@ -105,5 +105,5 @@ AssignedOfficer: /AssignedOfficer
 #### Facilitator Notes
 1. This lab intentionally uses a stable GA document-generation pattern: prompt for narrative, Word template for layout, flow for assembly.
 2. Have one known-good application number ready so you can demonstrate the finished document quickly.
-3. If time is short, provide a prebuilt template and spend class time on prompt, flow, and topic wiring. A starter solution is available at `workshop\assets\FSI09StarterSolution.zip` which includes a prebuilt `Loan_Assessment_Template.docx` for participants who do not have Word desktop or need a head start.
+3. If time is short, provide a prebuilt template and spend class time on prompt, flow, and topic wiring. A starter solution is available at `workshop\assets\Enterprise09StarterSolution.zip` which includes a prebuilt `Loan_Assessment_Template.docx` for participants who do not have Word desktop or need a head start.
 

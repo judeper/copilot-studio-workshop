@@ -11,9 +11,6 @@ workshop/automation/student-environment-map.json
 # Node.js dependencies (installed via npm install in workshop/automation)
 workshop/automation/node_modules/
 
-# Generated PDF output (regenerate with: node workshop/automation/Generate-WorkshopPDFs.js)
-workshop/pdf-output/
-
 # Certificate private keys
 *.cer
 *.pfx
