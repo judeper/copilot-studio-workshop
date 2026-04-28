@@ -6,6 +6,8 @@
 
 ⏱ Estimated time: 40 min
 
+> **Model guidance:** See [Model Baseline](../../facilitator-guide/model-baseline.md) for current preferred and fallback models.
+
 #### Overview
 In this lab, you will ground the Loan Processing Agent workflow in a live Dataverse table of loan products. You will verify the **Loan Type** (`wgb_loantype`) table, connect that table to a prompt, and produce applicant-to-product matches based on the current Woodgrove Bank product catalog instead of static text.
 

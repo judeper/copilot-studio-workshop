@@ -6,6 +6,8 @@
 
 ⏱ Estimated time: 35 min
 
+> **Model guidance:** See [Model Baseline](../../facilitator-guide/model-baseline.md) for current preferred and fallback models.
+
 #### Overview
 In this lab, you will teach the Loan Processing Agent to read financial documents as uploaded files or images, not just as plain text. You will create a multimodal prompt that extracts structured lending data from a PDF loan application and returns consistent JSON that later labs can reuse.
 

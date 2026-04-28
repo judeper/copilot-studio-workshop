@@ -199,6 +199,7 @@ function Wait-ForTargetDataverseAfterCopy {
 
 Write-Section "Loading facilitator fallback configuration"
 $config = Get-WorkshopConfig -Path $ConfigPath
+Assert-FacilitatorOnlyEnvironment -Config $config
 Require-Command -Name 'pac'
 
 $fallbackConfig = if ($config.PSObject.Properties.Match('FacilitatorFallback').Count -gt 0) {

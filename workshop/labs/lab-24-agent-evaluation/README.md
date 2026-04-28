@@ -6,6 +6,8 @@
 
 ⏱ Estimated time: 45 min
 
+> **Model guidance:** See [Model Baseline](../../facilitator-guide/model-baseline.md) for current preferred and fallback models.
+
 #### Overview
 In this lab, you will use Copilot Studio evaluation capabilities to measure the quality of the **Loan Processing Agent** with a repeatable test set instead of relying on manual validation alone. You will create or import test cases, run an evaluation, review graders and detailed results, inspect the **activity map** diagnostic path for one failing case, and improve the agent instructions based on evidence from the run. The workflow connects directly to the operational quality pattern used in transcript-analysis architectures: evaluate behavior, diagnose why it happened, and feed improvements back into the live agent.
 

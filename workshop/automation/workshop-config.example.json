@@ -54,7 +54,9 @@
 
   "Workshop": {
     "Wave": "<replace-with-wave-identifier>",
-    "Concurrency": 5
+    "Concurrency": 5,
+    "EnvironmentPurpose": "FacilitatorDemo",
+    "_EnvironmentPurposeDoc": "Safety guard for the environment referenced by EnvironmentUrl. Valid values: 'Student' (per-student sandbox), 'FacilitatorDemo' (facilitator-only demo base), 'Fallback' (facilitator-only rebuilt fallback target), 'Shared' (shared student prerequisites). Facilitator-only scripts (Import-WorkshopEnterpriseAssets, Set-WorkshopFacilitatorFallbackSource, Export-WorkshopFacilitatorArtifactLayers, Invoke-WorkshopFacilitatorBindingRepair, Invoke-WorkshopFacilitatorFallbackBuild, Invoke-WorkshopFacilitatorFallbackValidation, Remove-WorkshopFacilitatorEnvironment) refuse to run unless EnvironmentPurpose is 'FacilitatorDemo' or 'Fallback'."
   },
 
   "Day1": {

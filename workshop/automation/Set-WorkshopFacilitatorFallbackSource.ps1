@@ -129,6 +129,7 @@ function Get-CandidateEnvironmentRows {
 
 Write-Section "Loading facilitator fallback source inputs"
 $config = Get-WorkshopConfig -Path $ConfigPath
+Assert-FacilitatorOnlyEnvironment -Config $config
 Require-Command -Name 'pac'
 
 if ($ListCandidates) {

@@ -101,6 +101,7 @@ function Wait-ForPacEnvironmentDeletion {
 
 Write-Section 'Loading facilitator environment cleanup inputs'
 $config = Get-WorkshopConfig -Path $ConfigPath
+Assert-FacilitatorOnlyEnvironment -Config $config
 Require-Command -Name 'pac'
 
 $targetEnvironmentUrl = if ($PSBoundParameters.ContainsKey('EnvironmentUrl')) {

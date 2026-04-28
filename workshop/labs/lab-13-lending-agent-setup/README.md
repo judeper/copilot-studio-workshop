@@ -11,6 +11,19 @@ In this lab, you will stand up the Day 2 Loan Processing Agent scenario that you
 
 > Note: Keep the same Power Platform environment, solution, and agent names through Labs 13–23 so later labs can build on this setup without rework.
 
+## Day 1 → Day 2 bridge
+
+You're carrying these Day 1 skills into a richer enterprise context. Same Copilot Studio surface, deeper governance and orchestration.
+
+| Day 1 concept (Customer Service Agent) | Day 2 enterprise control (Loan Processing) |
+| --- | --- |
+| SharePoint grounding | Dataverse + structured tables (wgb_loantype, wgb_applicant, wgb_loanapplication) |
+| Single agent | Multi-agent orchestration (Loan Processing → Document Review, Loan Advisory) |
+| Adaptive cards in topics | AI-generated documents from Word templates |
+| Power Automate flow | Triggered automations + Dataverse reactions |
+| Manual model choice | Model baseline guidance + per-prompt moderation |
+| Test pane | Evaluation suite + activity map for governance |
+
 #### Prerequisites
 1. [Maker] Sign in to a Microsoft Power Platform environment where you can create solutions, tables, flows, and agents.
 2. [Maker] Confirm that you have a Copilot Studio license or trial assigned.

@@ -521,3 +521,14 @@ if ($ImportBaseData) {
     Import-WorkshopDay2BaseData -Config $config -EnvironmentUrl $environmentUrl -LoanTypeRows $loanTypeRows -AssessmentCriteriaRows $assessmentCriteriaRows
     Write-StepResult -Level PASS -Message 'Imported the Day 2 Woodgrove Lending Hub base data, including loan types, assessment criteria, sample applicants, application documents, and loan applications.'
 }
+
+Write-Section "Environment status"
+if ($ImportSolution -and $ImportBaseData) {
+    Write-StepResult -Level PASS -Message 'Environment status: DEMO-READY (solution + Lab 13 base data imported in a single run).'
+}
+elseif ($ImportBaseData) {
+    Write-StepResult -Level PASS -Message 'Environment status: DEMO-READY (solution + Lab 13 base data imported).'
+}
+elseif ($ImportSolution) {
+    Write-StepResult -Level WARN -Message 'Environment status: SOLUTION-ONLY (Lab 13 base data NOT imported — run with -ImportBaseData for demo-ready).'
+}

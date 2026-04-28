@@ -197,6 +197,7 @@ function Write-RepairChecklist {
 
 Write-Section "Loading facilitator binding repair inputs"
 $config = Get-WorkshopConfig -Path $ConfigPath
+Assert-FacilitatorOnlyEnvironment -Config $config
 $artifactPackage = Get-ArtifactPackage -Path $ArtifactPath
 
 $targetEnvironmentUrl = if ($PSBoundParameters.ContainsKey('EnvironmentUrl')) {

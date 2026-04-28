@@ -75,6 +75,16 @@ else {
 Write-Section "Recommended next steps"
 Write-StepResult -Level INFO -Message "StudentReady mode prepares the shared prerequisites and intentionally leaves agent authoring, topic creation, flow building, MCP setup, Teams publishing, and evaluation for the student walkthrough."
 Write-StepResult -Level INFO -Message "Use FacilitatorDemo mode only against a separate demo environment when you want Lab 13 pre-staged instead of student-authored."
+
+if ($Mode -eq 'FacilitatorDemo') {
+    Write-Section "FacilitatorDemo readiness"
+    if ($shouldImportEnterpriseSolution) {
+        Write-StepResult -Level WARN -Message 'Environment status: SOLUTION-ONLY. The WoodgroveLending solution was imported, but Lab 13 base data is NOT yet loaded. Run Import-WorkshopEnterpriseAssets.ps1 -ImportBaseData against this same environment to reach DEMO-READY.'
+    }
+    else {
+        Write-StepResult -Level WARN -Message 'Environment status: NOT DEMO-READY. Solution import was skipped (Day2.ImportEnterpriseSolution=false or -ImportEnterpriseSolution:$false). Run Import-WorkshopEnterpriseAssets.ps1 -ImportSolution -ImportBaseData against this environment to reach DEMO-READY.'
+    }
+}
 if ($CreateEnvironment) {
     Write-StepResult -Level WARN -Message "Environment bootstrap does not grant Copilot Studio author permissions, maker access, or connector/DLP approvals. Validate those separately before delivery."
 }

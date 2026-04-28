@@ -82,6 +82,7 @@ function Get-FetchAggregateCount {
 
 Write-Section "Loading facilitator fallback validation inputs"
 $config = Get-WorkshopConfig -Path $ConfigPath
+Assert-FacilitatorOnlyEnvironment -Config $config
 $manifest = Get-FacilitatorFallbackManifest -Path $ManifestPath
 
 Require-Command -Name 'pac'

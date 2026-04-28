@@ -3,6 +3,8 @@
 ### Lab 17 — Model Selection
 ⏱ Estimated time: 30 min
 
+> **Model guidance:** See [Model Baseline](../../facilitator-guide/model-baseline.md) for current preferred and fallback models.
+
 #### Overview
 In this lab, you will compare model options for the Loan Processing Agent and choose a working baseline for the rest of Day 2. The workshop default is **GPT-5 Chat** when it is available in your environment, but you will also review how **GPT-4.1** and **Claude Sonnet 4.5** trade off across accuracy, latency, and cost.
 

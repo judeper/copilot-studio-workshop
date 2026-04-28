@@ -3,6 +3,8 @@
 ### Lab 06 — Build the Customer Service Agent
 ⏱ Estimated time: 75 min
 
+> **Model guidance:** See [Model Baseline](../../facilitator-guide/model-baseline.md) for current preferred and fallback models.
+
 #### Overview
 In this lab, you will create the main workshop agent, `Woodgrove Customer Service Agent`, by describing the experience in natural language. You will refine the generated result, add trusted public knowledge, connect the internal SharePoint site created in Lab 00, apply a metadata filter to improve retrieval quality, upload files for focused local references, and test grounded answers.
 

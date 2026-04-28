@@ -68,6 +68,19 @@ This lab is presentation-first and closes the day with the commercial model behi
 
 > **Warning:** Avoid promising exact pricing outcomes during the workshop unless you are using current customer-approved numbers and the official estimator.
 
+## Day 1 Exit Checklist (Day 2 readiness gate)
+
+Before starting Day 2, confirm each item. If three or more are missing, plan to observe Day 2 rather than build.
+
+- [ ] Your Woodgrove Customer Service Agent is published and responds to a test query
+- [ ] You can identify which model your agent uses and switch it (preferred GPT-5 Chat, fallback GPT-4.1 — see facilitator-guide/model-baseline.md)
+- [ ] You added at least one knowledge source and observed grounded vs ungrounded behavior
+- [ ] You created at least one custom topic (Lab 07) end-to-end
+- [ ] You wired one adaptive card and one Power Automate flow into a topic (Labs 08-09)
+- [ ] You understand which environment your agent lives in and your role (Maker vs Owner)
+- [ ] You have access to a Day 2 environment (or know which provided one to use)
+- [ ] Your tenant has Copilot Studio credits or messages allocated (or you know who can grant them)
+
 #### Facilitator Notes
 1. Keep this lab anchored to the workshop scenario, not abstract licensing theory.
 2. Use the FAQ answers as discussion prompts and let [IT Pro] participants add tenant governance considerations.
