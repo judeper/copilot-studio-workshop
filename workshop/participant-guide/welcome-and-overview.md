@@ -29,7 +29,7 @@ Helpful lab references:
 
 - [Day 1 environment and foundations](../labs/lab-00-environment-setup/)
 - [Day 1 Build the Customer Service Agent](../labs/lab-06-custom-agent/)
-- [Day 2 Loan Processing Agent setup](../labs/lab-13-hiring-agent-setup/)
+- [Day 2 Loan Processing Agent setup](../labs/lab-13-lending-agent-setup/)
 - [Day 2 MCP integration](../labs/lab-22-mcp-integration/)
 - [Day 2 agent evaluation](../labs/lab-24-agent-evaluation/)
 - [Day 2 optional VS Code workflow](../labs/lab-25-vscode-extension/)

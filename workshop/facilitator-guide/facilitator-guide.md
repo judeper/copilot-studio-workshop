@@ -248,7 +248,7 @@ Recommended labs to reference:
 
 Shared core path:
 
-- [Lab 13 - Loan Processing Agent Setup](../labs/lab-13-hiring-agent-setup/)
+- [Lab 13 - Loan Processing Agent Setup](../labs/lab-13-lending-agent-setup/)
 - [Lab 14 - Agent Instructions](../labs/lab-14-agent-instructions/)
 - [Lab 15 - Multi-Agent](../labs/lab-15-multi-agent/)
 - [Lab 16 - Trigger Automation](../labs/lab-16-trigger-automation/)

@@ -123,7 +123,7 @@ Additional reset options:
 - [ ] Confirm facilitators can create or open the workshop solution in the intended environment.
 - [ ] Confirm facilitators can create or open agents, connections, and tables inside that solution.
 - [ ] Confirm environment maker permissions are assigned to expected users.
-- [ ] Confirm the localized Day 2 Loan Processing Agent files (`WoodgroveLending_1_0_0_0.zip`, `job-roles.csv`, and `evaluation-criteria.csv`) are present locally before you begin the Lab 13 walkthrough in that environment.
+- [ ] Confirm the localized Day 2 Loan Processing Agent files (`WoodgroveLending_1_0_0_0.zip`, `loan-types.csv`, and `assessment-criteria.csv`) are present locally before you begin the Lab 13 walkthrough in that environment.
 - [ ] Confirm the facilitator demo environment URL is the one saved in `EnvironmentUrl` or the one you will pass with `-EnvironmentUrl` before any optional solution import.
 - [ ] Confirm `pac auth list` shows the intended tenant/admin account context before any optional solution import. Do not rely on active `pac` environment selection alone to retarget `Import-WorkshopEnterpriseAssets.ps1`.
 - [ ] Confirm at least one clean demo environment is reserved for live walkthroughs and any optional solution-package pre-staging.
@@ -253,7 +253,7 @@ Complete these items when delivering the workshop virtually with a single facili
 - [ ] Confirm the MCP onboarding wizard is visible in a representative participant environment. If absent, prepare a facilitator-demo fallback plus screenshots of the supported wizard flow rather than sending participants through an unsupported manual MCP server path.
 - [ ] Confirm Dataverse tables are accessible in participant environments by testing record creation and deletion with a non-admin account.
 - [ ] Confirm the Evaluation experience opens and the "New evaluation" flow starts without errors.
-- [ ] Pre-download Day 2 CSV files (`job-roles.csv`, `evaluation-criteria.csv`) and share a direct download link in the meeting chat.
+- [ ] Pre-download Day 2 CSV files (`loan-types.csv`, `assessment-criteria.csv`) and share a direct download link in the meeting chat.
 
 ### Virtual pacing discipline
 
