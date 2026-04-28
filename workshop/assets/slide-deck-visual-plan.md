@@ -38,6 +38,8 @@ These filenames come from `screenshot-capture-checklist.md`. If the screenshots 
 | Licensing and ROI decision flow | Day 1 close and Day 2 evaluation are easier to connect if one visual shows credits, capacity, ROI analytics, and release readiness together | `../labs/lab-12-licensing/README.md`, `../labs/lab-24-agent-evaluation/README.md` |
 | Channel readiness comparison | The publish section benefits from a single view that compares Teams, Microsoft 365 Copilot, web, and WhatsApp by ownership and governance | `lab-timing-guide.md`, `../facilitator-guide/facilitator-guide.md` |
 | [Evaluation improvement loop](#evaluation-improvement-loop-module-12--lab-24) | Lab 24 should show a repeatable loop: test set, result, activity map, fix, rerun | `../labs/lab-24-agent-evaluation/README.md` |
+| [Three-Zones environment diagram](#three-zones-environment-diagram-module-13b--day-2-opener) | Module 13b needs a single image that anchors the Personal Sandbox / Team Dev / Production governance posture and the promotion gates between them | `../Copilot-Studio-Workshop-Slides/Module-13b-ALM-and-Governance.md`, `../automation/Initialize-FacilitatorGovernanceZones.ps1` |
+| [ALM pipeline diagram](#alm-pipeline-diagram-module-13b--day-2-opener) | Module 13b needs one visual that shows the Dev → Test → Prod promotion path with the Connector / Connection / Connection Reference triangle and Environment Variables binding per stage | `../Copilot-Studio-Workshop-Slides/Module-13b-ALM-and-Governance.md`, `../assets/WoodgroveLending_1_0_0_0.zip` |
 
 ### Grounding strategy comparison (Module 04 / Lab 06)
 
@@ -120,6 +122,8 @@ These filenames come from `screenshot-capture-checklist.md`. If the screenshots 
 
 **Teaching purpose:** Lab 15 asks participants to wire this topology. Without a visual, the five relationship arrows in the lab's Mermaid flowchart are hard to internalize from text alone. This diagram gives the room a shared mental model before they start connecting agents.
 
+**GA framing:** Connected Agents are GA in Copilot Studio as of **November 30, 2025**. The visual should not include any "preview" badge, "limited availability" caption, or opt-in disclaimer — it is a production architecture pattern. Pair this diagram in delivery with the **Child vs Connected agent matrix** (lifecycle, reuse, knowledge/tools, versioning, best-for) from the Lab 15 README so participants understand *why* one specialist is modeled as a child and the other as a connected agent, not just *how* to wire them.
+
 ---
 
 ### Evaluation improvement loop (Module 12 / Lab 24)
@@ -129,11 +133,12 @@ These filenames come from `screenshot-capture-checklist.md`. If the screenshots 
 **Steps:**
 
 1. **Create / Import Test Set** — CSV with 3 columns: `Input`, `ExpectedOutput`, `Context`. Participants use `evaluation-test-cases.csv` from `workshop/assets/`.
-2. **Select Graders** — Choose from 4 built-in graders (show all four with brief descriptions):
-   - *General quality* — overall response relevance and helpfulness.
-   - *Compare meaning* — semantic similarity between actual and expected output.
-   - *Tool use* — did the agent invoke the correct tool or action?
-   - *Keyword match* — are required keywords or phrases present?
+2. **Select Graders** — Choose from the seven built-in graders (and use **multi-grader** to attach more than one to a single test case):
+   - *General response quality* — overall response relevance and helpfulness.
+   - *Semantic meaning* — semantic similarity between actual and expected output.
+   - *Capability usage* — did the agent invoke the correct tool or action?
+   - *Keyword presence* — are required keywords or phrases present?
+   - *Text similarity*, *Exact match*, and *Custom Graders* — string-level match, exact match, and classification-based custom policies.
 3. **Run Evaluation** — Execute the test set against the agent. The platform runs every input row and scores each case against the selected graders.
 4. **Interpret Results** — Read the pass rate percentage and per-case pass/fail breakdown.
 5. **Diagnose Failures** — Open a failed case → read the grader reasoning → open the **Activity Map** → trace the decision chain from user input through knowledge retrieval, topic matching, and response generation.
@@ -179,6 +184,67 @@ These filenames come from `screenshot-capture-checklist.md`. If the screenshots 
 - Use a bold or colored arrow for the Step 6 → Step 3 return to make the iterative nature unmistakable.
 
 **Teaching purpose:** Lab 24 is procedurally the most detailed lab in the workshop. Participants need to see the full cycle before starting so they understand where each step fits in the improvement process. Showing the loop visually prevents the common mistake of treating evaluation as a one-shot pass/fail rather than an iterative quality practice.
+
+---
+
+### Three-Zones environment diagram (Module 13b / Day 2 opener)
+
+**Layout:** three side-by-side environment columns with a left-to-right promotion arrow underneath and a labeled gate between each pair.
+
+```
+┌──────────────────────┐   ┌──────────────────────┐   ┌──────────────────────┐
+│  Zone 1              │   │  Zone 2              │   │  Zone 3              │
+│  Personal Sandbox    │ → │  Team Dev            │ → │  Production          │
+│  Maker exploration   │   │  Curated, shared     │   │  Managed, monitored  │
+│  Ephemeral           │   │  Source-controlled   │   │  Auditable           │
+│                      │   │                      │   │                      │
+│  DLP: strictest      │   │  DLP: curated        │   │  DLP + Managed       │
+│  No prod data        │   │  business connectors │   │  Environments on     │
+└──────────────────────┘   └──────────────────────┘   └──────────────────────┘
+                ▲ peer review gate ▲   ▲ security + change-mgmt gate ▲
+```
+
+**Key visual cues:**
+
+- Title the visual **"Three Zones — a PowerCAT teaching pattern (not an official Microsoft framework)"** in the slide footer. This caption must appear on the slide itself, not only in the speaker notes.
+- Color the three columns with increasing saturation from left (light) to right (dark) to signal increasing governance posture. Avoid a red/yellow/green palette — the goal is "more controlled," not "safer."
+- Mark the gates between zones with a lock or signature icon and the two-word label ("peer review", "security + change-mgmt review"). Gates are the teaching point; the columns are scenery.
+- Add a small footnote row mapping the workshop's environments onto the model: "Student Sandbox = Zone 1 · Facilitator demo env = Zone 2 stand-in · Real bank deployment = Zone 3".
+
+**Teaching purpose:** Slide 99 is the slide most likely to be photographed and re-used by participants in their own internal decks. The diagram has to make the PowerCAT attribution unmissable so the pattern is not later misrepresented as an official Microsoft framework.
+
+---
+
+### ALM pipeline diagram (Module 13b / Day 2 opener)
+
+**Layout:** left-to-right promotion path with three environment stages, the Connector / Connection / Connection Reference triangle inset, and an Environment Variables row that re-binds at each stage.
+
+```
+   Solution (managed)
+         │
+         ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  Dev        │ →  │  Test       │ →  │  Prod       │
+│  (unmanaged)│    │             │    │  (managed)  │
+└──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+       │                  │                  │
+  EnvVar set A       EnvVar set B       EnvVar set C
+  ConnRef → Conn 1   ConnRef → Conn 2   ConnRef → Conn 3
+
+         Connector ──── Connection ──── Connection Reference
+            (API)        (auth session)     (the indirection
+                                             that makes promotion
+                                             work)
+```
+
+**Key visual cues:**
+
+- Place the Connector / Connection / Connection Reference triangle in a callout box and label it as **"the single most common reason a solution import succeeds but does not work."** This is the line participants will quote back during Day 2 troubleshooting.
+- Show the Environment Variables row beneath the three stages with three different binding values to make per-environment configuration visible.
+- Add a small icon (🔒) on the Test → Prod arrow with the caption **"Power Platform Pipelines — Production target only — facilitator demo"** so participants understand why they cannot run this from their student Sandbox.
+- Reference the take-home artifact in the slide footer: **"Take-home: `workshop/assets/WoodgroveLending_1_0_0_0.zip` — re-run the export/import in any Production environment you later own."**
+
+**Teaching purpose:** Slide 98 has to compress an entire ALM mental model into one image. The triangle is the conceptual anchor; the Environment Variables row is the proof that the same solution can land cleanly in different environments; the lock icon on the Pipelines arrow is the explicit reason this stays facilitator-demo in this workshop.
 
 ---
 

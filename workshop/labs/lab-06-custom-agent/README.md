@@ -87,6 +87,14 @@ Never disclose sensitive financial data to unauthorized parties. Refuse requests
 4. Add a line such as `Prefer the most relevant filtered enterprise source before using broader knowledge.`
 5. Select **Save** and rerun the same tests.
 
+#### Looking ahead: Component Collections (concept only — no hands-on build)
+
+> **Sidebar (≈5 min teaching).** SharePoint grounding works for one agent. When multiple agents need the same knowledge — for example, the **Woodgrove Customer Service Agent** (Day 1) and the **Loan Processing Agent** (Day 2) both need the latest **Woodgrove Product & Fee Disclosures** (mortgage product fact sheets, personal loan disclosures, account and fee schedules, adverse action template references) — Copilot Studio's **Component Collections** lets you bundle topics, knowledge, and actions into a reusable package owned by a primary agent. Other agents reference the collection instead of duplicating the source.
+
+We will use this on **Day 2 (Lab 14)** to share the **Woodgrove Product & Fee Disclosures** collection across the lending agents. The collection name and source URLs are facilitator-controlled and ship in `workshop-config.example.json` under the `ComponentCollections` section as `ProductDisclosuresCollectionName` and `DisclosureSourceUrls`.
+
+> **FSI guardrail.** Disclosures are customer-facing regulated content. In production, the disclosure lifecycle (drafting, legal review, version control, retirement) is owned by the bank's **Compliance / Disclosures team**, not the agent maker. The maker only references an already-approved collection. **KYC content is intentionally excluded from this collection** — KYC must remain a system-of-record lookup through a dedicated connector, never bundled as static knowledge.
+
 #### Validation
 1. Confirm the agent name is `Woodgrove Customer Service Agent`.
 2. Confirm the **Knowledge** section lists both public websites, the `Woodgrove Bank` SharePoint source, and uploaded reference files.

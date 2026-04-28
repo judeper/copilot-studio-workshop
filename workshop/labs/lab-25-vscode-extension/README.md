@@ -4,7 +4,9 @@
 
 ### Lab 25 — Developer Workflow with VS Code (Optional)
 
-⏱ Estimated time: 30 min
+⏱ Estimated time: Optional, ~30 min
+
+> **Skip if time-constrained.** Lab 25 is a fully optional developer-only stretch path. The core Day 2 outcomes are achieved by Labs 13–24; skipping Lab 25 does not affect any later content or the workshop wrap. Run it only if developers in the room have completed Lab 24 with time to spare, or recommend it as self-paced post-workshop study.
 
 #### Overview
 This optional lab shows how developers can work with an existing Copilot Studio agent in Microsoft Visual Studio Code and then sync the update back to Copilot Studio. You will clone the **Loan Processing Agent** into a local workspace, edit the agent instructions in YAML, apply the change back to the cloud agent, and validate the new behavior in the browser. This is a generally available developer workflow and is intended for participants who want a code-first authoring loop without introducing non-GA dependencies.
@@ -70,5 +72,6 @@ This optional lab shows how developers can work with an existing Copilot Studio 
 3. Remind participants that **Apply** updates the cloud agent definition but does not publish the agent to end users.
 4. If teams ask how MCP fits the developer workflow, explain that MCP is supported in the agent definition, but setup and authentication should still follow the supported GA onboarding wizard in Copilot Studio.
 5. If the Copilot Studio extension cannot be installed due to IT policy or marketplace restrictions, the developer can observe the facilitator demo and follow along in the browser. Confirm extension availability before the session starts.
+6. **Lab 25 is fully optional in v2.** It was made explicitly skippable to absorb the new Module 13b (ALM and Governance, ~30 min) at the start of Day 2 and the Lab 14 Component Collections extension. Treat Labs 13–24 as the shared core path and offer Lab 25 only when the developer track has caught up and there is genuine headroom in the schedule.
 
 

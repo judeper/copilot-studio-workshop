@@ -177,6 +177,80 @@ else {
     }
 }
 
+Write-Section "Validating Microsoft 365 Copilot license coverage (Lab 03 / Lab 11 M365 channel)"
+# TODO (human follow-up): verify the SKU IDs below against the current
+# Microsoft Learn "Product names and service plan identifiers for licensing"
+# article. The widely-published SKU GUID for Microsoft 365 Copilot
+# (skuPartNumber 'Microsoft_365_Copilot') is 639dec6b-bb19-468b-871c-c5c441c4b0cb.
+# Add additional Copilot SKU GUIDs (e.g. EDU, GCC variants) here as needed.
+$Microsoft365CopilotSkuIds = @(
+    '639dec6b-bb19-468b-871c-c5c441c4b0cb'
+)
+$Microsoft365CopilotSkuPartNumberPattern = 'Microsoft_365_Copilot'
+
+if ($participantEmails.Count -eq 0) {
+    Write-StepResult -Level INFO -Message 'No participant emails are configured, so the M365 Copilot license check was skipped.'
+}
+elseif (Test-PlaceholderValue -Value $sharePointPnPCertificateThumbprint) {
+    Write-StepResult -Level WARN -Message 'SharePoint.PnPCertificateThumbprint is not configured, so app-only Microsoft Graph auth is not ready. Skipping M365 Copilot license check; configure the certificate and rerun to evaluate participant licensing.'
+}
+else {
+    try {
+        Require-Module -Name 'Microsoft.Graph.Authentication'
+        $licenseCertificate = Get-CurrentUserCertificate -Thumbprint $sharePointPnPCertificateThumbprint
+        if (-not $licenseCertificate) {
+            throw "Certificate '$sharePointPnPCertificateThumbprint' was not found in Cert:\CurrentUser\My."
+        }
+        try { Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null } catch { }
+        Connect-MgGraph -TenantId $tenantId -ClientId $sharePointPnPClientId -Certificate $licenseCertificate -NoWelcome -ErrorAction Stop | Out-Null
+
+        $licensedCount = 0
+        $unlicensedCount = 0
+        foreach ($participantEmail in $participantEmails) {
+            if ([string]::IsNullOrWhiteSpace($participantEmail) -or (Test-PlaceholderValue -Value $participantEmail)) {
+                Write-StepResult -Level WARN -Message "Skipped participant entry '$participantEmail' (empty or placeholder)."
+                continue
+            }
+
+            try {
+                $licenseDetails = @(Invoke-MgGraphRequest -Method GET -Uri "v1.0/users/$participantEmail/licenseDetails" -ErrorAction Stop |
+                    Select-Object -ExpandProperty value)
+                $hasCopilot = $false
+                foreach ($detail in $licenseDetails) {
+                    $skuId = [string]$detail.skuId
+                    $skuPart = [string]$detail.skuPartNumber
+                    if ($Microsoft365CopilotSkuIds -contains $skuId) { $hasCopilot = $true; break }
+                    if (-not [string]::IsNullOrWhiteSpace($skuPart) -and $skuPart -like "*$Microsoft365CopilotSkuPartNumberPattern*") {
+                        $hasCopilot = $true
+                        break
+                    }
+                }
+
+                if ($hasCopilot) {
+                    Write-StepResult -Level PASS -Message "$participantEmail has a Microsoft 365 Copilot license assigned."
+                    $licensedCount++
+                }
+                else {
+                    Write-StepResult -Level WARN -Message "$participantEmail does NOT have a Microsoft 365 Copilot license. Lab 03 (Agent Builder) and Lab 11 (M365 Copilot channel) become watch-along for this participant."
+                    $unlicensedCount++
+                }
+            }
+            catch {
+                Write-StepResult -Level WARN -Message "Could not query license details for '$participantEmail': $($_.Exception.Message)"
+                $unlicensedCount++
+            }
+        }
+
+        Write-StepResult -Level INFO -Message "M365 Copilot license summary: $licensedCount licensed, $unlicensedCount unlicensed/unknown. Facilitators may demo the M365 channel themselves for unlicensed participants."
+    }
+    catch {
+        Write-StepResult -Level WARN -Message "M365 Copilot license check did not complete: $($_.Exception.Message)"
+    }
+    finally {
+        try { Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null } catch { }
+    }
+}
+
 Write-Section "Validating Day 1 sample data configuration"
 $sampleDevices = @($config.Day1.SampleDevices)
 if ($sampleDevices.Count -lt 4) {

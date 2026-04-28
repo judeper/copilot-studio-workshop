@@ -51,9 +51,9 @@ Recommended values:
 
 ## March 2026 workshop guardrails
 
-- Use `GPT-5 Chat` as the workshop's recommended hands-on model unless a module is explicitly comparing alternatives.
-- Mention `GPT-4.1` only as platform context when a model-selection exercise needs to explain current defaults or migration choices.
-- Compare `GPT-5 Chat`, `GPT-4.1`, `Claude Sonnet 4.5`, and `Claude Opus 4.6` when authoring model trade-off guidance.
+- Use `GPT-5 Chat` (GA in the Copilot Studio model picker since August 7, 2025) as the workshop's recommended hands-on model unless a module is explicitly comparing alternatives.
+- Mention `GPT-4.1` (labeled "Default" in the picker) only as platform context when a model-selection exercise needs to explain current defaults, the GA fallback path, or migration choices.
+- Compare `GPT-5 Chat`, `GPT-4.1`, `Claude Sonnet`, and `Deep Reasoning` (powered by OpenAI o1, GA March 2025) when authoring model trade-off guidance. Note that `Claude Sonnet` went GA in March 2026 as a rolling, opt-in rollout and is **not available in GCC, EU, UK, or EFTA tenants at GA**.
 - Do not describe `GPT-4o` as current, default, or recommended.
 - Treat MCP as GA and use the in-product onboarding wizard as the primary workshop path.
 - Use the GA in-product MCP onboarding wizard as the only MCP lab path.

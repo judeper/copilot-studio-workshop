@@ -21,11 +21,11 @@ A two-day, hands-on workshop for building, extending, and governing AI agents wi
 
 ### Presentation Slides
 
-The workshop includes 13 committed PowerPoint presentation decks covering the full two-day curriculum.
+The workshop includes 13 committed PowerPoint presentation decks covering the full two-day curriculum, plus one Markdown-only concept module (Module 13b — ALM and Governance) that opens Day 2.
 
 - **Location:** `workshop\Copilot-Studio-Workshop-Slides\`
-- **Format:** Delivery-ready PPTX files for instructor-led presentation and screen sharing
-- **Size:** 98 slides total across 13 module decks
+- **Format:** Delivery-ready PPTX files for instructor-led presentation and screen sharing (Module 13b is a Markdown source, no PPTX yet)
+- **Size:** 98 slides across 13 PPTX module decks plus a 5-slide Markdown source for Module 13b
 
 | Module | File | Focus area |
 |---|---|---|
@@ -42,6 +42,7 @@ The workshop includes 13 committed PowerPoint presentation decks covering the fu
 | 10 | `Module-10-MCP-and-Extensibility.pptx` | MCP and extensibility patterns |
 | 11 | `Module-11-Channels-and-Feedback.pptx` | Channel rollout and feedback loops |
 | 12 | `Module-12-Evaluation-and-ROI.pptx` | Evaluation and ROI measurement |
+| 13b | `Module-13b-ALM-and-Governance.md` (Markdown only — opens Day 2) | ALM (Solutions, Connection References, Environment Variables, Pipelines), Three-Zones PowerCAT teaching pattern, governance overlay, FSI regulatory anchors. Concept + facilitator demo only — no hands-on student lab. |
 
 ### Companion Materials
 

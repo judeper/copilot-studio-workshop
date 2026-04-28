@@ -6,15 +6,28 @@
 > **Model guidance:** See [Model Baseline](../../facilitator-guide/model-baseline.md) for current preferred and fallback models.
 
 #### Overview
-In this lab, you will compare model options for the Loan Processing Agent and choose a working baseline for the rest of Day 2. The workshop default is **GPT-5 Chat** when it is available in your environment, but you will also review how **GPT-4.1** and **Claude Sonnet 4.5** trade off across accuracy, latency, and cost.
+In this lab, you will compare model options for the Loan Processing Agent and choose a working baseline for the rest of Day 2. The workshop default is **GPT-5 Chat** when it is available in your environment, but you will also review how **GPT-4.1** and **Claude Sonnet** trade off across accuracy, latency, and cost.
 
 > **Note:** The model picker groups models by provider (OpenAI and Anthropic) and labels each as generally available, **Preview**, or **Experimental**. This workshop uses only generally available models for the working baseline. Preview and Experimental models may appear in the picker but are not covered in the labs.
+
+#### Model status reference
+
+Use this table to set expectations before you open the picker. Always confirm against the live picker because regional rollout varies.
+
+| Model | Status | Notes for this workshop |
+| --- | --- | --- |
+| **GPT-5 / GPT-5 Chat** | GA — August 7, 2025 | Workshop baseline when visible in your tenant. |
+| **GPT-4.1** | GA — labeled **Default** in the picker | Explicit GA fallback. The workshop is guaranteed to function end-to-end on this model. |
+| **GPT-5 mini** | GA | Cheaper and faster sibling of GPT-5; useful when latency and cost matter more than peak reasoning quality. |
+| **Claude Sonnet** | GA — March 2026, rolling rollout, opt-in per environment | Optional comparison only. **Not available in GCC, EU, UK, or EFTA tenants at GA.** Requires the external-model toggle in the Power Platform admin center and allow-listing in the Microsoft 365 admin center. |
+| **Deep Reasoning** | GA — March 2025 | Powered by **OpenAI o1**. Reasoning-intensive option for complex lending analysis; not the workshop baseline. |
+| **GPT-4o** | Retired from the picker | Do not target. GPT-4.1 replaces it as the platform default. |
 
 #### Prerequisites
 1. Complete **Lab 13** and **Lab 14** so the **Loan Processing Agent** already has working instructions and scenario context.
 2. Open **Loan Processing Agent** in Copilot Studio with permission to change the selected model.
 3. Keep a note-taking app open so you can capture model observations.
-4. Understand that not every tenant exposes every generally available model. Compare the options that are visible in your picker and document any gaps. Anthropic models (such as Claude Sonnet) appear only if external models are enabled by your admin in the Power Platform admin center and allowed in the Microsoft 365 admin center.
+4. Understand that not every tenant exposes every generally available model. Compare the options that are visible in your picker and document any gaps. **Claude Sonnet** went GA in March 2026 with a rolling, opt-in rollout and is **not available in GCC, EU, UK, or EFTA tenants at GA**; it also requires the external-model toggle to be enabled by your admin in the Power Platform admin center and allow-listed in the Microsoft 365 admin center.
 
 #### Step-by-Step Instructions
 #### Part 1 — Prepare a consistent test pack
@@ -40,11 +53,10 @@ Prompt 3: A loan officer asks you to adjust an applicant's rate based on neighbo
 #### Part 3 — Compare other generally available models
 1. Return to the model selector.
 2. If **GPT-4.1** is available, select it, save, open a **New test session**, and run the same three prompts.
-3. If **Claude Sonnet 4.5** is available, repeat the same process.
-4. If **Claude Sonnet 4.6** is available, repeat the same process.
-5. After each run, capture your observations in the scorecard below.
+3. If **Claude Sonnet** is available in your tenant and region, repeat the same process. Skip this step if you are in a GCC, EU, UK, or EFTA tenant or the external-model toggle is off.
+4. After each run, capture your observations in the scorecard below.
 
-> **Tip:** You may also see **GPT-5 Reasoning** (Preview), **GPT-5 Auto** (Preview), and experimental models such as **GPT-5.3 Chat**, **GPT-5.4 Reasoning**, or **Grok 4.1 Fast** (US Early Access only) in the picker. **Claude Opus 4.6** (Deep, GA) may also be available for reasoning-intensive tasks. These are not covered in this workshop but you can test them for comparison if time allows. Record them in the empty rows at the bottom of the scorecard.
+> **Tip:** You may also see **Deep Reasoning** (GA, powered by **OpenAI o1**) for reasoning-intensive lending analysis, **GPT-5 mini** as a faster and cheaper sibling of GPT-5, and Preview or Experimental entries such as **GPT-5 Reasoning** (Preview) or **GPT-5 Auto** (Preview). These are not covered in this workshop, but you can test them for comparison if time allows. Record them in the empty rows at the bottom of the scorecard.
 
 > **Tip:** For the **Best fit in this workshop** column, consider which tasks each model handles best. For example: broad loan processing task support, structured knowledge Q&A, or deep reasoning on complex lending scenarios. Use your observations from the three test prompts to justify your choice.
 
@@ -52,8 +64,7 @@ Prompt 3: A loan officer asks you to adjust an applicant's rate based on neighbo
 | --- | --- | --- | --- | --- |
 | GPT-5 Chat | High / Medium / Low | Fast / Medium / Slow | Higher / Medium / Lower | |
 | GPT-4.1 | High / Medium / Low | Fast / Medium / Slow | Higher / Medium / Lower | |
-| Claude Sonnet 4.5 | High / Medium / Low | Fast / Medium / Slow | Higher / Medium / Lower | |
-| Claude Sonnet 4.6 | High / Medium / Low | Fast / Medium / Slow | Higher / Medium / Lower | |
+| Claude Sonnet | High / Medium / Low | Fast / Medium / Slow | Higher / Medium / Lower | |
 | | | | | |
 | | | | | |
 
@@ -79,8 +90,8 @@ Prompt 3: A loan officer asks you to adjust an applicant's rate based on neighbo
 
 #### Facilitator Notes
 1. Keep the room centered on trade-offs, not model hype.
-2. Use **GPT-5 Chat** as the workshop baseline, then explain **GPT-4.1** as platform context and the Claude models as reasoning-depth comparisons when they are visible. Note that **GPT-4o** is retired and no longer appears in the picker for new agents; if participants ask, explain that GPT-4.1 replaced it as the default.
-3. Ask participants to justify their final selection with business language such as speed, loan officer trust, and operational cost. If the room needs a prompt for the **Best fit** column, suggest: GPT-5 Chat = "Workshop baseline, broad loan processing task support"; GPT-4.1 = "Policy review, structured knowledge Q&A"; Claude Sonnet 4.5/4.6 = "Deep reasoning on structured loan processing tasks where available."
+2. Use **GPT-5 Chat** as the workshop baseline (GA since August 7, 2025), then explain **GPT-4.1** as the platform GA fallback (labeled "Default" in the picker) and Claude Sonnet as a regional, opt-in comparison when it is visible. Note that **GPT-4o** is retired and no longer appears in the picker for new agents; if participants ask, explain that GPT-4.1 replaced it as the default.
+3. Ask participants to justify their final selection with business language such as speed, loan officer trust, and operational cost. If the room needs a prompt for the **Best fit** column, suggest: GPT-5 Chat = "Workshop baseline, broad loan processing task support"; GPT-4.1 = "Policy review, structured knowledge Q&A"; Claude Sonnet = "Deep reasoning on structured loan processing tasks where the tenant and region allow it."
 
 > **Tip:** Your facilitator can provide supplemental guidance on model prompting and agent behavior patterns if needed.
 

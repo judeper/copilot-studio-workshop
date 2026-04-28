@@ -9,6 +9,21 @@
 #### Overview
 In this lab, you will evolve the Loan Processing Agent from a single assistant into a coordinated lending team. You will keep **Loan Processing Agent** as the orchestrator, add a child **Document Review Agent** for financial document handling, and add a connected **Loan Advisory Agent** for loan assessment and applicant evaluation support.
 
+> **GA status:** Connected Agents are generally available in Copilot Studio as of **November 30, 2025**. The toggle, picker, and orchestrator behavior used in this lab are GA features — not preview. No additional opt-in is required.
+
+#### Child agent vs Connected agent — when to use which
+Use this matrix to choose the right pattern as you build. Both are GA; they solve different problems.
+
+| Aspect | Child Agent | Connected Agent |
+|---|---|---|
+| Lifecycle | Lives inside the parent agent | Independent agent, separately published |
+| Reuse | Single parent only | Many parents can call the same agent |
+| Knowledge & tools | Inherits parent context | Has its own knowledge, tools, and instructions |
+| Versioning | Versioned with the parent | Versioned and governed independently |
+| Best for | Tightly-coupled sub-task (e.g., a structured document review step inside loan processing) | Reusable specialist owned by another team (e.g., a shared **Compliance Q&A** agent used by lending, deposits, and cards) |
+
+In this lab, **Document Review Agent** is built as a child agent because it is tightly bound to the loan-processing flow, while **Loan Advisory Agent** is built as a connected agent so other Woodgrove agents (for example, a future Mortgage Origination Agent) can reuse it without duplicating its instructions or knowledge.
+
 #### Prerequisites
 1. [Maker] Complete **Lab 13** and **Lab 14** in the same environment.
 2. [Maker] Confirm that the **Loan Processing Agent** exists in the **WoodgroveLending** solution.
@@ -85,7 +100,7 @@ Do not answer questions about personal financial advice, competitor products, or
 > Note: If your environment already exposes the lending tables from the imported solution, use those records so the connected agent answers from live lending data rather than static examples.
 
 #### Part 5 — Connect the Loan Advisory Agent to Loan Processing Agent
-1. Open **Loan Advisory Agent** and confirm it has been saved. You do not need to publish to a channel for connected-agent discovery within the same environment — saving is sufficient. If you have made any changes, select **Save** now.
+1. Open **Loan Advisory Agent** and confirm it has been saved. With Connected Agents now GA, in-environment discovery works as soon as the agent is saved and the **Let other agents connect to and use this one** toggle is **On** — you do not need to publish to a channel first. If you have made any changes, select **Save** now.
 2. Return to **Loan Processing Agent**.
 3. Open the **Agents** tab and select **Add**.
 4. In the **Choose how you want to extend your agent** dialog, scroll to **Select an agent in your environment**.
@@ -116,6 +131,8 @@ Do not answer questions about personal financial advice, competitor products, or
 4. If the **Activity map** is empty, start a new test session after saving your configuration changes.
 
 #### Facilitator Notes
-1. Explain why the document review specialist is a child agent and the loan advisory specialist is a connected agent.
-2. Call out that this lab establishes the collaboration pattern used in later labs for automation, grounding, and document generation.
-3. If participants are short on time, pre-create the connected agent and let them focus on descriptions, instructions, and validation.
+1. Walk the room through the **Child agent vs Connected agent** matrix at the top of the lab before they start building. The "lifecycle, reuse, versioning" columns are the durable teaching points; the FSI example (a shared Compliance Q&A connected agent) lands well with banking audiences.
+2. Reinforce that Connected Agents went GA on **November 30, 2025**. Any older blog posts or community videos that describe a "preview" experience or extra opt-in are out of date — the in-product UX shown in this lab is the GA experience.
+3. Explain why the document review specialist is a child agent (tightly coupled to loan processing) and the loan advisory specialist is a connected agent (reusable by other Woodgrove lines of business).
+4. Call out that this lab establishes the collaboration pattern used in later labs for automation, grounding, and document generation.
+5. If participants are short on time, pre-create the connected agent and let them focus on descriptions, instructions, and validation.

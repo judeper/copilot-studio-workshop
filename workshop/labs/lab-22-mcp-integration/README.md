@@ -11,6 +11,8 @@ In this lab, you will extend the Loan Processing Agent solution with Model Conte
 
 > **Note:** MCP integration with pre-built servers uses **Work IQ MCP**, the intelligence layer that grounds agents in real-time Microsoft 365 context. Work IQ MCP requires a **Microsoft 365 Copilot license**. If the MCP servers do not appear in your environment, ask your facilitator whether the required license and access are enabled. If MCP servers are unavailable, the facilitator will demo this lab.
 
+> **Transport guidance:** This lab uses pre-built, Microsoft-hosted Work IQ MCP servers, which are added through the **in-product MCP onboarding wizard** in Copilot Studio. You do not edit JSON manifests, paste secrets, or configure transport settings by hand. If your team later builds a *custom* MCP server for the Loan Processing Agent, use **Streamable HTTP** as the transport — it is the currently recommended MCP transport for new Copilot Studio integrations. **Server-Sent Events (SSE)** is deprecated as a transport for new MCP servers; existing SSE-based servers continue to work but should be migrated to Streamable HTTP.
+
 #### Prerequisites
 1. Complete **Lab 15** so you have **Loan Processing Agent** ready for extension.
 2. **Microsoft 365 Copilot license** is required for Work IQ MCP servers. Confirm your workshop account has this license before starting.
@@ -65,6 +67,8 @@ In this lab, you will extend the Loan Processing Agent solution with Model Conte
 3. In your notes, record one action that the agent should be allowed to perform and one action that should remain out of scope.
 4. Note that each MCP server entry covers multiple tools (unlike connectors, which require a separate action per capability). This is a key advantage of MCP.
 5. Save your notes for the Day 2 wrap-up discussion.
+
+> **Note:** MCP servers are governed through the **Copilot Control System in Microsoft 365 admin center**. Keep workshop examples scoped to narrow, Microsoft-governed servers (such as the Work IQ catalog) rather than open-internet MCP endpoints, and register them only through the supported in-product wizard.
 
 > **Note:** MCP servers are governed through the **Copilot Control System in Microsoft 365 admin center**. Administrators can allow or block specific servers organization-wide under **Agents and Tools**, scope permissions using Microsoft Entra, and audit all tool calls through Microsoft Defender.
 

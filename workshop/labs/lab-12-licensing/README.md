@@ -79,7 +79,7 @@ Before starting Day 2, confirm each item. If three or more are missing, plan to 
 - [ ] You wired one adaptive card and one Power Automate flow into a topic (Labs 08-09)
 - [ ] You understand which environment your agent lives in and your role (Maker vs Owner)
 - [ ] You have access to a Day 2 environment (or know which provided one to use)
-- [ ] Your tenant has Copilot Studio credits or messages allocated (or you know who can grant them)
+- [ ] Your tenant has Copilot Credits allocated (or you know who can grant them)
 
 #### Facilitator Notes
 1. Keep this lab anchored to the workshop scenario, not abstract licensing theory.

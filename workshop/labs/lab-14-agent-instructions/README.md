@@ -4,7 +4,7 @@
 
 ### Lab 14 — Agent Instructions
 
-⏱ Estimated time: 25 min
+⏱ Estimated time: 25 min (+10 min optional Component Collections extension)
 
 #### Overview
 In this lab, you will turn the baseline Loan Processing Agent into a more reliable orchestrator by writing explicit instructions. You will compare three instruction styles, apply a balanced set to the **Loan Processing Agent**, and test how instruction wording changes scope, tone, and delegation behavior in the Woodgrove Bank lending scenario.
@@ -78,6 +78,22 @@ Allow general banking discussion beyond the immediate loan processing workflow.
 
 ![Testing instruction behavior in the test pane](./assets/lab-14-test-pane.png)
 
+#### Optional 10-min extension — Reference the Woodgrove Product & Fee Disclosures Component Collection
+
+> **Cross-day callback.** In Lab 06 we previewed Component Collections — a reusable bundle of topics, knowledge, and actions owned by a primary agent that other agents can reference. The facilitator has pre-created the **Woodgrove Product & Fee Disclosures** collection in the demo environment. In this extension you will reference it from the **Loan Processing Agent** so its lending answers stay aligned with the same disclosure content the **Woodgrove Customer Service Agent** uses.
+
+1. In the **Loan Processing Agent**, open the **Components** view (top tab row, alongside Knowledge and Tools).
+2. Select **+ Add component collection** and choose the collection named per `ComponentCollections.ProductDisclosuresCollectionName` in `workshop-config.example.json` (default `Woodgrove-Product-Disclosures`).
+3. Confirm the disclosure topics and knowledge entries appear as referenced (not copied) under the agent's component list.
+4. Save the agent.
+5. Select **Test** > **New test session** and ask: `What is the maximum term and current advertised rate range for our standard mortgage product?`
+6. Confirm the response cites disclosure content from the referenced collection rather than inventing rates or terms.
+7. Ask a second question: `Which fee schedule applies to a personal loan early repayment?` and confirm the answer again pulls from the disclosures collection.
+
+> **Why a Component Collection here?** It avoids drift. Mortgage rates, fee schedules, and adverse action wording change frequently and are reviewed by Compliance. Curating them once in a single referenced collection means the **Customer Service Agent** and the **Loan Processing Agent** read identical, current text — a governance and consistency win that single-agent SharePoint grounding cannot provide.
+
+> **FSI guardrail.** The disclosure content lifecycle (drafting, legal sign-off, version control, retirement) is owned by the bank's **Compliance / Disclosures team**. The agent maker only references the approved collection; they do not edit disclosure content. **KYC stays out of this collection** — KYC must remain a system-of-record connector lookup, never static bundled knowledge.
+
 #### Validation
 1. The **Loan Processing Agent** instructions show the balanced text and the final "next recommended lending action" line.
 2. In-scope questions receive concise lending-focused answers.
@@ -95,3 +111,4 @@ Allow general banking discussion beyond the immediate loan processing workflow.
 1. Use this lab to explain that instructions are not decorative text; they are operational guidance for orchestration and tool choice.
 2. Ask participants to compare the restrictive and balanced outputs verbally so they can hear how small wording changes alter the experience.
 3. Keep participants on the balanced set before they continue to Lab 15.
+4. **Component Collections extension.** Pre-create the **Woodgrove Product & Fee Disclosures** collection in the demo environment before this lab so the optional extension is a pure reference exercise — participants should not build the collection from scratch. Use the collection name and source URLs configured in `ComponentCollections.ProductDisclosuresCollectionName` and `ComponentCollections.DisclosureSourceUrls` in `workshop-config.example.json`. Skip this extension if the room is behind schedule; it is explicitly optional. Reinforce that disclosure content is Compliance-owned in production, and that **KYC is intentionally excluded** from the collection because KYC must stay a system-of-record connector lookup.

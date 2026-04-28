@@ -8,7 +8,9 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 >
 > **Relationship:** The PPTX decks are the delivery-ready presentation artifacts with visual design and presentation flow. This outline is the text-first companion used for speaker notes, narrative structure, and teaching strategy review.
 >
-> **Alignment note:** This outline contains 95 numbered entries while the PPTX corpus contains 98 slides. The counts do not match one-for-one because the decks may split title, transition, or visual teaching moments across multiple slides while the outline combines them into fewer narrative entries.
+> **Alignment note:** This outline contains 102 numbered entries (97 baseline Day 1/Day 2 entries plus 5 new Module 13b entries) while the PPTX corpus contains 98 slides. The counts do not match one-for-one because the decks may split title, transition, or visual teaching moments across multiple slides while the outline combines them into fewer narrative entries, and Module 13b is a Markdown-only concept module with no PPTX deck yet.
+>
+> **Day 2 timing alignment (v2):** To keep the 2-day cap, Day 2 absorbs the new Module 13b (~30 min) and the optional Lab 14 Component Collections extension (~10 min) by compressing Lab 23 to a ~20 min core (Parts 1–4 only) and treating Lab 25 as fully optional. Slides for Lab 23 should mirror the compressed scope; Slide content for Lab 25 should frame it as a skip-if-time-constrained developer stretch.
 >
 > **Per-module slide counts (PPTX):**
 >
@@ -17,7 +19,7 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 > | 00 | Workshop Framing | 8 | 7 |
 > | 01 | Agents Today | 6 | 3 |
 > | 02 | Studio Foundations | 11 | 10 |
-> | 03 | Reuse Patterns | 5 | 3 |
+> | 03 | Reuse Patterns | 5 | 4 (+1 new) |
 > | 04 | Custom Agent Design | 5 | 7 (+3 new) |
 > | 05 | Topic Design | 8 | 7 |
 > | 06 | Actions and Events | 11 | 11 |
@@ -26,8 +28,11 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 > | 09 | Multimodal and Data | 11 | 11 |
 > | 10 | MCP and Extensibility | 4 | 6 (+2 new) |
 > | 11 | Channels and Feedback | 4 | 6 (+2 new) |
-> | 12 | Evaluation and ROI | 7 | 6 |
-> | | **Total** | **98** | **95** (85 + 10 new) |
+> | 12 | Evaluation and ROI | 7 | 7 (+1 new) |
+> | 13b | ALM and Governance (concept module, Markdown only) | 0 | 5 (+5 new) |
+> | | **Total** | **98** | **102** (85 + 17 new) |
+>
+> **Module 13b note:** Module 13b is a concept module delivered from a Markdown source (`workshop\Copilot-Studio-Workshop-Slides\Module-13b-ALM-and-Governance.md`). It has no PPTX deck yet — future work to convert. It opens Day 2 between Lab 13 and Lab 14 and is concept + facilitator demo only (no hands-on student exercise).
 
 ## Day 1: Labs 00-12
 
@@ -159,6 +164,12 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 - Encourage teams to borrow proven structures rather than reinventing basics under time pressure.
 **Speaker note:** Position reuse as disciplined acceleration rather than shortcut-driven customization.
 
+### Slide 21a: M365 Agent Builder vs Copilot Studio <!-- NEW -->
+- Position M365 Agent Builder (inside Microsoft 365 Copilot) as the lightweight, natural-language authoring surface many business users will reach for first.
+- Walk the contrast table covering audience reach, authoring depth, governance, knowledge sources, and best-fit scenarios so participants can recommend the right tool per use case.
+- Anchor the Woodgrove framing: the Customer Service Agent lives in Copilot Studio because the bank needs governed ALM, Dataverse, multi-channel reach, and orchestration — Agent Builder is complementary, not competitive.
+**Speaker note:** This slide supports the optional Lab 03 Agent Builder walkthrough, which is gated on participants having a Microsoft 365 Copilot license. If license coverage in the room is thin (per the prereq check), keep the hands-on lab on Copilot Studio and use this slide as a 3-minute teaching moment with a licensed tenant demo. The teaching goal is the contrast, not the click-through.
+
 ### Slide 22: Lab Time: Lab 05
 - Ask learners to inspect a prebuilt pattern quickly and judge what is portable to their scenario.
 - Keep the focus on reusable ideas such as instructions, cards, topics, or flows.
@@ -212,6 +223,13 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 - Add initial instructions and connect the first knowledge source or placeholder.
 - Test whether the agent purpose is immediately understandable in the UI and chat.
 **Speaker note:** Coach participants to make the first version understandable before they make it sophisticated. The win condition here is a named, grounded agent that can cite trusted sources, not a feature-complete solution. Ask Makers to focus on clarity, IT pros to watch SharePoint access and DLP behavior, and developers to notice naming, reuse, and support boundaries. If the room stalls, use starter instructions or preselected knowledge sources and protect the rest of Day 1.
+
+### Slide 30a: Looking ahead — Component Collections (Day 1 sidebar) <!-- NEW -->
+- One agent grounded on SharePoint is enough for Lab 06; multiple agents needing the **same** curated knowledge is a different problem.
+- Component Collections bundle topics, knowledge, and actions into a reusable package owned by a primary agent and referenced by others.
+- Day 2 (Lab 14) will reference the **Woodgrove Product & Fee Disclosures** collection from the **Loan Processing Agent** so it stays aligned with the **Customer Service Agent**.
+- FSI guardrail: disclosures are Compliance-owned in production; **KYC is intentionally excluded** and stays a system-of-record connector lookup.
+**Speaker note:** Keep this to ~5 minutes — concept only, no clicks. The point is to plant the cross-day callback so Lab 14's optional extension lands as a payoff, not a surprise. Reference the `ComponentCollections.ProductDisclosuresCollectionName` and `ComponentCollections.DisclosureSourceUrls` keys in `workshop-config.example.json` so facilitators know where the collection is configured.
 
 ### Slide 31: Module 5: Topic design
 - Use topic guidance to keep entry points clear, reusable, and low overlap.
@@ -267,6 +285,13 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 - Prefer repeatable, useful outputs over creative variance when the workflow needs consistency.
 **Speaker note:** Use the generative-mode guidance to show that better instructions reduce ambiguity everywhere else.
 
+### Slide 39a: Multistage human approvals for high-stakes workflows <!-- NEW -->
+- Frame the AI agent as a **summarizer and router**, never the approver, for credit decisions, KYC reviews, large-payment release, and exception handling.
+- Walk through the canonical FSI loan-approval pattern: AI extracts fields → AI summarizes for the reviewer → Tier-1 underwriter approves → conditional escalation above a policy threshold (for example $250K) to a Tier-2 senior underwriter → decision written back to system of record → user notified.
+- Anchor the pattern in supervisory guidance: **SR 11-7 Model Risk Management**, **OCC AI/ML model risk principles**, **ECOA Reg B §1002.9** adverse-action notices, and the **four-eyes** principle for material credit decisions; mention **EU AI Act Article 14** human oversight for non-US audiences.
+- Emphasize the technical boundary: the Power Automate Approvals action must always be assigned to a real human mailbox — never to the agent identity or an AI Builder step.
+**Speaker note:** This is the slide where banking-specific governance lands on top of generic Power Automate. Read the one-liner aloud: "AI proposes, humans approve — and on loans above the policy threshold, two humans approve." Lab 09 Part 2 builds exactly this flow.
+
 ### Slide 40: Lab Time: Lab 09
 - Set the goal: wire one meaningful action with visible inputs and outputs.
 - Tell learners to start with the smallest useful scope before adding branches or exceptions.
@@ -277,7 +302,8 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 - Connect the agent to a flow or action that uses captured context.
 - Inspect what is passed in, what returns, and what the user sees on success or failure.
 - Note any permission or dependency concerns that would matter after the workshop.
-**Speaker note:** Use the lab to show why automation design needs both technical and business clarity.
+- Call out the optional **Part 2 — Multistage AI-assisted Loan Approval** as the FSI-native extension for facilitators who have time; the core lab still satisfies the workshop requirement.
+**Speaker note:** Use the lab to show why automation design needs both technical and business clarity. If you run Part 2, the teaching point is the four-eyes governance boundary, not the wiring.
 
 ### Slide 42: Lab Time: Lab 10
 - Move from user-initiated chat into event-driven automation patterns.
@@ -307,9 +333,10 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 
 ### Slide 46: Lab 11: Publish agent
 - Review the publish flow and channel options that matter for enterprise rollout.
+- Show how knowledge prioritization, suggested prompts, and the Microsoft 365 Copilot channel turn a published agent into a discoverable, on-brand experience.
 - Compare readiness considerations for Teams, Microsoft 365 Copilot, website, and later channel expansion.
 - Capture any policy, branding, or support blockers that would delay go-live.
-**Speaker note:** Reinforce that publishing is a coordination task across makers, admins, and business owners.
+**Speaker note:** Reinforce that publishing is a coordination task across makers, admins, and business owners. Call out that the Microsoft 365 Copilot channel requires end users to hold a Microsoft 365 Copilot license, while a Copilot Studio maker license alone is enough to ship the channel.
 
 ### Slide 47: Lab Time: Lab 12
 - Close Day 1 by switching from technical readiness into commercial and adoption readiness.
@@ -349,7 +376,13 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 - Use clear boundaries so each agent or capability owns a focused responsibility.
 - Explain how handoffs, escalation, and ownership reduce confusion when workflows expand.
 - Prefer coordinated components over one oversized agent that is hard to test or support.
-**Speaker note:** This framing helps the room understand why structured orchestration improves maintainability. Use the Document Review and Loan Advisory split to explain delegation boundaries, escalation, and ownership. Call out that the Activity map becomes the operating view for debugging handoffs, and that the same boundary-setting later makes flows, MCP tools, and evaluation results easier to reason about.
+**Speaker note:** This framing helps the room understand why structured orchestration improves maintainability. Use the Document Review and Loan Advisory split to explain delegation boundaries, escalation, and ownership. Call out that the Activity map becomes the operating view for debugging handoffs, and that the same boundary-setting later makes flows, MCP tools, and evaluation results easier to reason about. Note that **Connected Agents are GA as of November 30, 2025**, so the orchestrator, picker, and "Let other agents connect to and use this one" toggle shown in Lab 15 are production features — strip any "preview" caveats from older decks.
+
+### Slide 52a: Child vs connected agent — when to use which
+- Child agent: lives inside the parent, single parent, inherits parent context, versioned with the parent — best for a tightly-coupled sub-task.
+- Connected agent: independently published, many parents can call it, owns its own knowledge and tools, versioned independently — best for a reusable specialist (for example, a shared **Compliance Q&A** agent reused by lending, deposits, and cards).
+- In Lab 15: Document Review Agent is built as a **child**; Loan Advisory Agent is built as a **connected** agent so future Woodgrove agents can reuse it without duplicating instructions or knowledge.
+**Speaker note:** Show the matrix from the Lab 15 README on this slide (lifecycle, reuse, knowledge/tools, versioning, best-for). Anchor the teaching in the FSI scenario: connected agents are how a bank avoids re-implementing compliance, KYC orchestration, or product disclosure logic in every line-of-business agent. Both patterns are GA — selection is an architecture choice, not a feature gate.
 
 ### Slide 53: Lab Time: Lab 13
 - Set up the Loan Processing Agent baseline with the correct environment, naming, and scenario context.
@@ -375,6 +408,13 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 - Test one direct request and one ambiguous request to see whether the guidance holds.
 **Speaker note:** This lab is most valuable when participants connect instruction quality to predictable outcomes.
 
+### Slide 56a: Lab 14 optional extension — Reference the Product & Fee Disclosures Component Collection <!-- NEW -->
+- Cross-day payoff: the collection previewed on Day 1 (slide 30a) is now consumed by the **Loan Processing Agent**.
+- Hands-on micro-step (~10 min): open the agent's Components view, add the pre-seeded **Woodgrove Product & Fee Disclosures** collection by reference, save, and test with two disclosure-anchored questions.
+- Governance win: one curated source for both the **Customer Service Agent** and the **Loan Processing Agent** — no drift between channels.
+- FSI guardrail: Compliance owns the disclosure lifecycle; KYC stays out of this collection (system-of-record only).
+**Speaker note:** Skip this slide and the extension if the room is behind schedule — it is explicitly optional and gated on the facilitator having pre-created the collection in the demo environment. When you do run it, frame the "why" before the "how": the collection is the antidote to disclosure drift across customer-facing agents, which is a real audit finding in regulated lending. Emphasize that the participant is *referencing* an already-approved collection, not editing disclosure text.
+
 ### Slide 57: Lab Time: Lab 15
 - Move into multi-agent collaboration with a clear purpose for each delegated capability.
 - Ask teams to keep each role narrow enough that ownership stays understandable.
@@ -383,9 +423,10 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 
 ### Slide 58: Lab 15: Multi-agent team
 - Configure or review a multi-agent lending pattern with clear delegation boundaries.
+- Build **Document Review Agent** as a child agent and **Loan Advisory Agent** as a connected agent (Connected Agents GA Nov 30 2025).
 - Confirm each specialized capability has a purpose, entry point, and expected outcome.
 - Validate that the coordination logic stays understandable in the UI and test flow.
-**Speaker note:** The main lesson is disciplined orchestration, not maximum branching.
+**Speaker note:** The main lesson is disciplined orchestration, not maximum branching. Reinforce the child-vs-connected choice from slide 52a: Document Review is child because it is tightly coupled to loan processing; Loan Advisory is connected because future Woodgrove agents (mortgage, small-business lending) should reuse it. Both patterns are GA — no preview opt-in, no special licensing.
 
 ### Slide 59: Module 8: Automation and models
 - Add automation and model choices without losing operational control.
@@ -407,15 +448,16 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 
 ### Slide 62: Lab Time: Lab 17
 - Compare models using the same lending task so the differences stay meaningful.
-- Use GPT-5 Chat as the recommended hands-on baseline for the workshop.
-- Mention GPT-4.1 only as platform context when participants need a comparison point.
-**Speaker note:** Keep the comparison lightweight so the room focuses on fit, not benchmarking theater.
+- Use GPT-5 Chat (GA since August 7, 2025) as the recommended hands-on baseline for the workshop.
+- Mention GPT-4.1 (labeled "Default" in the picker) as the GA fallback when GPT-5 Chat is not visible in the participant's tenant.
+- Flag Claude Sonnet (GA March 2026, rolling and opt-in) as an optional comparison only — not available in GCC, EU, UK, or EFTA tenants at GA.
+**Speaker note:** Keep the comparison lightweight so the room focuses on fit, not benchmarking theater. Deep Reasoning (powered by OpenAI o1, GA March 2025) and GPT-5 mini are valid optional data points, but the workshop baseline stays on GPT-5 Chat or its GA fallback GPT-4.1.
 
 ### Slide 63: Lab 17: Model selection
 - Run the comparison in the UI and judge structure, speed, and usefulness for lending tasks.
 - Select the model that best balances reliable output with the workshop scenario needs.
 - Save the chosen baseline so later labs evaluate against the same model.
-**Speaker note:** Model selection matters most when the room can explain why a choice was made. Keep the scorecard simple but explicit. If GPT-5 Chat is available, use it as the baseline, then explain any fallback in terms of loan officer trust, latency, and cost. Do not switch models casually after this point because Lab 24 evaluation needs a stable baseline.
+**Speaker note:** Model selection matters most when the room can explain why a choice was made. Keep the scorecard simple but explicit. If GPT-5 Chat is available, use it as the baseline; if not, fall back to GPT-4.1 and explain the choice in terms of loan officer trust, latency, and cost. Claude Sonnet is an optional comparison where the tenant and region allow it (not GCC/EU/UK/EFTA at GA, and the external-model toggle must be on). Do not switch models casually after this point because Lab 24 evaluation needs a stable baseline.
 
 ### Slide 64: Safety by layered controls
 - Combine AI disclosure, instructions, moderation, error handling, and testing into one safety model.
@@ -488,21 +530,21 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 
 ### Slide 75: Document outputs with guardrails
 - Generated documents need clear inputs, approved templates, and obvious review points.
-- Focus on repeatable lending artifacts such as loan review packs, summaries, or loan officer briefs.
-- Make output quality measurable before anyone treats the result as production-ready.
-**Speaker note:** This framing helps document generation feel operational rather than magical.
+- Focus on repeatable lending artifacts where the regulatory expectation is already known, such as the **Adverse Action Notice** sent when a credit application is denied.
+- Make output quality measurable before anyone treats the result as production-ready, and keep the human reviewer (compliance officer) on the critical path.
+**Speaker note:** Anchor the room on a regulated artifact. ECOA Regulation B requires lenders to notify applicants of adverse action within 30 days, and FCRA §615(a) prescribes the content when a consumer report was used. The agent's job is to draft, never to send.
 
 ### Slide 76: Lab Time: Lab 21
-- Generate one document-oriented output only after the required context is present.
-- Ask learners to review the result for structure, policy fit, and next-step usefulness.
-- Use the timebox to document one improvement instead of endlessly polishing wording.
-**Speaker note:** A good first output teaches more than a perfect tenth revision.
+- Generate one **draft** Adverse Action Notice for a denied loan application from structured Dataverse fields.
+- Ask learners to review the draft for structure, statutory language, and the explicit "DRAFT — for compliance review" framing.
+- Use the timebox to confirm the guard branch refuses to generate a notice when the application is not denied.
+**Speaker note:** The point of the lab is the governance frame: a draft for a human reviewer, never an auto-sent letter. The document-generation mechanic is the same Word template + prompt + flow + topic pattern; only the scenario changed.
 
-### Slide 77: Lab 21: Document generation
-- Create or review the document-generation step tied to the Loan Processing Agent scenario.
-- Validate the produced artifact against the expected structure, tone, and lending-related scope.
-- Record one guardrail or template improvement before considering wider use.
-**Speaker note:** Keep the result tied to a business artifact someone could actually review or use.
+### Slide 77: Lab 21: Document generation — Adverse Action Notice
+- Build (or use the prebuilt) Word template with content controls for applicant, application, decision, principal reasons, credit bureau, statutory language, and reviewer.
+- Use a prompt to draft the FCRA §615(a) consumer-rights and dispute-rights paragraphs in plain language for compliance review.
+- Wire the agent flow with a `Denied` guard, return a `DRAFT-` prefixed Word file, and reinforce the no-auto-send rule in the chat reply.
+**Speaker note:** Reinforce three governance moments: the `DRAFT` token in the file name, the chat-reply review reminder, and the Denied guard in the flow. The lab text is a simplified, illustrative draft — banks must use their own legal-approved templates and have qualified compliance and legal staff review every notice before it leaves the institution.
 
 ### Slide 78: [TRANSITION] Into MCP
 - Move from internal orchestration into governed extensibility with external tools.
@@ -515,13 +557,15 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 - Use the in-product onboarding wizard to add or review MCP servers inside Copilot Studio.
 - Keep tool scope narrow, auditable, and explainable to admins; avoid non-GA detours.
 - Avoid fallback branching, manual secret editing, or any non-wizard setup path.
+- For any custom MCP servers built after the workshop, use **Streamable HTTP** as the recommended transport; **Server-Sent Events (SSE)** is deprecated for new MCP servers.
 **Speaker note:** State the supported path clearly so the room does not anchor on outdated guidance and extensibility stays governed.
 
 ### Slide 80: MCP architecture: protocol, not connector <!-- NEW -->
 - Explain how MCP differs from classic connectors: one server exposes multiple tools vs. one action per capability.
 - Describe the Agent 365 tooling server dependency and how the MCP catalog works as a governed marketplace.
 - Show that MCP enables richer, composable tool integration while maintaining admin-controlled boundaries.
-**Speaker note:** Participants need this mental model before Lab 22 — without it, MCP looks like "just another connector."
+- Note transport guidance for any custom MCP servers: **Streamable HTTP** is the recommended transport; **Server-Sent Events (SSE)** is deprecated for new servers and existing SSE-based servers should be migrated.
+**Speaker note:** Participants need this mental model before Lab 22 — without it, MCP looks like "just another connector." Workshop labs only use pre-built Microsoft-hosted servers added through the in-product wizard, so transport choice never comes up during the lab itself; mention Streamable HTTP only as forward guidance for teams that will build their own MCP servers after the workshop.
 
 ### Slide 81: MCP consent and governance <!-- NEW -->
 - Walk through the consent flow: server selection → connection → per-tool consent card → Allow/Deny.
@@ -549,9 +593,11 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 
 ### Slide 85: Publish and deploy workflow <!-- NEW -->
 - Walk through the publish → Channels tab → Microsoft channels → Add channel → Teams installation → availability options sequence.
+- Show how the same channel pane covers both **Microsoft Teams** and the **Microsoft 365 Copilot** surface, and call out the M365 Copilot license requirement for end users.
+- Position **knowledge prioritization** (Loan Policy SharePoint > woodgrovebank.com > general web search) and **suggested prompts** (4 banking conversation starters) as the pre-publish steps that shape the user's first impression.
 - Explain Copy link, Show to teammates, and Show to my organization as distinct availability levels.
 - Highlight where participants commonly lose orientation and how to recover at each step.
-**Speaker note:** This sequence has 5+ clicks and participants lose orientation at the availability step — walk through it visually before Lab 11.
+**Speaker note:** This sequence has 5+ clicks and participants lose orientation at the availability step — walk through it visually before Lab 11. Set expectations that knowledge prioritization is a soft preference (orchestrator still chooses per turn) and that suggested prompts are the cheapest adoption lever in the workshop.
 
 ### Slide 86: WhatsApp and external channels <!-- NEW -->
 - Position WhatsApp and other external channels in the broader channel strategy alongside Teams and web.
@@ -577,41 +623,97 @@ Use this master outline with `slide-deck-delivery-notes.md`, `slide-deck-visual-
 - Connect feedback signals to future tuning, release decisions, and support processes.
 **Speaker note:** Show that feedback is most useful when it has an owner and a follow-up path.
 
-<!-- Progress: 89/95 slides complete -->
+<!-- Progress: 90/96 slides complete -->
 
 ### Slide 90: Module 12: Evaluation and ROI
-- Use evaluation as a repeatable release gate instead of relying on ad hoc chat testing.
+- Use evaluation as a repeatable release gate instead of relying on ad hoc chat testing — Copilot Studio Evaluation is generally available since April 2026.
 - Pair evaluation evidence with transcript analytics and ROI analytics to tell a fuller value story.
 - Connect quality results to rollout, staffing, and investment decisions after the workshop.
-**Speaker note:** This final module brings quality, insight, and business value into one decision framework. Bring Lab 12 back into the conversation here: ROI analytics tells the value story, while evaluation tells the quality and release-readiness story. Together they answer whether the agent is worth scaling and safe enough to scale.
+**Speaker note:** This final module brings quality, insight, and business value into one decision framework. Bring Lab 12 back into the conversation here: ROI analytics tells the value story, while evaluation tells the quality and release-readiness story. Together they answer whether the agent is worth scaling and safe enough to scale. Now that Evaluation is GA, treat it like any other release-gate practice — it belongs in your operating model, not in a "preview" sidebar.
 
 <!-- NEW -->
-### Slide 91: Evaluation grader types
-- Explain the four built-in grader types so participants understand what each one measures before they configure their own test cases.
-- **General quality** assesses helpfulness, accuracy, and well-formed responses. **Compare meaning** checks semantic match regardless of wording. **Tool use** verifies correct action and connector invocation. **Keyword match** confirms required terms appear for compliance or branding.
-- Guide the room on when to choose each grader: default to General quality for most scenarios, use Compare meaning when exact phrasing does not matter, use Tool use when workflow steps must be verified, and use Keyword match for policy enforcement.
-**Speaker note:** Walk through all four grader types before Lab 24 so participants can make an informed choice when configuring their evaluation test set. Emphasize that General quality is the safe default, but Tool use is critical whenever the agent must invoke a specific action or connector — a correct-sounding text response that skipped the required tool call is still a failure. Connect Keyword match to real compliance scenarios such as mandatory disclosure language or branding terms that must appear in every response.
+### Slide 91: Evaluation grader types and multi-grader scoring
+- Walk the seven GA grader types: **General response quality**, **Semantic meaning**, **Keyword presence**, **Text similarity**, **Exact match**, **Capability usage**, and **Custom Graders** (Classification).
+- Explain **multi-grader**: attach more than one grader to a single test case so one run can score quality, tool use, and compliance keywords together. Per-grader pass rates appear alongside the overall pass rate.
+- Guide the room on when to choose each grader: default to General response quality, add Capability usage when a tool or action must fire, add Keyword presence or Custom Graders for mandatory disclosure language, and use Semantic meaning when wording flexibility is fine.
+**Speaker note:** Walk through the grader types before Lab 24 so participants can make an informed choice. Emphasize that General response quality is the safe default, but Capability usage is critical whenever the agent must invoke a specific tool or connector — a correct-sounding text response that skipped the required call is still a failure. Reinforce that multi-grader is a GA capability, not a preview, so the right pattern in production is to stack two or three graders on each case rather than picking one and hoping.
 
-### Slide 92: Lab Time: Lab 24
+<!-- NEW -->
+### Slide 92: Zones of Coverage and multi-turn evaluation
+- Frame every test set with the PowerCAT **Zones of Coverage**: **Capability** (does the agent do the lending task?), **Regression** (does last week's fix still hold?), and **Safety** (does the agent refuse, redirect, or escalate?).
+- Show that **multi-turn evaluation** scores a full conversation, not just the last message — critical when an ambiguous loan officer prompt should trigger a clarifying question first.
+- Mention **auto-generated test inputs** as a starter: Copilot Studio can draft cases from your agent instructions, and you refine them for the lending scenario.
+**Speaker note:** Zones of Coverage is the simplest way to keep a test set honest. If everything in the set is a Capability case, regressions sneak in and safety is invisible. Multi-turn matters because most real loan-officer prompts are ambiguous; single-shot evaluation hides clarifying-question failures. Use auto-gen as a draft accelerator only — every case still needs to be grounded in the lending context before it earns a place in the release-gate set.
+
+### Slide 93: Lab Time: Lab 24
 - Run a repeatable quality review with scored evidence instead of intuition alone.
-- Ask learners to compare pass rate, failure reasons, and next-step fixes.
+- Ask learners to balance Capability, Regression, and Safety cases, attach two or more graders per case, and add at least one multi-turn case.
 - Use the activity map and transcript evidence to prepare one improvement loop.
-**Speaker note:** This lab matters most when participants leave with a reusable QA habit, not just one run.
+**Speaker note:** This lab matters most when participants leave with a reusable QA habit, not just one run. The new GA capabilities — multi-grader, multi-turn, auto-generated inputs — are not extras; they are the shape the test set should take from now on.
 
-### Slide 93: Lab 24: Evaluation and QA
-- Create or run an evaluation test set in the UI using realistic lending prompts.
-- Inspect pass rate, grader reasoning, and activity-map evidence for at least one failing case.
+### Slide 94: Lab 24: Evaluation and QA
+- Create or run an evaluation test set in the UI using realistic lending prompts across all three Zones of Coverage.
+- Inspect per-grader pass rate, grader reasoning, multi-turn conversation detail, and activity-map evidence for at least one failing case.
 - Use the findings to refine the agent before calling it release-ready.
-**Speaker note:** Connect the workflow back to the transcript-analysis architecture so quality improvement feels operational and repeatable. Show what makes a failing case useful: clear expected behavior, grader reasoning, and an activity map that points to the real fix. Leave the room with the idea that evaluation is a reusable release gate, not a one-time workshop artifact.
+- For advanced teams (IT Pro / Developer): mention the **EvalGate** CI/CD pattern (e.g., **EvalGateADO** for Azure DevOps) as a take-home for wiring evaluation into a build pipeline. Awareness only — out of scope for the workshop.
+**Speaker note:** Connect the workflow back to the transcript-analysis architecture so quality improvement feels operational and repeatable. Show what makes a failing case useful: clear expected behavior, per-grader reasoning, and an activity map that points to the real fix. Close with EvalGate as the natural next step for teams that already use Azure DevOps; do not demo it.
 
-### Slide 94: Lab Time: Lab 25
+### Slide 95: Lab Time: Lab 25
 - Start the optional developer branch while the main room stays on wrap-up, QA review, and rollout planning.
 - Direct developers to the VS Code workflow only if they are caught up on the core path.
 - Keep nondevelopers focused on evaluation findings, ROI framing, and next actions.
 **Speaker note:** This structure keeps the core workshop complete while still giving developers a relevant extension path.
 
-### Slide 95: Lab 25: VS Code workflow
+### Slide 96: Lab 25: VS Code workflow
 - Optionally clone and sync the agent with the VS Code extension using the supported GA workflow.
 - Validate that local edits flow back into Copilot Studio without changing the workshop baseline or bypassing in-product controls.
 - Use this branch only for developers while the main room closes on evaluation, ROI, and rollout actions.
 **Speaker note:** End by making the developer add-on feel optional, useful, and safely separated from the core path. Reassure nondevelopers that the core delivery story is already complete. For developers, stress that local editing complements, not replaces, the governed in-product flow and later release controls.
+
+## Module 13b: ALM and Governance for Copilot Studio Agents
+
+Module 13b is a concept module that opens Day 2 between Lab 13 (solution import) and Lab 14 (instructions). It runs ~30 minutes as a lecture plus one facilitator-driven demo, with no hands-on student exercise — student Sandbox environments cannot exercise Power Platform Pipelines or three separate governance zones. The full slide source lives in `workshop\Copilot-Studio-Workshop-Slides\Module-13b-ALM-and-Governance.md`.
+
+### Slide 97: Why ALM matters for agents <!-- NEW -->
+- Frame an agent as a versioned application: instructions, topics, knowledge sources, connections, environment variables, and child agents are all deployable artifacts, not settings.
+- Establish the bank-grade expectation: source of truth, peer review, traceable promotion, and a rollback path apply to agents the same way they apply to any production code path.
+- Anchor the regulatory motivation early — direct edits in production are findings under NYDFS Part 500 §500.11 and the OCC's 2024 AI guidance, not just hygiene problems.
+**Speaker note:** Open with one sentence — "Anything you cannot redeploy from source is anything you cannot defend in audit." Use it to set the tone for the rest of Day 2.
+
+### Slide 98: ALM building blocks — Solutions, Connections, Environment Variables, Pipelines <!-- NEW -->
+- Walk Solutions as the unit of packaging, using the `WoodgroveLending` solution participants imported in Lab 13 as the live example, and contrast managed (immutable, Production) versus unmanaged (editable, Dev).
+- Explain the Connector / Connection / Connection Reference triangle and call it out as the single most common reason a solution import succeeds but does not work after promotion.
+- Cover Environment Variables (per-environment configuration, including the Key Vault secret type for anything that would otherwise leak into solution XML) and frame Power Platform Pipelines as the promotion automation that requires Production environments — therefore facilitator-demo only in this workshop.
+**Speaker note:** Reinforce the triangle visually if you have a whiteboard. Most "I imported the solution but the connector is empty" support tickets trace to a missing or unbound connection reference.
+
+### Slide 99: Three Zones — a PowerCAT teaching pattern (not an official Microsoft framework) <!-- NEW -->
+- State the framing rule out loud the first time the term appears: Three Zones is a PowerCAT teaching pattern, not a published Microsoft framework, and the Microsoft Cloud Adoption Framework "landing zones" concept is something different.
+- Walk the three zones in order — Zone 1 Personal Sandbox (maker exploration, ungoverned, ephemeral), Zone 2 Team Dev (curated, source-controlled, shared with the team), Zone 3 Production (managed, monitored, auditable, fully governed) — and describe promotion as a gate, not a copy.
+- Map the workshop's environments onto the model: the student Sandbox is Zone 1, the facilitator demo environment is the Zone 2 stand-in, and a real bank deployment lives in Zone 3. Run the `Initialize-FacilitatorGovernanceZones.ps1` console output as the demo visual.
+**Speaker note:** Customers who later search for "Microsoft Three Zones" and find nothing will lose trust in the rest of the deck — always say "PowerCAT pattern" out loud the first time the term appears.
+
+### Slide 100: Governance overlay — DLP, Managed Environments, isolation, monitoring <!-- NEW -->
+- Cover Data Loss Prevention policy classes (Business, Non-Business, Blocked) and make the point that the same agent in Zone 1 versus Zone 3 may legitimately have different DLP postures.
+- Walk the Managed Environments feature set most relevant to Zone 3: sharing limits, weekly digest, solution checker enforcement, and maker welcome content.
+- Cover environment isolation as the cross-environment data-movement guard, then close with tenant-level monitoring (capacity, license, and Copilot Studio credit consumption surfaced in the Power Platform admin center).
+**Speaker note:** This is the slide where the IT Pro audience leans in — acknowledge them by name and note that the slide is intentionally heavier on platform controls than maker UX.
+
+### Slide 101: FSI regulatory anchors <!-- NEW -->
+- Map the module to the five regulatory anchors students will be asked about in design review: GLBA Safeguards Rule (data protection and access controls), NYDFS Part 500 §500.11 (third-party service provider security policies), OCC AI guidance (model risk management for LLM-based agents), EU AI Act Annex III §5(b) (banking systems affecting access to credit are high-risk AI), and SR 11-7 (US Federal Reserve model risk management — already cited in Lab 09).
+- For each anchor, explicitly tie the regulation to a Three-Zones or ALM practice already on the prior slides — the GLBA Safeguards boundary is partly how Zone 1 versus Zones 2/3 is enforced; SR 11-7 ties to Lab 09's four-eyes pattern and Lab 16's autonomous-triage demo.
+- Close by referencing `workshop\automation\Disable-WorkshopAutonomousTriggers.ps1` as the cleanup tool that completes the governance loop after the Lab 16 demo, so the IT Pro audience sees "build" and "decommission" as equally first-class operations.
+**Speaker note:** End with one line — "Every Day 2 lab from this point forward is, implicitly, a control you would defend in one of these reviews." That sentence is the bridge into Lab 14 instructions.
+
+<!-- NEW -->
+### Slide 97: Module 13b: Autonomous Triage Assistant — facilitator demo
+- Show one trigger-driven Copilot Studio agent firing on its own schedule against the facilitator demo Loan Processing Agent and writing an **internal-only triage memo** to a SharePoint library — no borrower contact, no credit decision, no Dataverse write to any application or decision row.
+- Frame the demo as a **governance showcase**, not a productivity demo: the teaching value is in what the agent is *forbidden* to do.
+- Anchor the pattern to the regulatory guardrails the room already cares about: **SR 11-7 model risk management**, **ECOA / Regulation B §1002.9 adverse-action notices**, **OCC AI guidance (Bulletin 2021-39)**, **EU AI Act Annex III §5(b) high-risk credit scoring**, and the **four-eyes principle**.
+**Speaker note:** This is intentionally facilitator-demo only — students do not deploy this in their environments. The original "Autonomous Borrower-Watch" idea was reframed after the FSI council flagged it as a clear violation of SR 11-7 effective-challenge expectations and ECOA fair-lending norms. The reframed Tier-2 Triage Assistant keeps the autonomous-trigger teaching value while removing every regulated-decision and customer-facing action. Open the maker portal, show the trigger, then open the SharePoint memo library and walk a real prior memo. Read the memo's "Items the agent declined to recommend" and "Audit" sections aloud — those two sections are the demo. Do not soften the "what we are NOT doing" list; that is the governance teaching moment, not a footnote.
+
+<!-- NEW -->
+### Slide 98: Autonomous demo — discussion and closeout
+- Pose the discussion prompt: *"What would have to be true before you would let this same trigger deliver its memo to the customer instead of to your triage manager? List the controls."* Let small groups answer before you do.
+- Capture the room's controls list — explicit human review, adverse-action workflow, model validation and challenger model, transcript retention and supervisory review, fair-lending impact testing, complaint handling, opt-in/opt-out — and reinforce that this is the *long list* that separates an internal triage memo from a customer-facing decision.
+- Close on cleanup: the autonomous trigger keeps firing and keeps burning Copilot Credits after the workshop ends. Run `Disable-WorkshopAutonomousTriggers.ps1` against the facilitator demo environment the same day the workshop closes, then optionally archive the SharePoint memo library as a teaching artifact.
+**Speaker note:** Do not skip the discussion prompt. The point of the entire demo is the conversation it produces, not the memo. End with the cleanup callout on screen so the next facilitator inheriting the demo environment has the script name in front of them. See `workshop/facilitator-guide/autonomous-triage-demo.md` for the full demo script, the prerequisites, the regulatory citations, and the Q&A talking points.

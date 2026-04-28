@@ -1,7 +1,7 @@
 # Copilot Studio Workshop
 ## Day 1 — Foundation Track
 ### Lab 03 — Declarative Agents
-⏱ Estimated time: 60 min
+⏱ Estimated time: 60 min (core) + 15 min (optional Agent Builder section)
 
 #### Overview
 In this lab, you will create a declarative agent for Microsoft 365 Copilot and Microsoft Teams. You will define the agent purpose, add a reusable prompt tool, test the orchestration, and publish the experience so participants can see how declarative agents extend Microsoft 365 Copilot with focused skills.
@@ -96,8 +96,53 @@ When a user asks a banking policy question about accounts, loans, compliance, or
 
 > **Warning:** If publishing is blocked in a trial environment, finish the creation and validation steps in Copilot Studio and ask the facilitator to demo the published experience from a paid environment.
 
+#### Optional: Build a quick agent with M365 Agent Builder
+⏱ Estimated time: 10–15 min — **optional, requires Microsoft 365 Copilot license**
+
+> **Prerequisites:** This walkthrough requires an active **Microsoft 365 Copilot** license assigned to your workshop account. Run `powershell -File .\workshop\automation\Invoke-WorkshopPrereqCheck.ps1` and review the license check output. If the check flags your account as unlicensed, **skip this section** and continue with the Copilot Studio path you just completed. The facilitator may demonstrate the Agent Builder flow from a licensed tenant instead.
+
+This optional section contrasts the lightweight **M365 Agent Builder** authoring surface (inside Microsoft 365 Copilot) with the full **Copilot Studio** experience you used above. Many business users will start in Agent Builder; this exercise helps you explain when each tool is the right choice for Woodgrove Bank scenarios.
+
+##### Step A — Open the Agent Builder experience
+1. Open `https://m365.cloud.microsoft/copilot` in a new browser tab and sign in with your licensed workshop account.
+2. In the left navigation, select **Agents**, then select **Build an agent** (or **Create agent** depending on your tenant rollout).
+
+##### Step B — Describe the agent in natural language
+1. In the **Describe your agent** prompt, enter the following text:
+
+```text
+Create an agent that helps Woodgrove Bank customers find the right loan product based on their goals, timeline, and budget. Ask one focused question at a time, summarize the recommended product at the end, and never quote specific rates or eligibility decisions.
+```
+
+2. Wait for Agent Builder to generate a draft. Review the auto-generated **Name**, **Description**, **Instructions**, and **Starter prompts**.
+3. If Agent Builder offers to attach knowledge from your OneDrive or SharePoint, decline for this walkthrough — keep the agent ungrounded so the contrast with the Copilot Studio version stays clear.
+
+##### Step C — Test the agent inside Microsoft 365 Copilot
+1. Select **Test** (or **Try it**) in the right pane.
+2. Enter `I am 32, want to buy my first home in 18 months, and have $40,000 saved.` and review the response.
+3. Try one of the suggested starter prompts to confirm the generated instructions guide the conversation.
+
+##### Step D — Compare the two authoring surfaces
+Use this contrast table to discuss when each tool is appropriate. The Woodgrove Bank scenario in this workshop intentionally uses **Copilot Studio** for the rest of Day 1 and all of Day 2.
+
+| Aspect | M365 Agent Builder | Copilot Studio |
+|---|---|---|
+| Audience reach | Personal, team, or org-wide inside Microsoft 365 Copilot | Multi-channel: Teams, web, Microsoft 365 Copilot, custom channels |
+| Authoring depth | Natural-language description plus light configuration | Full topic designer, Power Fx, flows, actions, MCP, generative orchestration |
+| Governance | Sits within Microsoft 365 admin and Copilot sharing scope | Full ALM with environments, solutions, DLP, pipelines, Dataverse security |
+| Knowledge sources | Microsoft 365 sources: SharePoint, OneDrive, public web | Wide: SharePoint, Dataverse, files, custom connectors, MCP servers |
+| Best for | Quick personal or team productivity helpers | Production-grade enterprise agents with complex workflows |
+
+##### Step E — Reflect on the Woodgrove choice
+1. The **Woodgrove Customer Service Agent** you are building across this workshop lives in **Copilot Studio** because Woodgrove Bank needs governed ALM, Dataverse data, multi-channel reach (Teams plus the customer portal), connected and child agent orchestration, and policy-grade moderation. None of those requirements fit Agent Builder's lightweight scope.
+2. Note one Woodgrove use case that *would* be a good fit for Agent Builder (for example, a personal assistant that summarizes a relationship manager's recent client emails). Park that idea — you can build it later inside Microsoft 365 Copilot without adding load to the central Copilot Studio environment.
+
+> **Tip:** You can leave the Agent Builder draft saved to your personal Microsoft 365 Copilot scope. It will not interfere with the rest of the workshop labs.
+
 #### Facilitator Notes
 1. Encourage participants to keep the declarative agent focused; the point is to extend Microsoft 365 Copilot with a narrow banking capability.
 2. If the group is mixed, call out that [Maker] tasks happen in Copilot Studio while [IT Pro] participants should pay attention to channel and publishing constraints.
 3. Keep the custom prompt lightweight because later labs introduce knowledge sources, topics, adaptive cards, and automation.
+4. **Optional Agent Builder section.** Before starting, ask the room "Who has Microsoft 365 Copilot assigned to their workshop account?" and reference the prereq check output. If fewer than half the room is licensed, skip the hands-on portion and run Step D (the contrast table) as a 5-minute facilitator-led discussion using your own licensed tenant as the demo. The teaching goal is the contrast — when to use which tool — not the click-through.
+5. Reinforce the Woodgrove framing in Step E: the rest of the workshop uses Copilot Studio because the bank needs governance, ALM, channel reach, and complex workflows. Agent Builder is a complement, not a competitor.
 

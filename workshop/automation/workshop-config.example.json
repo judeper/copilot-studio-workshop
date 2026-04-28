@@ -116,5 +116,29 @@
     "LoanTypesCsvPath": "..\\assets\\loan-types.csv",
     "AssessmentCriteriaCsvPath": "..\\assets\\assessment-criteria.csv",
     "ImportEnterpriseSolution": false
+  },
+
+  "Governance": {
+    "_Doc": "Facilitator-only settings for the combined ALM + Governance module's Three-Zones (PowerCAT teaching pattern) demo. Students do NOT receive three environments; these are facilitator-managed demo envs only.",
+    "EnableThreeZonesDemo": false,
+    "PersonalSandboxEnvironmentUrl": "https://contoso-personal.crm.dynamics.com",
+    "TeamDevEnvironmentUrl": "https://contoso-teamdev.crm.dynamics.com",
+    "ProductionEnvironmentUrl": "https://contoso-prod.crm.dynamics.com",
+    "ALMSolutionDownloadUrl": "https://example.com/path/to/ALM-takehome.zip"
+  },
+
+  "Autonomous": {
+    "_Doc": "Facilitator-only settings for the Autonomous Borrower-Watch Tier-2 Triage demo (Lab P1-4). Triggers must be disabled after the workshop to avoid burning Copilot Credits — see Disable-WorkshopAutonomousTriggers.ps1.",
+    "EnableBorrowerWatchDemo": false,
+    "TriggerSchedule": "Hourly",
+    "DisableAfterWorkshop": true
+  },
+
+  "ComponentCollections": {
+    "_Doc": "Cross-day Component Collections asset (Day 1 micro-addition + Day 2 micro-addition). Replaces the deprecated 'KYC Knowledge' framing — see facilitator guide.",
+    "ProductDisclosuresCollectionName": "Woodgrove-Product-Disclosures",
+    "DisclosureSourceUrls": [
+      "https://woodgrovebank.example.com/disclosures"
+    ]
   }
 }

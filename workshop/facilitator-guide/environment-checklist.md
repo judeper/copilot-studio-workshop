@@ -73,6 +73,9 @@ If provisioning per-student environments (instead of a shared environment), addi
 - Run: `powershell -File .\workshop\automation\Invoke-StudentEnvironmentProvisioning.ps1`
 - Post-workshop cleanup: `powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelete`
 - For a disposable facilitator demo or fallback target, use `powershell -File .\workshop\automation\Remove-WorkshopFacilitatorEnvironment.ps1 -EnvironmentUrl https://<demo-or-fallback>.crm.dynamics.com`
+- After the workshop, disable autonomous triggers in the demo environment so the Module 16 Tier-2 Triage Assistant stops firing and burning Copilot Credits: dry-run with `powershell -File .\workshop\automation\Disable-WorkshopAutonomousTriggers.ps1 -ListOnly`, then apply with `powershell -File .\workshop\automation\Disable-WorkshopAutonomousTriggers.ps1`.
+- For the Module 13b ALM + Governance facilitator demo, validate the Three-Zones environments before class with `powershell -File .\workshop\automation\Initialize-FacilitatorGovernanceZones.ps1` (reads `Governance.PersonalSandboxEnvironmentUrl`, `TeamDevEnvironmentUrl`, `ProductionEnvironmentUrl`).
+- Before publishing or shipping any v2 content change, run `pwsh -File .\workshop\tests\terminology-lint.ps1` (canonical terminology gate) and walk `workshop\tests\pass-2-release-readiness.md` (the v2 release-gate checklist).
 
 ### Cleanup and re-testing
 

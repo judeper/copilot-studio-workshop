@@ -13,6 +13,8 @@ Use this morning-of runbook during the opening setup window. Run the checks in o
 | 7. MCP readiness | Day 2 | Open **Tools**, choose the MCP path, and start the onboarding wizard. If you have a pre-staged MCP tool, confirm it still opens. | The MCP onboarding wizard or saved MCP tool loads without capability or connection errors. | If the facilitator demo account can still complete the wizard, switch MCP modules to **demo mode**. If no facilitator account can open MCP, treat the MCP module as **not ready**. |
 | 8. Evaluation availability | Day 2 | Open **Evaluation** and start the **New evaluation** flow. | The evaluation experience opens and the test-set path is available without errors. | Retry once with the facilitator demo account. If the demo account works, switch evaluation to **demo mode**. If it also fails, treat the evaluation module as **not ready**. |
 | 9. Dataverse table readiness | Day 2 | Open a Dataverse table in the target environment and confirm a test record can be created and deleted. | The table opens, a row can be added and removed without permission errors. | If the facilitator demo account can complete the operation, switch Dataverse exercises to **demo mode**. If neither account works, treat the Dataverse path as **not ready**. |
+| 10. Terminology lint | Both | From the repo root run `pwsh -File workshop/tests/terminology-lint.ps1`. | Exits with code 0 and reports no forbidden tokens. | If forbidden tokens are reported, fix the call-site before opening the workshop; the lint is the P0 atomic-merge gate. |
+| 11. M365 Copilot license probe | Both | Run `pwsh -File workshop/automation/Invoke-WorkshopPrereqCheck.ps1` and review the **M365 Copilot license** section. | Section emits **PASS** or **WARN** (never throws). Lab 03 (Agent Builder) and Lab 11 (M365 Copilot channel) are license-gated; a WARN means switch those labs to demo mode for unlicensed seats. | If the script throws, the facilitator's environment is misconfigured — fix before the day starts. |
 
 ## Morning-of outcomes
 
@@ -20,4 +22,8 @@ Use this morning-of runbook during the opening setup window. Run the checks in o
 - Switch only the affected module to demo mode when checks 4–8 fail on the attendee path but succeed on the facilitator fallback.
 - Treat the environment as not ready when checks 1–3 fail, or when any later check has no working facilitator fallback.
 - Delete the temporary test agent or reset the disposable artifacts after the smoke pass.
+
+## Pre-release readiness
+
+For pre-release verification of Plan v2 content (Pass 1 P0 correctness sweep + Pass 2 P1 additions — multistage approvals, Adverse Action Notice, Component Collections, Three Zones, Autonomous Borrower-Watch), use the deeper [Pass 2 Release Readiness Checklist](pass-2-release-readiness.md). Run that checklist before tagging a release; this smoke test only covers morning-of environment readiness.
 

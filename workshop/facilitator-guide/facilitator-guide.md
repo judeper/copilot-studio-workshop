@@ -36,6 +36,7 @@ The 13 PPTX decks in [`../Copilot-Studio-Workshop-Slides/`](../Copilot-Studio-Wo
 - [`../assets/slide-deck-visual-plan.md`](../assets/slide-deck-visual-plan.md) for screenshot reuse, custom visual planning, and failure-state capture recommendations.
 - [`../assets/lab-timing-guide.md`](../assets/lab-timing-guide.md) for pacing, recovery options, and module timing.
 - [`../assets/screenshot-capture-checklist.md`](../assets/screenshot-capture-checklist.md) for the screenshot inventory that supports the deck and the labs.
+- [`autonomous-triage-demo.md`](autonomous-triage-demo.md) for the **facilitator-demo only** Tier-2 Triage Assistant walkthrough (Module 13b, slides 97-98) — autonomous trigger, internal-only memo, regulatory guardrails (SR 11-7, ECOA Reg B §1002.9, OCC AI guidance, EU AI Act Annex III §5(b)), and the post-workshop `Disable-WorkshopAutonomousTriggers.ps1` cleanup step.
 - [`../tests/validation-checklist.md`](../tests/validation-checklist.md) and [`../tests/environment-smoke-tests.md`](../tests/environment-smoke-tests.md) for validation cues and demo-mode fallback decisions.
 
 ## Automated setup
@@ -98,6 +99,10 @@ powershell -File .\workshop\automation\Remove-StudentEnvironments.ps1 -HardDelet
 
 # 8. Optional: tear down a disposable facilitator demo or fallback target
 powershell -File .\workshop\automation\Remove-WorkshopFacilitatorEnvironment.ps1 -EnvironmentUrl https://<demo-or-fallback>.crm.dynamics.com
+
+# 9. Post-workshop: disable the autonomous Triage Assistant demo trigger so it stops firing and consuming Copilot Credits in the facilitator demo environment
+pwsh -File .\workshop\automation\Disable-WorkshopAutonomousTriggers.ps1 -ListOnly
+pwsh -File .\workshop\automation\Disable-WorkshopAutonomousTriggers.ps1
 ```
 
 > **Cleanup safety:** `Remove-WorkshopFacilitatorEnvironment.ps1` refuses to delete the configured facilitator gold source unless you intentionally re-run it with `-AllowGoldSourceDeletion`.
@@ -263,7 +268,34 @@ Shared core path:
 
 Optional/stretch path:
 
-- [Lab 25 - VS Code Extension](../labs/lab-25-vscode-extension/)
+- [Lab 25 - VS Code Extension](../labs/lab-25-vscode-extension/) — **fully optional in v2**; skip if time-constrained.
+
+#### Day 2 sample schedule (v2)
+
+This schedule reflects v2 changes: NEW Module 13b opens Day 2 (~30 min concept + facilitator demo), Lab 14 includes an optional ~10 min Component Collections extension, Lab 23 has been compressed to a ~20 min core (Parts 1–4 only), and Lab 25 is fully optional. Total Day 2 core (Labs 13–24 + Module 13b) ≈ 500 min plus ~90 min of buffers (lunch, breaks, intro/wrap) → fits a 9:00–17:00 day with disciplined pacing and demo-first delivery on the longer labs (13, 21, 22, 24).
+
+| Time | Block |
+| --- | --- |
+| 09:00–09:15 | Day 2 welcome, Day 1 carry-forward, prerequisite check |
+| 09:15–09:45 | **Module 13b — ALM and Governance** (concept + facilitator demo, no hands-on) |
+| 09:45–10:30 | Lab 13 — Loan Processing Agent setup (45 min) |
+| 10:30–10:45 | Break |
+| 10:45–11:10 | Lab 14 — Agent instructions (25 min core; +10 min optional Component Collections) |
+| 11:10–11:50 | Lab 15 — Multi-agent (40 min) |
+| 11:50–12:30 | Lab 16 — Trigger automation (40 min) |
+| 12:30–13:30 | Lunch |
+| 13:30–14:00 | Lab 17 — Model selection (30 min) |
+| 14:00–14:40 | Lab 18 — Content moderation (40 min) |
+| 14:40–15:15 | Lab 19 — Multimodal prompts (35 min) |
+| 15:15–15:30 | Break |
+| 15:30–16:10 | Lab 20 — Dataverse grounding (40 min) |
+| 16:10–16:55 | Lab 21 — Document generation (45 min) |
+| 16:55–17:40 | Lab 22 — MCP integration (45 min) |
+| 17:40–18:00 | Lab 23 — User feedback (compressed ~20 min core) |
+| *(parallel/end of day)* | Lab 24 — Agent evaluation (55 min, may run partially as facilitator demo if pacing slips) |
+| *(optional stretch)* | Lab 25 — VS Code workflow (~30 min, developer track only) |
+
+> **Pacing note:** If Lab 24 cannot fit in full, demo the evaluation flow live and direct participants to complete the hands-on portion as self-paced study. Lab 25 should only run when developers in the room have caught up and there is genuine headroom; otherwise recommend it as post-workshop study.
 
 ## Pacing guidance
 
@@ -311,11 +343,12 @@ Let participants work without interruption when:
 | Day 1 | Custom agent built | 13:45 | Most tables have a working agent with knowledge attached. |
 | Day 1 | Interaction layer complete | 15:15 | Topics, Adaptive Cards, and flows are functioning for most participants. |
 | Day 1 | Publish and recap | 16:30 | Participants have published or observed publishing and know Day 2 prerequisites. |
-| Day 2 | Scenario reset complete | 09:30 | Loan Processing Agent architecture and prerequisites are clear to everyone. |
-| Day 2 | Multi-agent core built | 11:15 | Central agent and connected-agent pattern are working. |
-| Day 2 | Safety and grounding complete | 14:00 | Safety, model selection, multimodal, and Dataverse topics are covered. |
-| Day 2 | MCP, feedback, and evaluation complete | 16:00 | MCP configuration, feedback capture, evaluation flow, and the end-to-end scenario can be demonstrated. |
-| Day 2 | Final review | 16:30 | Deliverables reviewed, governance discussed, and next steps captured. |
+| Day 2 | Module 13b (ALM and Governance) complete | 09:30 | Solutions, pipelines, and the Three Zones framing are clear; participants are ready to enter the Loan Processing Agent build. |
+| Day 2 | Lending agent set up and instructed (Labs 13–14) | 11:00 | Loan Processing Agent imported and core instructions in place. |
+| Day 2 | Multi-agent and automation core built (Labs 15–16) | 13:00 | Connected-agent pattern and trigger automation working end-to-end. |
+| Day 2 | Model, safety, multimodal, and Dataverse complete (Labs 17–20) | 15:00 | Model selection, content moderation, multimodal prompts, and Dataverse grounding covered. |
+| Day 2 | Document generation, MCP, feedback, evaluation complete (Labs 21–24) | 16:30 | Lab 24 evaluation flow demonstrated; Lab 23 compressed core (~20 min) accommodates Module 13b. |
+| Day 2 | Final review and optional Lab 25 | 17:00 | Wrap and governance discussion; developer track may branch to optional Lab 25 if the room has headroom. |
 
 ## Troubleshooting strategy
 
@@ -466,3 +499,4 @@ Suggested rhythm:
 - Note which labs were completed versus demonstrated.
 - Record tenant or licensing issues that need post-event remediation.
 - Share the participant guides and direct attendees to the relevant lab folders for continued practice.
+- If the **Module 13b Autonomous Triage Assistant demo** ran in the facilitator demo environment, run `pwsh -File .\workshop\automation\Disable-WorkshopAutonomousTriggers.ps1 -ListOnly` and then without `-ListOnly` to stop the autonomous trigger from continuing to fire and consume Copilot Credits. See [`autonomous-triage-demo.md`](autonomous-triage-demo.md) for the full demo script and cleanup detail.

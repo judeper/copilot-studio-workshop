@@ -4,7 +4,7 @@
 
 ### Lab 23 — User Feedback
 
-⏱ Estimated time: 30 min
+⏱ Estimated time: 20 min (core) — Part 5 is optional and can be skipped if time-constrained
 
 #### Overview
 In this lab, you will close the loop on the Loan Processing Agent scenario by collecting post-conversation feedback. You will confirm the built-in reaction experience, add a custom adaptive card for dissatisfied users, and review where both reaction data and card responses can be inspected after a conversation.
@@ -91,9 +91,9 @@ In this lab, you will close the loop on the Loan Processing Agent scenario by co
 4. Confirm the end-conversation prompts.
 5. Select a **1-star** or **2-star** CSAT score.
 6. Complete the adaptive card and submit it.
-7. Start a second short session and provide a positive rating so you can compare both paths.
+7. *Optional — skip if time-constrained.* Start a second short session and provide a positive rating so you can compare both paths.
 
-#### Part 5 — Review the results
+#### Part 5 — Review the results (Optional — skip if time-constrained)
 1. Open the **Analytics** tab for **Loan Processing Agent**.
 2. Scroll to **Satisfaction** and open **Reactions** details to review built-in thumbs data if you collected any during testing.
 3. Note that the custom adaptive card responses are not automatically summarized in the same chart.
@@ -109,7 +109,7 @@ In this lab, you will close the loop on the Loan Processing Agent scenario by co
 2. The `Capture Dissatisfied Feedback` topic exists and contains the adaptive card.
 3. The **End of Conversation** topic routes low CSAT scores to the custom topic.
 4. A low CSAT test shows the feedback card.
-5. You can review built-in reactions in **Analytics** and inspect adaptive card responses in the **Activity** tab.
+5. *(Optional, only if Part 5 was completed.)* You can review built-in reactions in **Analytics** and inspect adaptive card responses in the **Activity** tab.
 
 #### Troubleshooting
 1. If the adaptive card does not appear, confirm that the **End of Conversation** topic condition routes low scores to the custom topic.
@@ -121,4 +121,5 @@ In this lab, you will close the loop on the Loan Processing Agent scenario by co
 1. Explain clearly that built-in reactions and custom adaptive card feedback solve different reporting needs.
 2. Demo one negative CSAT path live so participants can see the redirect happen.
 3. If time allows, discuss how to persist the adaptive card outputs into a Dataverse table for long-term analysis.
+4. **Compressed in v2 to absorb Module 13b and the Lab 14 Component Collections extension.** The core lab is now Parts 1–4 (low-CSAT happy path only), targeting ~20 minutes. Part 5 (Analytics and Activity review) and the positive-rating comparison test in Part 4 step 7 are explicitly optional. The trimmed steps remain in the README for facilitators who have headroom or for self-paced study.
 
